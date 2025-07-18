@@ -26,7 +26,7 @@ export default function SearchInferenceModelPane({
   return (
     <div className="flex w-full flex-col items-center">
       <Card className="mt-0 w-full max-w-screen-lg bg-white">
-        <CardHeader className="w-full pb-3  pt-5">
+        <CardHeader className="w-full pb-3 pt-5">
           <div className="flex w-full flex-row items-center justify-between">
             <CardTitle>Search via Inference</CardTitle>
             <a href="https://docs.neuronpedia.org/search" target="_blank" rel="noreferrer">
@@ -57,7 +57,7 @@ export default function SearchInferenceModelPane({
               />
             </InferenceActivationAllProvider>
           ) : (
-            <div className=" flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center justify-center">
               <div className="pb-3 pt-2 text-base font-bold text-slate-400">
                 Inference is not currently not enabled for this model.
               </div>

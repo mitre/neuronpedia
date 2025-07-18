@@ -30,7 +30,7 @@ export default function FeatureTooltip({ s = true }: { s?: boolean }) {
         <br />
         <div className="group relative mb-0 mt-1 flex w-full flex-row items-center justify-center gap-x-3 rounded-xl bg-emerald-100 px-5 py-1 text-emerald-800 transition-all hover:bg-emerald-200">
           <div className="h-2 w-2 rounded-full bg-emerald-700" />
-          <div className=" flex flex-1 flex-col ">
+          <div className="flex flex-1 flex-col">
             <div className="cursor-default pb-0.5 pt-3 text-xs leading-none transition-all group-hover:text-emerald-800">
               references to London
             </div>

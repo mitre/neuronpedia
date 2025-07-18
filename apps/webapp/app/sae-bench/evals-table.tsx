@@ -666,10 +666,10 @@ export default function EvalsTable({
               options.field === 'modelId'
                 ? '115px'
                 : options.field === 'release'
-                ? '90px'
-                : options.field === 'saeClass'
-                ? '90px'
-                : undefined,
+                  ? '90px'
+                  : options.field === 'saeClass'
+                    ? '90px'
+                    : undefined,
             maxWidth: options.field === 'modelId' ? '126px' : undefined,
           }}
         />
@@ -909,11 +909,11 @@ export default function EvalsTable({
                 ? item === 0
                   ? '0'
                   : item === -1
-                  ? 'N/A'
-                  : convertNumToAbbr(item)
+                    ? 'N/A'
+                    : convertNumToAbbr(item)
                 : field === 'dSae'
-                ? convertNumToAbbr(item)
-                : getSaeBenchDisplayString(item)}
+                  ? convertNumToAbbr(item)
+                  : getSaeBenchDisplayString(item)}
               {` ` +
                 ` (${numberOfSaesThatWouldMatchFilter} of ${getFilteredRowsForJustThisFilter(field, item).length})`}
             </div>
@@ -981,7 +981,7 @@ export default function EvalsTable({
       )}
       {anonymized && (
         <div className="flex flex-col items-center justify-center gap-y-1 bg-slate-100 px-5 py-0 pb-3 text-[12px] text-slate-500">
-          <div className="max-w-screen-md ">
+          <div className="max-w-screen-md">
             We evaluate a suite of open-source sparse autoencoders on each SAEBench metric. Use the filters to select a
             subset of the SAE Suite. Hover over metric names in the plot title to see a detailed metric description.
             Choose which metric to plot on x and y axis.
@@ -1000,7 +1000,7 @@ export default function EvalsTable({
                   setPreset(preset.params);
                 }}
                 variant="outline"
-                className={`h-8 flex-1 gap-x-1 rounded-full border border-slate-300 px-3.5 py-2 text-[12px] font-medium  ${
+                className={`h-8 flex-1 gap-x-1 rounded-full border border-slate-300 px-3.5 py-2 text-[12px] font-medium ${
                   presetIsSelected(preset)
                     ? 'border-sky-700 bg-sky-200 text-sky-700 hover:bg-sky-200 hover:text-sky-700'
                     : 'border-slate-300 bg-slate-100 text-slate-500 hover:bg-sky-100 hover:text-sky-600'
@@ -1056,7 +1056,7 @@ export default function EvalsTable({
           isEmbed
             ? 'relative w-full items-center justify-center'
             : 'w-full items-start justify-center gap-x-5 px-5 pb-0 pt-5 sm:gap-x-7 sm:px-7'
-        } order-1 flex-col items-center  bg-white sm:order-2  sm:flex-row sm:items-start`}
+        } order-1 flex-col items-center bg-white sm:order-2 sm:flex-row sm:items-start`}
       >
         <div className={`flex flex-col items-center justify-center gap-x-5 ${isEmbed ? 'w-full px-3' : 'flex-1'}`}>
           <EvalsPlot
@@ -1212,32 +1212,32 @@ export default function EvalsTable({
                         </CustomTooltip>
                         <div className="flex flex-col items-start gap-y-0.5">
                           {groupBy === 'modelId' && (
-                            <div className=" whitespace-pre px-1.5 py-0.5 text-[11px] font-medium text-slate-700">
+                            <div className="whitespace-pre px-1.5 py-0.5 text-[11px] font-medium text-slate-700">
                               {getSaeBenchDisplayString(data.modelId)}
                             </div>
                           )}
                           {groupBy === 'layer' && (
-                            <div className=" whitespace-pre px-1.5 py-0.5 text-[11px] font-medium text-slate-700">
+                            <div className="whitespace-pre px-1.5 py-0.5 text-[11px] font-medium text-slate-700">
                               Layer {data.layer}
                             </div>
                           )}
                           {groupBy === 'saeClass' && (
-                            <div className=" whitespace-pre px-1.5 py-0.5 text-[11px] font-medium text-slate-700">
+                            <div className="whitespace-pre px-1.5 py-0.5 text-[11px] font-medium text-slate-700">
                               {getSaeBenchDisplayString(data.saeClass)}
                             </div>
                           )}
                           {groupBy === 'dSae' && (
-                            <div className=" whitespace-pre px-1.5 py-0.5 text-[11px] font-medium text-slate-700">
+                            <div className="whitespace-pre px-1.5 py-0.5 text-[11px] font-medium text-slate-700">
                               {convertNumToAbbr(data.dSae)} Width
                             </div>
                           )}
                           {groupBy === 'release' && (
-                            <div className=" whitespace-pre px-1.5 py-0.5 text-[11px] font-medium text-slate-700">
+                            <div className="whitespace-pre px-1.5 py-0.5 text-[11px] font-medium text-slate-700">
                               {getSaeBenchDisplayString(data.release)}
                             </div>
                           )}
                           {groupBy === 'trainingTokens' && (
-                            <div className=" whitespace-pre px-1.5 py-0.5 text-[11px] font-medium text-slate-700">
+                            <div className="whitespace-pre px-1.5 py-0.5 text-[11px] font-medium text-slate-700">
                               {data.trainingTokens === -1
                                 ? 'N/A Tokens'
                                 : `${convertNumToAbbr(data.trainingTokens)} Tokens`}
@@ -1254,7 +1254,7 @@ export default function EvalsTable({
                   }
                   if (key === 'modelId') {
                     return (
-                      <div className={`px-0 py-0 text-center text-[11px] `}>
+                      <div className="px-0 py-0 text-center text-[11px]">
                         <a
                           href={`/${data.modelId}`}
                           target="_blank"
@@ -1274,10 +1274,10 @@ export default function EvalsTable({
                         {data[columnOptions.field] === 0
                           ? '0'
                           : data[columnOptions.field] === -1
-                          ? 'N/A'
-                          : data[columnOptions.field]
-                          ? convertNumToAbbr(data[columnOptions.field])
-                          : '-'}
+                            ? 'N/A'
+                            : data[columnOptions.field]
+                              ? convertNumToAbbr(data[columnOptions.field])
+                              : '-'}
                       </div>
                     );
                   }
@@ -1314,34 +1314,34 @@ export default function EvalsTable({
                         },
                       ]
                     : key === 'trainingTokens'
-                    ? [
-                        {
-                          label: 'Equals',
-                          value: FilterMatchMode.EQUALS,
-                        },
-                      ]
-                    : key === 'saeClass'
-                    ? [
-                        {
-                          label: 'Equals',
-                          value: FilterMatchMode.EQUALS,
-                        },
-                      ]
-                    : key === 'dSae'
-                    ? [
-                        {
-                          label: 'Equals',
-                          value: FilterMatchMode.EQUALS,
-                        },
-                      ]
-                    : key === 'release'
-                    ? [
-                        {
-                          label: 'Equals',
-                          value: FilterMatchMode.EQUALS,
-                        },
-                      ]
-                    : undefined
+                      ? [
+                          {
+                            label: 'Equals',
+                            value: FilterMatchMode.EQUALS,
+                          },
+                        ]
+                      : key === 'saeClass'
+                        ? [
+                            {
+                              label: 'Equals',
+                              value: FilterMatchMode.EQUALS,
+                            },
+                          ]
+                        : key === 'dSae'
+                          ? [
+                              {
+                                label: 'Equals',
+                                value: FilterMatchMode.EQUALS,
+                              },
+                            ]
+                          : key === 'release'
+                            ? [
+                                {
+                                  label: 'Equals',
+                                  value: FilterMatchMode.EQUALS,
+                                },
+                              ]
+                            : undefined
                 }
                 filterElement={key === 'sourceId' ? undefined : getFilterElement}
                 header={() => {
@@ -1422,7 +1422,7 @@ export default function EvalsTable({
         <Button
           size="sm"
           variant="outline"
-          className=" w-[120px] gap-x-1.5 bg-slate-100 text-[11px] text-slate-600 hover:bg-slate-200"
+          className="w-[120px] gap-x-1.5 bg-slate-100 text-[11px] text-slate-600 hover:bg-slate-200"
           onClick={() => {
             const dt = dataTableRef.current as unknown as DataTable<DataTableValueArray>;
             const filters = dt.getFilterMeta();
@@ -1438,7 +1438,7 @@ export default function EvalsTable({
         <Button
           size="sm"
           variant="outline"
-          className=" w-[120px] gap-x-1.5 bg-slate-100 text-[11px] text-slate-600 hover:bg-slate-200"
+          className="w-[120px] gap-x-1.5 bg-slate-100 text-[11px] text-slate-600 hover:bg-slate-200"
           onClick={() => {
             const dt = dataTableRef.current as unknown as DataTable<DataTableValueArray>;
             const filters = dt.getFilterMeta();
@@ -1454,7 +1454,7 @@ export default function EvalsTable({
         <Button
           size="sm"
           variant="outline"
-          className=" w-[120px] gap-x-1.5 bg-slate-100 text-[11px] text-slate-600 hover:bg-slate-200"
+          className="w-[120px] gap-x-1.5 bg-slate-100 text-[11px] text-slate-600 hover:bg-slate-200"
           onClick={() => {
             const dt = dataTableRef.current as unknown as DataTable<DataTableValueArray>;
             const filters = dt.getFilterMeta();

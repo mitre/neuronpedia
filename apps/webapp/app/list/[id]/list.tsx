@@ -250,7 +250,7 @@ export default function List({ listId }: { listId: string }) {
                       setFieldValue('defaultTestText', list.defaultTestText);
                       setShowEdit(false);
                     }}
-                    className={` mb-0 mt-0 flex w-full flex-1 items-center justify-center overflow-hidden rounded bg-slate-700 py-1.5 font-sans text-xs font-medium text-white transition-all hover:bg-slate-400 hover:text-slate-700 focus:ring-0 disabled:bg-slate-300 disabled:text-slate-400`}
+                    className="mb-0 mt-0 flex w-full flex-1 items-center justify-center overflow-hidden rounded bg-slate-700 py-1.5 font-sans text-xs font-medium text-white transition-all hover:bg-slate-400 hover:text-slate-700 focus:ring-0 disabled:bg-slate-300 disabled:text-slate-400"
                   >
                     Cancel
                   </button>
@@ -333,7 +333,7 @@ export default function List({ listId }: { listId: string }) {
 
       {list.defaultTestText && (
         <div
-          className={` mb-2 flex w-full max-w-screen-xl flex-col items-start gap-x-2 gap-y-1.5 rounded pt-1 ${
+          className={`mb-2 flex w-full max-w-screen-xl flex-col items-start gap-x-2 gap-y-1.5 rounded pt-1 ${
             wrap ? 'pb-1' : 'forceShowScrollBarHorizontal overflow-x-scroll whitespace-nowrap pb-2'
           }`}
         >
@@ -367,12 +367,12 @@ export default function List({ listId }: { listId: string }) {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    <div className="mb-[1px] flex w-full flex-row items-center justify-start whitespace-normal text-left font-sans ">
+                    <div className="mb-[1px] flex w-full flex-row items-center justify-start whitespace-normal text-left font-sans">
                       {findSelectedFeatureDescription(
                         new NeuronIdentifier(activation?.modelId, activation?.layer, activation?.index),
                       )}
                     </div>
-                    <div className="flex w-full flex-row items-center justify-end whitespace-nowrap text-right text-[7px] text-slate-500 ">
+                    <div className="flex w-full flex-row items-center justify-end whitespace-nowrap text-right text-[7px] text-slate-500">
                       {activation?.modelId?.toUpperCase()} · {activation?.layer?.toUpperCase()} ·{' '}
                       {activation?.index?.toUpperCase()}
                     </div>
@@ -397,9 +397,9 @@ export default function List({ listId }: { listId: string }) {
               <thead>
                 <tr className="text-left text-[12px] font-normal text-slate-400">
                   <th className="pb-2 pr-2 font-normal">Description</th>
-                  <th className="px-2 pb-2 font-normal ">Feature</th>
-                  <th className="px-2 pb-2 font-normal ">Explanation</th>
-                  <th className="px-2 pb-2 font-normal ">Activation Density</th>
+                  <th className="px-2 pb-2 font-normal">Feature</th>
+                  <th className="px-2 pb-2 font-normal">Explanation</th>
+                  <th className="px-2 pb-2 font-normal">Activation Density</th>
                 </tr>
               </thead>
               {Array.from(selectedFeatures)
@@ -603,7 +603,7 @@ export default function List({ listId }: { listId: string }) {
         >
           <ToggleGroup.Item
             key="listView"
-            className="flex flex-auto flex-row items-center gap-x-1.5 px-3 py-0.5 text-[10px] font-medium text-slate-500 transition-all hover:bg-sky-200 data-[state=on]:bg-sky-300 data-[state=on]:text-slate-700 sm:px-4  sm:text-[11px]"
+            className="flex flex-auto flex-row items-center gap-x-1.5 px-3 py-0.5 text-[10px] font-medium text-slate-500 transition-all hover:bg-sky-200 data-[state=on]:bg-sky-300 data-[state=on]:text-slate-700 sm:px-4 sm:text-[11px]"
             value="listView"
             aria-label="listView"
           >
@@ -612,7 +612,7 @@ export default function List({ listId }: { listId: string }) {
           </ToggleGroup.Item>
           <ToggleGroup.Item
             key="detailView"
-            className="flex flex-auto flex-row items-center gap-x-1.5 px-3 py-0.5 text-[10px] font-medium text-slate-500 transition-all hover:bg-sky-200 data-[state=on]:bg-sky-300 data-[state=on]:text-slate-700 sm:px-4  sm:text-[11px]"
+            className="flex flex-auto flex-row items-center gap-x-1.5 px-3 py-0.5 text-[10px] font-medium text-slate-500 transition-all hover:bg-sky-200 data-[state=on]:bg-sky-300 data-[state=on]:text-slate-700 sm:px-4 sm:text-[11px]"
             value="detailView"
             aria-label="detailView"
           >
@@ -633,10 +633,10 @@ export default function List({ listId }: { listId: string }) {
                   alert('Copied iFrame embed code to clipboard.');
                 }}
               >
-                <Copy className="h-3.5 w-3.5 " /> iFrame Embed
+                <Copy className="h-3.5 w-3.5" /> iFrame Embed
               </button>
             </div>
-            <div className=" flex flex-row items-center justify-center gap-x-1.5">
+            <div className="flex flex-row items-center justify-center gap-x-1.5">
               <button
                 type="button"
                 className="flex h-7 flex-row items-center justify-center gap-x-1.5 rounded bg-slate-200 px-2 py-0.5 text-[10px] font-medium text-slate-500 hover:bg-slate-300 active:bg-sky-300 sm:text-[11px]"
@@ -646,7 +646,7 @@ export default function List({ listId }: { listId: string }) {
                   alert('Copied embed link to clipboard.');
                 }}
               >
-                <Copy className="h-3.5 w-3.5 " /> Link Embed
+                <Copy className="h-3.5 w-3.5" /> Link Embed
               </button>
             </div>
           </div>

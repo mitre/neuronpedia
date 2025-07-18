@@ -35,7 +35,7 @@ export default async function Page({ params }: { params: { name: string } }) {
         </>
       ) : (
         <div className="mt-5 flex w-full max-w-screen-xl flex-col items-center justify-center gap-y-5 px-3 text-xs text-slate-600">
-          <Card className=" min-w-80 bg-white">
+          <Card className="min-w-80 bg-white">
             <CardHeader>
               <CardTitle>{user.name}</CardTitle>
               <CardDescription>{user.bio ? user.bio : 'No bio provided.'}</CardDescription>

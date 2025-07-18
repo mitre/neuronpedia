@@ -125,7 +125,7 @@ function ConfigItem({
   labelDescription: string;
 }) {
   return (
-    <div className="col-span-1  mb-1 flex w-full flex-col items-center justify-center text-xs">
+    <div className="col-span-1 mb-1 flex w-full flex-col items-center justify-center text-xs">
       <div className="text-[11px] font-medium text-slate-400">
         <CustomTooltip
           trigger={
@@ -206,7 +206,7 @@ export default function SaeLensConfigPane({
               <CustomTooltip
                 wide
                 trigger={
-                  <Button variant="outline" className="mb-0.5  h-7 whitespace-pre text-[10px] text-slate-500" size="sm">
+                  <Button variant="outline" className="mb-0.5 h-7 whitespace-pre text-[10px] text-slate-500" size="sm">
                     How To Load
                   </Button>
                 }
@@ -280,8 +280,8 @@ export default function SaeLensConfigPane({
                       ? typeof config[key] === 'string'
                         ? (config[key] as string)
                         : typeof config[key] === 'number'
-                        ? (config[key] as number).toLocaleString()
-                        : JSON.stringify(config[key]).replace(/,/g, ', ')
+                          ? (config[key] as number).toLocaleString()
+                          : JSON.stringify(config[key]).replace(/,/g, ', ')
                       : ''
                   }
                   label={Object.keys(KEY_TO_LABEL).includes(key) ? KEY_TO_LABEL[key].label : key}
@@ -308,8 +308,8 @@ export default function SaeLensConfigPane({
                         ? typeof config[key] === 'string'
                           ? (config[key] as string)
                           : typeof config[key] === 'number'
-                          ? (config[key] as number).toLocaleString()
-                          : JSON.stringify(config[key]).replace(/,/g, ', ')
+                            ? (config[key] as number).toLocaleString()
+                            : JSON.stringify(config[key]).replace(/,/g, ', ')
                         : ''
                     }
                     label={Object.keys(KEY_TO_LABEL).includes(key) ? KEY_TO_LABEL[key].label : key}

@@ -9,7 +9,7 @@ RUN sed -i 's/https/http/' /etc/apk/repositories
 # Optional custom CA bundle file support
 ARG CUSTOM_CA_BUNDLE
 # Copy the CA bundle file if provided, otherwise copy nothing (using .nocustomca as a no-op)
-COPY ${CUSTOM_CA_BUNDLE:-docker/.nocustomca} /tmp/ca-bundle-temp
+COPY ${CUSTOM_CA_BUNDLE:-.nocustomca} /tmp/ca-bundle-temp
 
 # Set up CA certificates and environment if bundle was provided
 RUN if [ -f /tmp/ca-bundle-temp ] && [ "${CUSTOM_CA_BUNDLE}" != ".nocustomca" ]; then \

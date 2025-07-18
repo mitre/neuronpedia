@@ -81,7 +81,7 @@ export default function ActivationItemTokenTooltip({
                           key={`${tokenIndex}-${index}-${i}`}
                           className="flex basis-2/3 justify-end whitespace-pre-line font-mono"
                         >
-                          <div className="whitespace-pre-line rounded  bg-slate-200 px-1">{a}</div>
+                          <div className="whitespace-pre-line rounded bg-slate-200 px-1">{a}</div>
                         </div>
 
                         <div key={`${tokenIndex}-${index}-val-${i}`} className="basis-1/3 text-left">
@@ -104,7 +104,7 @@ export default function ActivationItemTokenTooltip({
                     return v[tokenIndex].t!.map((a, i) => (
                       <div className="flex flex-row items-center justify-center gap-x-1" key={i}>
                         <pre key={`${tokenIndex}-${index}-${i}`} className="flex basis-2/3 justify-end font-mono">
-                          <div className="whitespace-pre-line rounded  bg-slate-200 px-1">{a}</div>
+                          <div className="whitespace-pre-line rounded bg-slate-200 px-1">{a}</div>
                         </pre>
 
                         <div key={`${tokenIndex}-${index}-val-${i}`} className="basis-1/3 text-left">

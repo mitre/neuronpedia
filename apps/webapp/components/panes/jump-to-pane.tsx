@@ -43,9 +43,9 @@ export default function JumpToPane({
           release
             ? release.defaultSourceId || getFirstSourceForRelease(release, Visibility.PUBLIC, false, false)?.id
             : defaultSourceId || defaultModelId in globalModels
-            ? defaultSourceId ||
-              getFirstSourceForModel(globalModels[defaultModelId], Visibility.PUBLIC, false, false)?.id
-            : undefined
+              ? defaultSourceId ||
+                getFirstSourceForModel(globalModels[defaultModelId], Visibility.PUBLIC, false, false)?.id
+              : undefined
         }
         filterToRelease={release?.name}
         filterToFeaturedReleases={filterToFeaturedReleases}

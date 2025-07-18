@@ -51,7 +51,7 @@ export default function UserVectors({ initialVectors }: { initialVectors: Neuron
               <th className="">Actions</th>
             </tr>
           )}
-          className="rounded text-xs  text-slate-600 odd:bg-slate-100"
+          className="rounded text-xs text-slate-600 odd:bg-slate-100"
           data={initialVectors}
           // eslint-disable-next-line react/no-unstable-nested-components
           itemContent={(index, vector) => (

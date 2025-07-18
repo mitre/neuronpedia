@@ -34,7 +34,7 @@ export default function Privacy() {
         </a>
         .
       </div>
-      <div id="privacy" className=" mt-8 text-center text-lg font-light text-slate-600 antialiased md:text-2xl">
+      <div id="privacy" className="mt-8 text-center text-lg font-light text-slate-600 antialiased md:text-2xl">
         Privacy
       </div>
 
@@ -88,10 +88,10 @@ export default function Privacy() {
         will not include personally identifiable information in these data exports, like your email address or IP
         address.
       </div>
-      <div id="terms" className=" mt-8 text-center text-lg font-light text-slate-600 antialiased md:text-2xl">
+      <div id="terms" className="mt-8 text-center text-lg font-light text-slate-600 antialiased md:text-2xl">
         Terms of Use
       </div>
-      <div className=" pb-8 pt-3 text-left text-slate-600">
+      <div className="pb-8 pt-3 text-left text-slate-600">
         <strong>Don&apos;t do illegal stuff.</strong> We&apos;re not sure how you could use Neuronpedia to do anything
         illegal, but if you figure out a way, don&apos;t do it. Illegal means whatever the laws prohibit in your
         jurisdiction and Neuronpedia&apos;s (California, USA). This includes things like spamming Neuronpedia or trying
@@ -108,7 +108,7 @@ export default function Privacy() {
         will work perfectly or even correctly. If you use Neuronpedia, you are responsible for your actions on
         Neuronpedia. Neuronpedia will not protect you if you do silly things like try to harass another user.
       </div>
-      <div id="questions" className=" mt-0 text-center text-lg font-light text-slate-600 antialiased md:text-2xl">
+      <div id="questions" className="mt-0 text-center text-lg font-light text-slate-600 antialiased md:text-2xl">
         Questions?
       </div>
       <div className="mb-16 pb-16 pt-3 text-left text-slate-600">

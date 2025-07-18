@@ -274,7 +274,7 @@ export default function ActivationsList({
             >
               <ToggleGroup.Item
                 key="split"
-                className="flex-1 items-center rounded px-1 py-1 text-[10px] font-medium text-slate-400 transition-all  hover:bg-slate-100 data-[state=on]:bg-slate-200 data-[state=on]:text-slate-600 sm:rounded-md sm:px-4  sm:py-1.5 sm:text-[11px]"
+                className="flex-1 items-center rounded px-1 py-1 text-[10px] font-medium text-slate-400 transition-all hover:bg-slate-100 data-[state=on]:bg-slate-200 data-[state=on]:text-slate-600 sm:rounded-md sm:px-4 sm:py-1.5 sm:text-[11px]"
                 value="split"
                 aria-label="split"
               >
@@ -302,7 +302,7 @@ export default function ActivationsList({
           >
             <ToggleGroup.Item
               key="showLineBreaks"
-              className="flex-1 items-center rounded px-1 py-1 text-[10px] font-medium text-slate-400 transition-all  hover:bg-slate-100 data-[state=on]:bg-slate-200 data-[state=on]:text-slate-600 sm:rounded-md sm:px-4  sm:py-1.5 sm:text-[11px]"
+              className="flex-1 items-center rounded px-1 py-1 text-[10px] font-medium text-slate-400 transition-all hover:bg-slate-100 data-[state=on]:bg-slate-200 data-[state=on]:text-slate-600 sm:rounded-md sm:px-4 sm:py-1.5 sm:text-[11px]"
               value="showLineBreaks"
               aria-label="showLineBreaks"
             >
@@ -371,8 +371,8 @@ export default function ActivationsList({
                           </Tooltip.Portal>
                         </Tooltip.Root>
                       </Tooltip.Provider>
-                      <div className="border-[2px] border-emerald-400  px-1 py-[1px]">DFA Source</div>
-                      <div className="border-[2px] border-orange-400  px-1 py-[1px]">DFA Target</div>
+                      <div className="border-[2px] border-emerald-400 px-1 py-[1px]">DFA Source</div>
+                      <div className="border-[2px] border-orange-400 px-1 py-[1px]">DFA Target</div>
                     </div>
                   )}
                 </div>

@@ -198,7 +198,7 @@ export default function GemmaScopeHome({ release }: { release: SourceReleaseWith
         </div>
       </div>
       <Tabs.Root
-        className="flex h-full w-full flex-row border-b  border-slate-200 bg-white sm:h-[calc(100vh-48px-43px-26px)] sm:max-h-[calc(100vh-48px-43px-26px)] sm:min-h-[calc(100vh-48px-43px-26px)]"
+        className="flex h-full w-full flex-row border-b border-slate-200 bg-white sm:h-[calc(100vh-48px-43px-26px)] sm:max-h-[calc(100vh-48px-43px-26px)] sm:min-h-[calc(100vh-48px-43px-26px)]"
         defaultValue={tabValue}
         value={tabValue}
         onValueChange={(v) => {
@@ -211,7 +211,7 @@ export default function GemmaScopeHome({ release }: { release: SourceReleaseWith
           aria-label="Sidebar for Navigation"
         >
           <Tabs.Trigger
-            className="group relative flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all  data-[state=active]:pl-5 data-[state=active]:text-sky-700 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
+            className="group relative flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all data-[state=active]:pl-5 data-[state=active]:text-sky-700 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
             value="main"
           >
             <div className="flex min-w-[160px] flex-row gap-x-2 rounded-full px-4 py-2.5 transition-all group-data-[state=active]:bg-slate-600 group-data-[state=active]:text-white">
@@ -219,7 +219,7 @@ export default function GemmaScopeHome({ release }: { release: SourceReleaseWith
             </div>
           </Tabs.Trigger>
           <Tabs.Trigger
-            className="group relative flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all  data-[state=active]:pl-5 data-[state=active]:text-sky-700 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
+            className="group relative flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all data-[state=active]:pl-5 data-[state=active]:text-sky-700 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
             value="microscope"
           >
             <div className="flex min-w-[160px] flex-row gap-x-2 rounded-full px-4 py-2.5 transition-all group-data-[state=active]:bg-gBlue group-data-[state=active]:text-white">
@@ -228,7 +228,7 @@ export default function GemmaScopeHome({ release }: { release: SourceReleaseWith
             </div>
           </Tabs.Trigger>
           <Tabs.Trigger
-            className="group flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all  data-[state=active]:pl-5 data-[state=active]:text-sky-700 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
+            className="group flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all data-[state=active]:pl-5 data-[state=active]:text-sky-700 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
             value="analyze"
           >
             <div className="flex min-w-[160px] flex-row gap-x-2 whitespace-nowrap rounded-full px-4 py-2.5 transition-all group-data-[state=active]:bg-gYellow group-data-[state=active]:text-white">
@@ -237,7 +237,7 @@ export default function GemmaScopeHome({ release }: { release: SourceReleaseWith
             </div>
           </Tabs.Trigger>
           <Tabs.Trigger
-            className="group flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all  data-[state=active]:pl-5 data-[state=active]:text-sky-700 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
+            className="group flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all data-[state=active]:pl-5 data-[state=active]:text-sky-700 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
             value="steer"
           >
             <div className="flex min-w-[160px] flex-row gap-x-2 whitespace-nowrap rounded-full px-4 py-2.5 transition-all group-data-[state=active]:bg-gRed group-data-[state=active]:text-white">
@@ -246,7 +246,7 @@ export default function GemmaScopeHome({ release }: { release: SourceReleaseWith
             </div>
           </Tabs.Trigger>
           <Tabs.Trigger
-            className="group flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all  data-[state=active]:pl-5 data-[state=active]:text-sky-700 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
+            className="group flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all data-[state=active]:pl-5 data-[state=active]:text-sky-700 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
             value="learn"
           >
             <div className="flex min-w-[160px] flex-row gap-x-2 rounded-full px-4 py-2.5 transition-all group-data-[state=active]:bg-gGreen group-data-[state=active]:text-white">
@@ -255,7 +255,7 @@ export default function GemmaScopeHome({ release }: { release: SourceReleaseWith
             </div>
           </Tabs.Trigger>
           <Tabs.Trigger
-            className="group flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all  data-[state=active]:pl-5 data-[state=active]:text-sky-700 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
+            className="group flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all data-[state=active]:pl-5 data-[state=active]:text-sky-700 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
             value="openproblems"
           >
             <div className="flex min-w-[160px] flex-row gap-x-2 rounded-full px-4 py-2.5 transition-all group-data-[state=active]:bg-slate-600 group-data-[state=active]:text-white">
@@ -264,7 +264,7 @@ export default function GemmaScopeHome({ release }: { release: SourceReleaseWith
             </div>
           </Tabs.Trigger>
           <Tabs.Trigger
-            className="group flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all  data-[state=active]:pl-5 data-[state=active]:text-indigo-600 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
+            className="group flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all data-[state=active]:pl-5 data-[state=active]:text-indigo-600 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
             value="playground"
           >
             <div className="flex min-w-[160px] flex-row gap-x-2 whitespace-nowrap rounded-full px-4 py-2.5 transition-all group-data-[state=active]:bg-indigo-600 group-data-[state=active]:text-white">
@@ -273,7 +273,7 @@ export default function GemmaScopeHome({ release }: { release: SourceReleaseWith
             </div>
           </Tabs.Trigger>{' '}
           <Tabs.Trigger
-            className="group flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all  data-[state=active]:pl-5 data-[state=active]:text-indigo-600 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
+            className="group flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all data-[state=active]:pl-5 data-[state=active]:text-indigo-600 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
             value="browse"
           >
             <button
@@ -294,7 +294,7 @@ export default function GemmaScopeHome({ release }: { release: SourceReleaseWith
               onClick={() => {
                 setSignInModalOpen(true);
               }}
-              className="group flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all  data-[state=active]:pl-5 data-[state=active]:text-sky-700 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
+              className="group flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all data-[state=active]:pl-5 data-[state=active]:text-sky-700 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
             >
               <div className="flex flex-row gap-x-2 rounded-full px-4 py-2.5 text-gYellow transition-all group-data-[state=active]:bg-gYellow group-data-[state=active]:text-white">
                 <BellDot className="h-5 w-5" />
@@ -306,7 +306,7 @@ export default function GemmaScopeHome({ release }: { release: SourceReleaseWith
             href="/steer"
             target="_blank"
             rel="noreferrer"
-            className="group flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all  data-[state=active]:pl-5 data-[state=active]:text-indigo-600 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
+            className="group flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all data-[state=active]:pl-5 data-[state=active]:text-indigo-600 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
           >
             <div className="flex min-w-[160px] flex-row gap-x-2 whitespace-nowrap rounded-full px-4 py-2.5 transition-all group-data-[state=active]:bg-indigo-600 group-data-[state=active]:text-white">
               <Joystick className="h-5 w-5" />
@@ -317,7 +317,7 @@ export default function GemmaScopeHome({ release }: { release: SourceReleaseWith
             href={blogPostLink}
             target="_blank"
             rel="noreferrer"
-            className="group flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all  data-[state=active]:pl-5 data-[state=active]:text-sky-700 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
+            className="group flex flex-row items-center gap-x-2 px-1 py-1 text-left transition-all data-[state=active]:pl-5 data-[state=active]:text-sky-700 hover:data-[state=inactive]:bg-slate-100 hover:data-[state=inactive]:text-slate-500"
           >
             <div className="flex flex-row gap-x-2 rounded-full px-4 py-2.5 transition-all group-data-[state=active]:bg-gGreen group-data-[state=active]:text-white">
               <ScrollText className="h-5 w-5" />
@@ -363,7 +363,7 @@ export default function GemmaScopeHome({ release }: { release: SourceReleaseWith
           </div>
         </Tabs.Content>
 
-        <Tabs.Content ref={analyzeRef} className=" h-full w-full flex-col bg-white" value="analyze">
+        <Tabs.Content ref={analyzeRef} className="h-full w-full flex-col bg-white" value="analyze">
           <div className="flex h-full w-full flex-col items-center overflow-y-scroll bg-white px-0 pb-1">
             {/* eslint-disable-next-line */}
             <TabAnalyze tabUpdater={setTabValue} completedTabsAdd={addCompletedTab} />

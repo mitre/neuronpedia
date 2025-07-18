@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import CustomTooltip from "../../../components/custom-tooltip";
+import CustomTooltip from '../../../components/custom-tooltip';
 
 export default function DeepDiveTooltip({ children }: { children: React.ReactNode }) {
   return (

@@ -77,7 +77,7 @@ export default function SteerPresetSelector({
             {preset.exampleSteerOutputId && IS_ACTUALLY_NEURONPEDIA_ORG && (
               <Button
                 variant="outline"
-                className={`px-3 py-0 text-[10px] leading-tight  ${
+                className={`px-3 py-0 text-[10px] leading-tight ${
                   selectedFeatures.length === 0 ? 'border-sky-300 bg-sky-100 text-sky-600 shadow' : 'text-slate-500'
                 }`}
                 onClick={() => {

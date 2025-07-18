@@ -100,7 +100,7 @@ export default function ManageSourcesPane() {
                         <td className="whitespace-nowrap px-6 font-mono">
                           {setIndex === 0 && <div className="flex h-6 items-center font-medium">{model}</div>}
                         </td>
-                        <td className="whitespace-nowrap px-6 font-mono ">
+                        <td className="whitespace-nowrap px-6 font-mono">
                           <div className="flex h-8 w-full flex-row items-center justify-between gap-2 font-medium">
                             {setName}
                           </div>

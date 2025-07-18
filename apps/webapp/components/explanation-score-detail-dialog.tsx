@@ -129,7 +129,7 @@ export default function ExplanationScoreDetailDialog() {
                         The score of the explanation according to the scoring method. See details for the score below.
                       </CustomTooltip>
                     </div>
-                    <div className="rounded-xl  bg-emerald-500 p-3 text-lg font-bold text-white">
+                    <div className="rounded-xl bg-emerald-500 p-3 text-lg font-bold text-white">
                       {explanationScoreDetailScore && Math.round(explanationScoreDetailScore.value * 100)}
                     </div>
                     <div className="mt-2 text-xs text-slate-600">
@@ -215,7 +215,7 @@ export default function ExplanationScoreDetailDialog() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex flex-1 flex-col  items-start justify-start gap-y-2">
+                    <div className="flex flex-1 flex-col items-start justify-start gap-y-2">
                       {recallParsedJson?.top.map((activation, i) => (
                         <div key={i} className="flex w-full flex-col">
                           <div className="flex w-full flex-row items-center justify-between gap-x-3">
@@ -328,11 +328,11 @@ export default function ExplanationScoreDetailDialog() {
                     <tr className="">
                       <th className="gap-x-1 whitespace-pre px-2 py-1.5">
                         Text{' '}
-                        <CustomTooltip trigger={<Info className=" h-3 w-3" />}>The text that was scored.</CustomTooltip>
+                        <CustomTooltip trigger={<Info className="h-3 w-3" />}>The text that was scored.</CustomTooltip>
                       </th>
-                      <th className=" gap-x-1 whitespace-pre px-2 py-1.5">
+                      <th className="gap-x-1 whitespace-pre px-2 py-1.5">
                         Quantile{' '}
-                        <CustomTooltip trigger={<Info className=" h-3 w-3" />}>
+                        <CustomTooltip trigger={<Info className="h-3 w-3" />}>
                           Quantile of the text - higher is more activating.
                         </CustomTooltip>
                       </th>
@@ -396,11 +396,11 @@ export default function ExplanationScoreDetailDialog() {
                     <tr className="">
                       <th className="gap-x-1 whitespace-pre px-2 py-1.5">
                         Text{' '}
-                        <CustomTooltip trigger={<Info className=" h-3 w-3" />}>The text that was scored.</CustomTooltip>
+                        <CustomTooltip trigger={<Info className="h-3 w-3" />}>The text that was scored.</CustomTooltip>
                       </th>
-                      <th className=" gap-x-1 whitespace-pre px-2 py-1.5">
+                      <th className="gap-x-1 whitespace-pre px-2 py-1.5">
                         Quantile{' '}
-                        <CustomTooltip trigger={<Info className=" h-3 w-3" />}>
+                        <CustomTooltip trigger={<Info className="h-3 w-3" />}>
                           Quantile of the text - higher is more activating.
                         </CustomTooltip>
                       </th>

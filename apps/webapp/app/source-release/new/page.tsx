@@ -22,10 +22,10 @@ export default function NewReleasePage() {
             key === 'visibility'
               ? 'PRIVATE'
               : key === 'urls' || key === 'defaultUmapSourceIds'
-              ? []
-              : key === 'isNewUi' || key === 'featured'
-              ? false
-              : '',
+                ? []
+                : key === 'isNewUi' || key === 'featured'
+                  ? false
+                  : '',
           ]),
         )}
         onSubmit={async (values) => {

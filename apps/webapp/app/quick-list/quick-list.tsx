@@ -46,7 +46,7 @@ export default function QuickList({ name, features }: { name: string; features: 
         >
           <ToggleGroup.Item
             key="listView"
-            className="flex flex-auto flex-row items-center gap-x-1.5 px-3 py-1 text-[10px] font-medium text-slate-500 transition-all hover:bg-sky-200 data-[state=on]:bg-sky-300 data-[state=on]:text-slate-700 sm:px-4  sm:text-[11px]"
+            className="flex flex-auto flex-row items-center gap-x-1.5 px-3 py-1 text-[10px] font-medium text-slate-500 transition-all hover:bg-sky-200 data-[state=on]:bg-sky-300 data-[state=on]:text-slate-700 sm:px-4 sm:text-[11px]"
             value="listView"
             aria-label="listView"
           >
@@ -55,7 +55,7 @@ export default function QuickList({ name, features }: { name: string; features: 
           </ToggleGroup.Item>
           <ToggleGroup.Item
             key="detailView"
-            className="flex flex-auto flex-row items-center gap-x-1.5 px-3 py-1 text-[10px] font-medium text-slate-500 transition-all hover:bg-sky-200 data-[state=on]:bg-sky-300 data-[state=on]:text-slate-700 sm:px-4  sm:text-[11px]"
+            className="flex flex-auto flex-row items-center gap-x-1.5 px-3 py-1 text-[10px] font-medium text-slate-500 transition-all hover:bg-sky-200 data-[state=on]:bg-sky-300 data-[state=on]:text-slate-700 sm:px-4 sm:text-[11px]"
             value="detailView"
             aria-label="detailView"
           >
@@ -69,9 +69,9 @@ export default function QuickList({ name, features }: { name: string; features: 
             <div className="table w-full table-auto">
               <thead>
                 <tr className="text-left text-[12px] font-normal text-slate-400">
-                  <th className="px-2 pb-2 font-normal ">Neuron</th>
-                  <th className="px-2 pb-2 font-normal ">Explanation</th>
-                  <th className="px-2 pb-2 font-normal ">Activation Density</th>
+                  <th className="px-2 pb-2 font-normal">Neuron</th>
+                  <th className="px-2 pb-2 font-normal">Explanation</th>
+                  <th className="px-2 pb-2 font-normal">Activation Density</th>
                 </tr>
               </thead>
               {features.map((feature, index) => {

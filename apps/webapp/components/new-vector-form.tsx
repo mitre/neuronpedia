@@ -142,7 +142,7 @@ export default function NewVectorForm({ defaultModel, callback }: { defaultModel
                     name="modelId"
                     readOnly
                     value={model?.id}
-                    className={`mt-1 h-[40px] w-28 max-w-28 select-none rounded-md border border-slate-300 px-2 text-center text-[11px] text-slate-600 `}
+                    className="mt-1 h-[40px] w-28 max-w-28 select-none rounded-md border border-slate-300 px-2 text-center text-[11px] text-slate-600"
                   />
                 ) : (
                   <div className="mt-1 h-[40px] w-36 min-w-36 select-none text-center">
@@ -211,7 +211,7 @@ export default function NewVectorForm({ defaultModel, callback }: { defaultModel
                   name="vector"
                   className={`mt-1 h-[40px] w-full rounded-md border ${
                     errors.vector && touched.vector ? 'border-red-500' : 'border-slate-300'
-                  } resize-none px-2 py-2 text-[11px] leading-tight text-slate-600  placeholder-slate-300`}
+                  } resize-none px-2 py-2 text-[11px] leading-tight text-slate-600 placeholder-slate-300`}
                   placeholder="[ 0.0065, 0.0184, 0.0206, -0.0247, ... ]"
                 />
               </label>

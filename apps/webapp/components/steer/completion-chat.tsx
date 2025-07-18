@@ -217,7 +217,7 @@ export default function SteerCompletionChat({
 
   return (
     <div
-      className={`relative h-full max-h-[calc(100dvh-48px)] min-h-[calc(100dvh-48px)] w-full min-w-0 flex-col text-sm font-medium  leading-normal text-slate-500 sm:h-full sm:max-h-[calc(100dvh-76px)] sm:min-h-[calc(100dvh-76px)] sm:w-auto sm:basis-2/3 ${
+      className={`relative h-full max-h-[calc(100dvh-48px)] min-h-[calc(100dvh-48px)] w-full min-w-0 flex-col text-sm font-medium leading-normal text-slate-500 sm:h-full sm:max-h-[calc(100dvh-76px)] sm:min-h-[calc(100dvh-76px)] sm:w-auto sm:basis-2/3 ${
         showSettingsOnMobile ? 'hidden sm:flex' : 'flex'
       }`}
     >
@@ -245,7 +245,7 @@ export default function SteerCompletionChat({
             {isSteering && <LoadingSquare className="px-1.5 py-3" />}
           </div>
         </div>
-        <div className="flex h-full max-h-[calc(100dvh-48px)] min-h-[calc(100dvh-48px)] w-full flex-1 flex-col overflow-y-scroll bg-sky-100 px-3 py-2 text-left text-xs  text-slate-400 sm:max-h-[calc(100dvh-76px)] sm:min-h-[calc(100dvh-76px)] sm:px-5">
+        <div className="flex h-full max-h-[calc(100dvh-48px)] min-h-[calc(100dvh-48px)] w-full flex-1 flex-col overflow-y-scroll bg-sky-100 px-3 py-2 text-left text-xs text-slate-400 sm:max-h-[calc(100dvh-76px)] sm:min-h-[calc(100dvh-76px)] sm:px-5">
           <div className="sticky top-0.5 flex flex-row justify-center uppercase text-sky-700 sm:top-0">
             <div className="select-none rounded-full px-5 py-1 text-[10px] font-bold">Steered</div>
           </div>
@@ -287,7 +287,7 @@ export default function SteerCompletionChat({
         </div>
       </div>
       <div className="-mt-32 flex w-full flex-col items-center justify-center pb-8 sm:-mt-28 sm:pb-4">
-        <div className={`relative mb-2 mt-2.5 flex flex-row items-center justify-center gap-x-1.5 sm:mt-0 sm:gap-x-3 `}>
+        <div className="relative mb-2 mt-2.5 flex flex-row items-center justify-center gap-x-1.5 sm:mt-0 sm:gap-x-3">
           <div className="my-0 flex flex-row gap-x-2 sm:my-0">
             <button
               type="button"
@@ -298,7 +298,7 @@ export default function SteerCompletionChat({
                 }
                 reset();
               }}
-              className="flex aspect-square h-8 cursor-pointer flex-row items-center justify-center gap-x-1.5 rounded-full bg-slate-300 px-4 text-xs text-slate-600 shadow  hover:bg-slate-200 disabled:cursor-default disabled:text-slate-400 disabled:hover:bg-slate-300 sm:aspect-auto sm:h-10 sm:px-5 sm:text-sm"
+              className="flex aspect-square h-8 cursor-pointer flex-row items-center justify-center gap-x-1.5 rounded-full bg-slate-300 px-4 text-xs text-slate-600 shadow hover:bg-slate-200 disabled:cursor-default disabled:text-slate-400 disabled:hover:bg-slate-300 sm:aspect-auto sm:h-10 sm:px-5 sm:text-sm"
             >
               <RotateCcw className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
               <span className="inline-block whitespace-pre">Reset</span>
@@ -317,7 +317,7 @@ export default function SteerCompletionChat({
                   'Copied share link to clipboard.\nPaste it somewhere to share your conversation and steering settings.',
                 );
               }}
-              className="flex aspect-square h-8 cursor-pointer flex-row items-center justify-center gap-x-1.5 rounded-full bg-slate-300 px-4 text-xs text-slate-600 shadow  hover:bg-slate-200 disabled:cursor-default disabled:text-slate-400 disabled:hover:bg-slate-300 sm:aspect-auto sm:h-10 sm:px-5 sm:text-sm"
+              className="flex aspect-square h-8 cursor-pointer flex-row items-center justify-center gap-x-1.5 rounded-full bg-slate-300 px-4 text-xs text-slate-600 shadow hover:bg-slate-200 disabled:cursor-default disabled:text-slate-400 disabled:hover:bg-slate-300 sm:aspect-auto sm:h-10 sm:px-5 sm:text-sm"
             >
               <Share className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
               <span className="inline-block whitespace-pre">{copying ? 'Copied' : 'Share'}</span>
@@ -351,7 +351,7 @@ export default function SteerCompletionChat({
                 stopSteering();
               }
             }}
-            className={`absolute right-2 flex h-full cursor-pointer items-center justify-center `}
+            className="absolute right-2 flex h-full cursor-pointer items-center justify-center"
           >
             {!isSteering ? (
               <ArrowUp className="h-8 w-8 rounded-full bg-gBlue p-1.5 text-white hover:bg-gBlue/80" />

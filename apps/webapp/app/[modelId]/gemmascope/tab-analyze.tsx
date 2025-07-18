@@ -75,7 +75,7 @@ export default function TabAnalyze({
         </Dialog.Portal>
       </Dialog.Root>
 
-      <div className="mb-10 mt-5 flex w-full flex-row items-center justify-start px-2 sm:mb-5 sm:px-5 ">
+      <div className="mb-10 mt-5 flex w-full flex-row items-center justify-start px-2 sm:mb-5 sm:px-5">
         <div className="flex w-full flex-col items-start justify-start gap-x-4 gap-y-1.5 rounded px-2 py-1 sm:flex-row">
           <div className="flex w-[105px] min-w-[105px] max-w-[105px] flex-row items-center gap-x-2 sm:flex-col">
             <span className="w-[105px] min-w-[105px] max-w-[105px] whitespace-nowrap rounded-full bg-slate-100 px-3 py-1 text-center text-[10px] font-bold uppercase text-slate-600">
@@ -92,8 +92,8 @@ export default function TabAnalyze({
           </div>
         </div>
       </div>
-      <div className="mb-10 flex w-full flex-row items-center justify-start px-2 sm:mb-6 sm:px-5 ">
-        <div className="flex w-full flex-col items-start justify-start gap-x-4 gap-y-1.5 rounded  px-2 py-1 sm:flex-row">
+      <div className="mb-10 flex w-full flex-row items-center justify-start px-2 sm:mb-6 sm:px-5">
+        <div className="flex w-full flex-col items-start justify-start gap-x-4 gap-y-1.5 rounded px-2 py-1 sm:flex-row">
           <div className="mb-2 flex w-full flex-row items-center justify-between gap-x-2 sm:mb-0 sm:w-auto sm:flex-col sm:justify-start">
             <span className="w-[105px] min-w-[105px] max-w-[105px] whitespace-nowrap rounded-full bg-slate-100 px-0 py-1 text-center text-[10px] font-bold uppercase text-slate-600">
               🎨 Demo
@@ -173,21 +173,21 @@ export default function TabAnalyze({
                 aria-label="Selections of answers"
               >
                 <RadioGroup.Item
-                  className="flex-1 items-center rounded-full border border-gYellow px-1 py-2.5 text-[12px] font-medium text-slate-600 shadow transition-all hover:bg-gYellow/20  data-[state=checked]:bg-gYellow data-[state=checked]:text-white sm:px-4  sm:py-2.5 sm:text-[12px]"
+                  className="flex-1 items-center rounded-full border border-gYellow px-1 py-2.5 text-[12px] font-medium text-slate-600 shadow transition-all hover:bg-gYellow/20 data-[state=checked]:bg-gYellow data-[state=checked]:text-white sm:px-4 sm:py-2.5 sm:text-[12px]"
                   value="sports"
                   aria-label="sports"
                 >
                   🏋️ Olympic sports
                 </RadioGroup.Item>
                 <RadioGroup.Item
-                  className="flex-1 items-center rounded-full border border-gBlue px-1 py-2.5 text-[12px] font-medium text-slate-600 shadow transition-all hover:bg-gBlue/20  data-[state=checked]:bg-gBlue data-[state=checked]:text-white sm:px-4  sm:py-2.5 sm:text-[12px]"
+                  className="flex-1 items-center rounded-full border border-gBlue px-1 py-2.5 text-[12px] font-medium text-slate-600 shadow transition-all hover:bg-gBlue/20 data-[state=checked]:bg-gBlue data-[state=checked]:text-white sm:px-4 sm:py-2.5 sm:text-[12px]"
                   value="cities"
                   aria-label="cities"
                 >
                   🌆 famous cities
                 </RadioGroup.Item>
                 <RadioGroup.Item
-                  className="flex-1 flex-row items-center whitespace-nowrap rounded-full border border-gRed px-1 py-3 text-[12px] font-medium text-slate-600 shadow transition-all hover:bg-gRed/20  data-[state=checked]:bg-gRed data-[state=checked]:text-white sm:px-0  sm:py-2.5 sm:text-[12px]"
+                  className="flex-1 flex-row items-center whitespace-nowrap rounded-full border border-gRed px-1 py-3 text-[12px] font-medium text-slate-600 shadow transition-all hover:bg-gRed/20 data-[state=checked]:bg-gRed data-[state=checked]:text-white sm:px-0 sm:py-2.5 sm:text-[12px]"
                   value="animals"
                   aria-label="animals"
                 >
@@ -197,7 +197,7 @@ export default function TabAnalyze({
                   </div>
                 </RadioGroup.Item>
                 <RadioGroup.Item
-                  className="flex-1 flex-row items-center whitespace-nowrap rounded-full border border-gGreen px-1 py-3 text-[12px] font-medium text-slate-600 shadow transition-all hover:bg-gGreen/20  data-[state=checked]:bg-gGreen data-[state=checked]:text-white sm:px-0  sm:py-2.5 sm:text-[12px]"
+                  className="flex-1 flex-row items-center whitespace-nowrap rounded-full border border-gGreen px-1 py-3 text-[12px] font-medium text-slate-600 shadow transition-all hover:bg-gGreen/20 data-[state=checked]:bg-gGreen data-[state=checked]:text-white sm:px-0 sm:py-2.5 sm:text-[12px]"
                   value="none"
                   aria-label="none"
                 >
@@ -217,7 +217,7 @@ export default function TabAnalyze({
           !hasCorrectishAnswer() && !forceVerify ? 'opacity-40' : ''
         }`}
       >
-        <div className="flex w-full flex-col items-start justify-start gap-x-4 gap-y-1.5 rounded  px-2 py-1 sm:flex-row">
+        <div className="flex w-full flex-col items-start justify-start gap-x-4 gap-y-1.5 rounded px-2 py-1 sm:flex-row">
           <div className="mb-2 flex w-full flex-row items-center justify-between gap-x-2 sm:mb-0 sm:w-auto sm:flex-col sm:justify-start">
             <span className="w-[105px] min-w-[105px] max-w-[105px] whitespace-nowrap rounded-full bg-slate-100 px-0 py-1 text-center text-[10px] font-bold uppercase text-slate-600">
               ⚡️ Analyze
@@ -288,7 +288,7 @@ export default function TabAnalyze({
           !forceExtraCredit ? 'opacity-40' : ''
         }`}
       >
-        <div className="flex w-full flex-col items-start justify-start gap-x-4 gap-y-1.5 rounded  px-2 py-1 sm:flex-row">
+        <div className="flex w-full flex-col items-start justify-start gap-x-4 gap-y-1.5 rounded px-2 py-1 sm:flex-row">
           <span className="w-[105px] min-w-[105px] max-w-[105px] whitespace-nowrap rounded-full bg-slate-100 px-3 py-1 text-center text-[10px] font-bold uppercase text-slate-600">
             🧩 Puzzles
           </span>
@@ -342,7 +342,7 @@ export default function TabAnalyze({
           !forceExtraCredit ? 'opacity-40' : ''
         }`}
       >
-        <div className="flex w-full flex-col items-start justify-start gap-x-4 gap-y-1.5 rounded  px-2 py-1 sm:flex-row">
+        <div className="flex w-full flex-col items-start justify-start gap-x-4 gap-y-1.5 rounded px-2 py-1 sm:flex-row">
           <span className="w-[105px] min-w-[105px] max-w-[105px] whitespace-nowrap rounded-full bg-slate-100 px-3 py-1 text-center text-[10px] font-bold uppercase text-slate-600">
             🎁 Next
           </span>

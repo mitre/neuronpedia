@@ -19,7 +19,7 @@ const querySchema = object({
       "security": [{
           "apiKey": []
       }],
-      "description": "Exports all explanations for a specific SAE. Warning: This can be a large response (>3 megabytes).",
+      "description": "[Deprecated, use https://neuronpedia-datasets.s3.us-east-1.amazonaws.com/index.html?prefix=v1/] Exports all explanations for a specific SAE. Warning: This can be a large response (>3 megabytes).",
       "parameters": [
         {
           "in": "query",
@@ -80,8 +80,9 @@ export const GET = withOptionalUser(async (request: RequestOptionalUser) => {
     // file does not exist, return error
     return NextResponse.json(
       {
+        newUrl: 'https://neuronpedia-datasets.s3.us-east-1.amazonaws.com/index.html?prefix=v1/',
         message:
-          "We don't yet have an explanation export for this model and SAE. Please contact support@neuronpedia.org if you need this now and we'll get it to you ASAP.",
+          "Explanation export not found. Newer explanations exports can be found at https://neuronpedia-datasets.s3.us-east-1.amazonaws.com/index.html?prefix=v1/  Please contact support@neuronpedia.org if you need this now and we'll get it to you ASAP.",
       },
       { status: 404 },
     );
@@ -91,8 +92,9 @@ export const GET = withOptionalUser(async (request: RequestOptionalUser) => {
     }
     return NextResponse.json(
       {
+        newUrl: 'https://neuronpedia-datasets.s3.us-east-1.amazonaws.com/index.html?prefix=v1/',
         message:
-          "We don't yet have an explanation export for this model and SAE. Please contact support@neuronpedia.org if you need this now and we'll get it to you ASAP. Alternatively, double-check the exports directory to see if it's there: https://neuronpedia-exports.s3.amazonaws.com/index.html",
+          "Explanation export not found. Newer explanations exports can be found at https://neuronpedia-datasets.s3.us-east-1.amazonaws.com/index.html?prefix=v1/  Please contact support@neuronpedia.org if you need this now and we'll get it to you ASAP.",
       },
       { status: 404 },
     );

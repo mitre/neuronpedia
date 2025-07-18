@@ -47,7 +47,7 @@ export default function NewSourceSetForm() {
   };
 
   return IS_LOCALHOST ? (
-    <div className="w-full max-w-xl px-5  xl:px-0 ">
+    <div className="w-full max-w-xl px-5 xl:px-0">
       <h1 className="mt-0 text-center text-xl font-medium text-slate-800">Add SAE Set</h1>
       <div className="mt-2 text-sm">
         An SAE Set is one or more SAEs. Usually, this is to group together SAEs with the same hook point, but different

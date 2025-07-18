@@ -90,7 +90,7 @@ export default function SaeEvalMetricsAccordion({
                   <CustomTooltip
                     key={subKey}
                     trigger={
-                      <div className="group flex cursor-default flex-row items-center justify-between gap-x-5 rounded px-3 py-[3px]  hover:bg-slate-200">
+                      <div className="group flex cursor-default flex-row items-center justify-between gap-x-5 rounded px-3 py-[3px] hover:bg-slate-200">
                         <div className="group flex cursor-default flex-row items-center gap-x-1.5 px-0 font-sans text-[11px] font-medium text-slate-500">
                           {evalMetricsSchema?.[key]?.properties?.[subKey]?.title}
                         </div>

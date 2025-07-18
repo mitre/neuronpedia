@@ -403,6 +403,15 @@ export default function NavBarButtons({ session }: { session: Session | null }) 
       )}
 
       <Link
+        href="https://neuronpedia-datasets.s3.us-east-1.amazonaws.com/index.html?prefix=v1/"
+        target="_blank"
+        rel="noreferrer"
+        className="relative flex cursor-pointer items-center whitespace-nowrap rounded-full px-2.5 py-1 text-[13px] transition-all hover:bg-sky-100 hover:text-sky-700 focus:outline-none data-[state=open]:bg-sky-700 data-[state=open]:text-white"
+      >
+        Exports
+      </Link>
+
+      <Link
         href="/blog"
         className="relative flex cursor-pointer items-center whitespace-nowrap rounded-full px-2.5 py-1 text-[13px] transition-all hover:bg-sky-100 hover:text-sky-700 focus:outline-none data-[state=open]:bg-sky-700 data-[state=open]:text-white"
       >

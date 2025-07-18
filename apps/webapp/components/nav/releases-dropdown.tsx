@@ -47,7 +47,7 @@ export default function ReleasesDropdown({ breadcrumb = false }: { breadcrumb?: 
                     <div>{release.descriptionShort}</div>
                     {release.name === 'gemma-scope' && (
                       <div className="flex flex-row items-center gap-x-0.5 text-[8.5px] font-bold uppercase text-emerald-600">
-                        <StarFilledIcon className="h-2 w-2 " /> Featured
+                        <StarFilledIcon className="h-2 w-2" /> Featured
                       </div>
                     )}
                     {/* <div className="whitespace-pre text-[10px]  font-medium text-slate-400">

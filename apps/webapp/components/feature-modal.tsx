@@ -22,7 +22,7 @@ export default function FeatureModal() {
             <div className="mb-0 flex w-full flex-row items-start justify-between gap-x-4 rounded-t-md border-b bg-white px-2 pb-2 pt-2 sm:px-4">
               <button
                 type="button"
-                className=" flex flex-row items-center justify-center gap-x-1 rounded-full bg-slate-300 px-3 py-1.5 text-[11px] text-slate-600 hover:bg-sky-700 hover:text-white focus:outline-none"
+                className="flex flex-row items-center justify-center gap-x-1 rounded-full bg-slate-300 px-3 py-1.5 text-[11px] text-slate-600 hover:bg-sky-700 hover:text-white focus:outline-none"
                 aria-label="Close"
                 onClick={() => {
                   setFeatureModalOpen(false);
@@ -34,7 +34,7 @@ export default function FeatureModal() {
                 href={`/${featureModalFeature?.modelId}/${featureModalFeature?.layer}/${featureModalFeature?.index}`}
                 target="_blank"
                 rel="noreferrer"
-                className=" flex flex-row items-center justify-center gap-x-1 rounded-full bg-slate-300 px-3 py-1.5 text-[11px] text-slate-600 hover:bg-sky-700 hover:text-white focus:outline-none"
+                className="flex flex-row items-center justify-center gap-x-1 rounded-full bg-slate-300 px-3 py-1.5 text-[11px] text-slate-600 hover:bg-sky-700 hover:text-white focus:outline-none"
               >
                 ↗ Popup
               </a>

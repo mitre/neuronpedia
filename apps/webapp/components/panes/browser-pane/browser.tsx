@@ -306,7 +306,7 @@ export default function Browser({
                     currentNeuron?.layer === neuron.layer &&
                     currentNeuron?.index === neuron.index
                       ? 'bg-sky-100 shadow-[inset_0_0px_0px_1.5px_rgba(3,105,161,.5)]'
-                      : 'bg-white  hover:bg-slate-100'
+                      : 'bg-white hover:bg-slate-100'
                   }`}
                   onMouseEnter={() => {
                     if (!locked) {

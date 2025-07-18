@@ -125,7 +125,7 @@ export default function BookmarkButton({ mini, currentNeuron }: { mini: boolean;
         bookmarked
           ? 'bg-sky-700 text-white hover:bg-sky-800'
           : 'bg-slate-500 text-slate-700 hover:enabled:bg-sky-300 hover:enabled:text-sky-800 disabled:bg-slate-400 disabled:opacity-60'
-      } w-12 overflow-hidden rounded-lg px-0 py-1.5 text-center text-xs font-bold uppercase transition-all `}
+      } w-12 overflow-hidden rounded-lg px-0 py-1.5 text-center text-xs font-bold uppercase transition-all`}
     >
       {bookmarked ? (
         <div className="-mt-0.5 flex flex-row items-center justify-center">
@@ -146,7 +146,7 @@ export default function BookmarkButton({ mini, currentNeuron }: { mini: boolean;
       className={`${
         bookmarked
           ? 'bg-sky-700 text-white hover:bg-sky-800'
-          : 'bg-slate-200 text-slate-500/80  hover:enabled:bg-sky-300 hover:enabled:text-sky-800 disabled:bg-slate-400 disabled:opacity-60'
+          : 'bg-slate-200 text-slate-500/80 hover:enabled:bg-sky-300 hover:enabled:text-sky-800 disabled:bg-slate-400 disabled:opacity-60'
       } h-9 w-9 overflow-hidden rounded-full px-0 py-1.5 text-center text-xs font-bold uppercase transition-all`}
     >
       {bookmarked ? (

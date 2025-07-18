@@ -2,9 +2,9 @@
 // ignore this eslint rule because we need to augment the type
 
 /* eslint-disable-next-line unused-imports/no-unused-imports */
-import "next-auth";
+import 'next-auth';
 
-declare module "next-auth" {
+declare module 'next-auth' {
   /**
    * Returned by `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
    */

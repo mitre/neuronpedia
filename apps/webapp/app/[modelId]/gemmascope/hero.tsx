@@ -26,7 +26,7 @@ export default function Hero({ release }: { release: SourceReleaseWithPartialRel
                     href={url}
                     target="_blank"
                     rel="noreferrer"
-                    className=" text-[11px] text-slate-400 hover:text-sky-700 hover:underline"
+                    className="text-[11px] text-slate-400 hover:text-sky-700 hover:underline"
                   >
                     {new URL(url).hostname.replace('www.', '')} ↗
                   </a>

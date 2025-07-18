@@ -621,8 +621,8 @@ export default function Umap({ modelId, sourceSet, layers }: { modelId: string; 
                           color: showLogSparsity
                             ? SPARSITY_COLORS[0]
                             : searchText.length > 0
-                            ? SEARCH_NOT_MATCHED_COLOR
-                            : UMAP_INITIAL_COLORS[0],
+                              ? SEARCH_NOT_MATCHED_COLOR
+                              : UMAP_INITIAL_COLORS[0],
                         }}
                       >
                         {Math.floor(SPARSITY_COLOR_MIN)}
@@ -634,14 +634,14 @@ export default function Umap({ modelId, sourceSet, layers }: { modelId: string; 
                             showLogSparsity
                               ? SPARSITY_COLORS[0]
                               : searchText.length > 0
-                              ? SEARCH_NOT_MATCHED_COLOR
-                              : UMAP_INITIAL_COLORS[0]
+                                ? SEARCH_NOT_MATCHED_COLOR
+                                : UMAP_INITIAL_COLORS[0]
                           }, ${
                             showLogSparsity
                               ? SPARSITY_COLORS[SPARSITY_COLORS.length - 1]
                               : searchText.length > 0
-                              ? SEARCH_NOT_MATCHED_COLOR
-                              : UMAP_INITIAL_COLORS[0]
+                                ? SEARCH_NOT_MATCHED_COLOR
+                                : UMAP_INITIAL_COLORS[0]
                           })`,
                         }}
                       />
@@ -651,8 +651,8 @@ export default function Umap({ modelId, sourceSet, layers }: { modelId: string; 
                           color: showLogSparsity
                             ? SPARSITY_COLORS[SPARSITY_COLORS.length - 1]
                             : searchText.length > 0
-                            ? SEARCH_NOT_MATCHED_COLOR
-                            : UMAP_INITIAL_COLORS[0],
+                              ? SEARCH_NOT_MATCHED_COLOR
+                              : UMAP_INITIAL_COLORS[0],
                         }}
                       >
                         {Math.ceil(SPARSITY_COLOR_MAX)}
@@ -679,7 +679,7 @@ export default function Umap({ modelId, sourceSet, layers }: { modelId: string; 
                     </ToggleGroup.Item>
                     <ToggleGroup.Item
                       key="showLogSparsity"
-                      className="flex-auto items-center rounded-l px-1 py-1 text-[10px] font-medium text-slate-500  transition-all hover:bg-slate-100 data-[state=on]:bg-white data-[state=on]:text-slate-600 sm:px-4  sm:text-[11px]"
+                      className="flex-auto items-center rounded-l px-1 py-1 text-[10px] font-medium text-slate-500 transition-all hover:bg-slate-100 data-[state=on]:bg-white data-[state=on]:text-slate-600 sm:px-4 sm:text-[11px]"
                       value="showLogSparsity"
                       aria-label="showLogSparsity"
                     >
@@ -717,7 +717,7 @@ export default function Umap({ modelId, sourceSet, layers }: { modelId: string; 
                   isZoomDefault()
                     ? 'disabled bg-slate-200 text-slate-400'
                     : 'bg-slate-300 text-slate-700 hover:bg-slate-400'
-                }  flex items-center justify-center px-2 py-1 text-xs`}
+                } flex items-center justify-center px-2 py-1 text-xs`}
               >
                 <Maximize className="h-4 w-4" />
                 Reset
@@ -768,7 +768,7 @@ export default function Umap({ modelId, sourceSet, layers }: { modelId: string; 
             </div>
           </div>
         </div>
-        <div className={`flex w-full flex-row gap-x-2 px-2.5 `}>
+        <div className="flex w-full flex-row gap-x-2 px-2.5">
           <div className={`z-10 flex h-[${UMAP_HEIGHT}px] w-full flex-1 flex-col border-t border-t-slate-300`}>
             {umapExplanations.length === 0 && (
               <div
@@ -786,16 +786,15 @@ export default function Umap({ modelId, sourceSet, layers }: { modelId: string; 
               itemContent={(i, exp) => (
                 <div
                   key={exp.id}
-                  className={`flex w-full cursor-pointer flex-row
-                  ${
+                  className={`flex w-full cursor-pointer flex-row ${
                     i > 0
                       ? searchText.length > 0
                         ? highlightedUmapExplanations[i - 1].umap_cluster !== exp.umap_cluster
                           ? 'border-t border-t-slate-200'
                           : ''
                         : visibleUmapExplanations[i - 1].umap_cluster !== exp.umap_cluster
-                        ? 'border-t border-t-slate-200'
-                        : ''
+                          ? 'border-t border-t-slate-200'
+                          : ''
                       : ''
                   }`}
                 >
@@ -912,7 +911,7 @@ export default function Umap({ modelId, sourceSet, layers }: { modelId: string; 
                         setNewListDialogOpen(true);
                         return true;
                       }}
-                      className="flex min-w-[160px]  flex-1 flex-row items-center justify-center overflow-hidden whitespace-pre rounded bg-white px-3 py-1.5 text-xs font-medium leading-tight text-slate-600 shadow outline-none hover:bg-slate-100"
+                      className="flex min-w-[160px] flex-1 flex-row items-center justify-center overflow-hidden whitespace-pre rounded bg-white px-3 py-1.5 text-xs font-medium leading-tight text-slate-600 shadow outline-none hover:bg-slate-100"
                     >
                       {isAddingToNewList ? 'Adding...' : `Add ${selectedFeatures.size} to New List`}
                     </button>
@@ -923,7 +922,7 @@ export default function Umap({ modelId, sourceSet, layers }: { modelId: string; 
                         e.stopPropagation();
                         setSelectedFeatures(new Map());
                       }}
-                      className="flex min-w-[100px]  flex-1 flex-row items-center justify-center overflow-hidden whitespace-pre rounded bg-white px-3 py-1.5 text-xs font-medium leading-tight text-slate-600 shadow outline-none hover:bg-slate-100"
+                      className="flex min-w-[100px] flex-1 flex-row items-center justify-center overflow-hidden whitespace-pre rounded bg-white px-3 py-1.5 text-xs font-medium leading-tight text-slate-600 shadow outline-none hover:bg-slate-100"
                     >
                       Deselect All
                     </button>

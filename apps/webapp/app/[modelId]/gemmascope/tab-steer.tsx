@@ -35,7 +35,7 @@ export default function TabSteer({
         </div>
       </div>
 
-      <div className="flex w-full flex-col items-start justify-start gap-x-4 gap-y-1.5 rounded  px-2 py-1 sm:flex-row sm:px-7">
+      <div className="flex w-full flex-col items-start justify-start gap-x-4 gap-y-1.5 rounded px-2 py-1 sm:flex-row sm:px-7">
         <div className="mb-2 flex w-full flex-row items-center justify-between gap-x-2 sm:mb-0 sm:w-auto sm:flex-col sm:justify-start">
           <span className="w-[105px] min-w-[105px] max-w-[105px] whitespace-nowrap rounded-full bg-slate-100 px-0 py-1 text-center text-[10px] font-bold uppercase text-slate-600">
             🕹️ Demo
@@ -99,7 +99,7 @@ export default function TabSteer({
       </div>
 
       <div className="mb-5 mt-5 flex w-full flex-row items-center justify-start px-2 sm:px-5">
-        <div className="flex w-full flex-col items-start justify-start gap-x-4 gap-y-1.5 rounded  px-2 py-1 sm:flex-row">
+        <div className="flex w-full flex-col items-start justify-start gap-x-4 gap-y-1.5 rounded px-2 py-1 sm:flex-row">
           <span className="w-[105px] min-w-[105px] max-w-[105px] whitespace-nowrap rounded-full bg-slate-100 px-3 py-1 text-center text-[10px] font-bold uppercase text-slate-600">
             🎁 Next
           </span>

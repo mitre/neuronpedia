@@ -27,36 +27,36 @@ export function getSaeBenchDisplayString(v: string) {
   return v === 'sae_bench'
     ? 'SAE Bench - Aug 24'
     : v === 'sae_bench_0125'
-    ? 'SAE Bench - Jan 25'
-    : v === 'gemmascope'
-    ? 'Gemma Scope'
-    : v === 'llamascope'
-    ? 'Llama Scope'
-    : v === 'deepseek-r1-distill-llama-8b'
-    ? 'DeepSeek-R1-Distill-Llama-8B'
-    : v === 'gemma-2-2b'
-    ? 'Gemma-2-2B'
-    : v === 'gemma-2-9b'
-    ? 'Gemma-2-9B'
-    : v === 'pythia-70m-deduped'
-    ? 'Pythia-70M-Deduped'
-    : v === 'pythia-160m-deduped'
-    ? 'Pythia-160M-Deduped'
-    : v === 'jumprelu'
-    ? 'JumpReLU'
-    : v === 'standard'
-    ? 'ReLU'
-    : v === 'topk'
-    ? 'TopK'
-    : v === 'gated'
-    ? 'Gated'
-    : v === 'batch_topk'
-    ? 'Batch TopK'
-    : v === 'matryoshka_batch_topk'
-    ? 'Matryoshka'
-    : v === 'p-anneal' || v === 'p_anneal'
-    ? 'P-Anneal'
-    : v;
+      ? 'SAE Bench - Jan 25'
+      : v === 'gemmascope'
+        ? 'Gemma Scope'
+        : v === 'llamascope'
+          ? 'Llama Scope'
+          : v === 'deepseek-r1-distill-llama-8b'
+            ? 'DeepSeek-R1-Distill-Llama-8B'
+            : v === 'gemma-2-2b'
+              ? 'Gemma-2-2B'
+              : v === 'gemma-2-9b'
+                ? 'Gemma-2-9B'
+                : v === 'pythia-70m-deduped'
+                  ? 'Pythia-70M-Deduped'
+                  : v === 'pythia-160m-deduped'
+                    ? 'Pythia-160M-Deduped'
+                    : v === 'jumprelu'
+                      ? 'JumpReLU'
+                      : v === 'standard'
+                        ? 'ReLU'
+                        : v === 'topk'
+                          ? 'TopK'
+                          : v === 'gated'
+                            ? 'Gated'
+                            : v === 'batch_topk'
+                              ? 'Batch TopK'
+                              : v === 'matryoshka_batch_topk'
+                                ? 'Matryoshka'
+                                : v === 'p-anneal' || v === 'p_anneal'
+                                  ? 'P-Anneal'
+                                  : v;
 }
 
 const UNIQUE_COLORS = ['#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7'];
@@ -207,12 +207,15 @@ export default forwardRef<EvalsPlotMethods, EvalsPlotProps>(
       }
 
       // split visibleRows by groupBy
-      let groupedRows = visibleRows.reduce((acc, row) => {
-        const key = row[groupBy];
-        acc[key] = acc[key] || [];
-        acc[key].push(row);
-        return acc;
-      }, {} as Record<string, Record<string, any>[]>);
+      let groupedRows = visibleRows.reduce(
+        (acc, row) => {
+          const key = row[groupBy];
+          acc[key] = acc[key] || [];
+          acc[key].push(row);
+          return acc;
+        },
+        {} as Record<string, Record<string, any>[]>,
+      );
 
       // sort groupedRows by key
       const sortedEntries = Object.entries(groupedRows).sort(([keyA], [keyB]) => {
@@ -261,10 +264,10 @@ export default forwardRef<EvalsPlotMethods, EvalsPlotProps>(
           groupBy === 'dSae'
             ? `${convertNumToAbbr(Number(key))} Width`
             : groupBy === 'trainingTokens'
-            ? Number(key) === -1
-              ? 'N/A Tokens'
-              : `${convertNumToAbbr(Number(key))} Tokens`
-            : getSaeBenchDisplayString(key),
+              ? Number(key) === -1
+                ? 'N/A Tokens'
+                : `${convertNumToAbbr(Number(key))} Tokens`
+              : getSaeBenchDisplayString(key),
         mode: 'markers',
         marker: {
           color:
@@ -463,7 +466,7 @@ export default forwardRef<EvalsPlotMethods, EvalsPlotProps>(
       <div className="flex w-full flex-col items-center justify-center gap-y-0 bg-white pt-0 sm:items-start sm:gap-y-0 md:gap-y-5 lg:flex-row">
         {!isEmbed && (
           <div className="order-2 mb-2 flex flex-col gap-y-2 pl-5 pr-5 text-xs sm:order-1">
-            <div className="mb-2 flex w-full flex-col items-start justify-start gap-x-2 ">
+            <div className="mb-2 flex w-full flex-col items-start justify-start gap-x-2">
               <div className="mb-1 flex w-full flex-row items-center justify-between gap-x-2">
                 <b className="text-[11px] text-slate-500">Plot X</b>
                 <div className="flex flex-row items-center gap-x-1 text-[10px] font-medium text-slate-500">
@@ -493,7 +496,7 @@ export default forwardRef<EvalsPlotMethods, EvalsPlotProps>(
                     }
                   }}
                 >
-                  <Select.Trigger className="group flex max-h-[32px]  min-h-[32px] w-[320px] min-w-[320px] max-w-[320px] flex-row items-center justify-start gap-x-1 whitespace-pre rounded-full border-slate-300 bg-slate-200  px-2 text-[10px]  font-medium text-slate-700 hover:bg-slate-100 focus:outline-none sm:text-xs">
+                  <Select.Trigger className="group flex max-h-[32px] min-h-[32px] w-[320px] min-w-[320px] max-w-[320px] flex-row items-center justify-start gap-x-1 whitespace-pre rounded-full border-slate-300 bg-slate-200 px-2 text-[10px] font-medium text-slate-700 hover:bg-slate-100 focus:outline-none sm:text-xs">
                     <div className="flex w-full flex-row items-center justify-center gap-x-1">
                       <div className="flex flex-col gap-y-0 sm:gap-y-0">
                         <Select.Value>
@@ -519,10 +522,10 @@ export default forwardRef<EvalsPlotMethods, EvalsPlotProps>(
                         {metricColumns.concat(getSpecialMetricColumns()).map((metricColumn) => (
                           <div
                             key={metricColumn.getName()}
-                            className={`flex w-full flex-row items-center justify-center border-b border-b-slate-100 px-3  ${
+                            className={`flex w-full flex-row items-center justify-center border-b border-b-slate-100 px-3 ${
                               metricColumn.getName() === metricColumnX?.getName()
                                 ? 'bg-sky-200 text-sky-700'
-                                : 'text-slate-600  hover:bg-slate-100 '
+                                : 'text-slate-600 hover:bg-slate-100'
                             }`}
                           >
                             <CustomTooltip
@@ -559,7 +562,7 @@ export default forwardRef<EvalsPlotMethods, EvalsPlotProps>(
                 </Select.Root>
               </div>
             </div>
-            <div className="mb-2 flex w-full flex-col items-start justify-start gap-x-2 ">
+            <div className="mb-2 flex w-full flex-col items-start justify-start gap-x-2">
               <div className="mb-1 flex w-full flex-row items-center justify-between gap-x-2">
                 <b className="text-[11px] text-slate-500">Plot Y</b>
                 <div className="flex flex-row items-center gap-x-1 text-[10px] font-medium text-slate-500">
@@ -590,7 +593,7 @@ export default forwardRef<EvalsPlotMethods, EvalsPlotProps>(
                     }
                   }}
                 >
-                  <Select.Trigger className="group flex max-h-[32px]  min-h-[32px] w-[320px] min-w-[320px] max-w-[320px] flex-row items-center justify-start gap-x-1 whitespace-pre rounded-full border-slate-300 bg-slate-200  px-2 text-[10px]  font-medium text-slate-700 hover:bg-slate-100 focus:outline-none sm:text-xs">
+                  <Select.Trigger className="group flex max-h-[32px] min-h-[32px] w-[320px] min-w-[320px] max-w-[320px] flex-row items-center justify-start gap-x-1 whitespace-pre rounded-full border-slate-300 bg-slate-200 px-2 text-[10px] font-medium text-slate-700 hover:bg-slate-100 focus:outline-none sm:text-xs">
                     <div className="flex w-full flex-row items-center justify-center gap-x-1">
                       <div className="flex flex-col gap-y-0 sm:gap-y-0">
                         <Select.Value>
@@ -616,10 +619,10 @@ export default forwardRef<EvalsPlotMethods, EvalsPlotProps>(
                         {metricColumns.concat(getSpecialMetricColumns()).map((metricColumn) => (
                           <div
                             key={metricColumn.getName()}
-                            className={`flex w-full flex-row items-center justify-center border-b border-b-slate-100 px-3  ${
+                            className={`flex w-full flex-row items-center justify-center border-b border-b-slate-100 px-3 ${
                               metricColumn.getName() === metricColumnY?.getName()
                                 ? 'bg-sky-200 text-sky-700'
-                                : 'text-slate-600  hover:bg-slate-100 '
+                                : 'text-slate-600 hover:bg-slate-100'
                             }`}
                           >
                             <CustomTooltip
@@ -669,7 +672,7 @@ export default forwardRef<EvalsPlotMethods, EvalsPlotProps>(
                     setGroupBy(newVal);
                   }}
                 >
-                  <Select.Trigger className="group flex max-h-[32px]  min-h-[32px] w-[320px] min-w-[320px] max-w-[320px] flex-row items-center justify-between gap-x-1 whitespace-pre rounded-full border-slate-300 bg-slate-200 px-2 pl-5 text-[10px]  font-medium text-slate-700 hover:bg-slate-100 focus:outline-none sm:text-xs">
+                  <Select.Trigger className="group flex max-h-[32px] min-h-[32px] w-[320px] min-w-[320px] max-w-[320px] flex-row items-center justify-between gap-x-1 whitespace-pre rounded-full border-slate-300 bg-slate-200 px-2 pl-5 text-[10px] font-medium text-slate-700 hover:bg-slate-100 focus:outline-none sm:text-xs">
                     <div className="flex flex-1 flex-row justify-center">
                       <Select.Value />
                     </div>
@@ -749,12 +752,12 @@ export default forwardRef<EvalsPlotMethods, EvalsPlotProps>(
                       {filter === 'dSae'
                         ? `${value.map((v) => convertNumToAbbr(v)).join(', ')} Width`
                         : filter === 'trainingTokens'
-                        ? ''
-                        : filter === 'layer'
-                        ? `Layer ${value.join(', ')}`
-                        : typeof value[0] === 'string'
-                        ? value.map((v) => capitalizeFirstLetter(v)).join(', ')
-                        : value.join(', ')}{' '}
+                          ? ''
+                          : filter === 'layer'
+                            ? `Layer ${value.join(', ')}`
+                            : typeof value[0] === 'string'
+                              ? value.map((v) => capitalizeFirstLetter(v)).join(', ')
+                              : value.join(', ')}{' '}
                     </span>
                   ) : (
                     ''
@@ -763,7 +766,7 @@ export default forwardRef<EvalsPlotMethods, EvalsPlotProps>(
                 return '';
               })}
           </div>
-          <div className={`mb-2 mt-0 text-xs font-medium text-slate-500 `}>
+          <div className="mb-2 mt-0 text-xs font-medium text-slate-500">
             {metricColumnX ? getMetricTooltip(metricColumnX) : ''}
             {' vs '}
             {metricColumnY ? getMetricTooltip(metricColumnY) : ''}

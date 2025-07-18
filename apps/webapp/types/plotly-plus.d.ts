@@ -1,6 +1,6 @@
-import "plotly.js-dist-min";
+import 'plotly.js-dist-min';
 
-declare module "plotly.js-dist-min" {
+declare module 'plotly.js-dist-min' {
   interface PlotData {
     nbinsx?: number | undefined;
     dimensions?: any;

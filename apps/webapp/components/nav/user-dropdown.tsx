@@ -18,11 +18,11 @@ export default function UserDropdown({ session }: { session: Session | null }) {
     <div className="relative z-50 flex items-center text-left">
       <Popover
         content={
-          <div className=" z-50 w-full rounded-md bg-white p-2 text-slate-500 sm:w-44">
+          <div className="z-50 w-full rounded-md bg-white p-2 text-slate-500 sm:w-44">
             {user && (
               <>
                 <Link
-                  className="relative z-50  mb-1 flex w-full select-none flex-col items-center justify-center space-x-2 rounded-xl border-0 border-slate-200 bg-slate-100 p-2 py-3 text-sm outline-none ring-0 transition-all duration-75 hover:bg-slate-200 sm:mb-0.5"
+                  className="relative z-50 mb-1 flex w-full select-none flex-col items-center justify-center space-x-2 rounded-xl border-0 border-slate-200 bg-slate-100 p-2 py-3 text-sm outline-none ring-0 transition-all duration-75 hover:bg-slate-200 sm:mb-0.5"
                   href={`/user/${user?.name || name}`}
                   onClick={() => {
                     setShowUserPopover(false);

@@ -41,7 +41,7 @@ export default function SAEEvalsPane({
 
   return (
     <Card className="w-full bg-white">
-      <CardHeader className="w-full pb-0  pt-5">
+      <CardHeader className="w-full pb-0 pt-5">
         <div className="flex w-full flex-row items-center justify-between">
           <CardTitle>SAE Evaluations</CardTitle>
           <a

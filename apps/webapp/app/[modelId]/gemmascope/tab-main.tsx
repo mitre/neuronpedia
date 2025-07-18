@@ -34,7 +34,7 @@ export default function TabMain({
           </span>
         </div>
 
-        <div className=" flex w-full flex-col items-start justify-start text-left text-sm font-medium text-slate-600">
+        <div className="flex w-full flex-col items-start justify-start text-left text-sm font-medium text-slate-600">
           <div className="leading-normal">
             The inner workings of modern AIs are a mystery. {`This is because AIs are language models that are`}{' '}
             <strong>grown, not designed</strong>.
@@ -47,7 +47,7 @@ export default function TabMain({
             2B. It also contains interesting and relevant content even for those already familiar with the topic.
           </div>
         </div>
-        <div className="hidden flex-col items-center justify-center rounded-lg bg-slate-100 px-5 py-3.5 pt-3 text-xs font-medium text-slate-500 sm:flex ">
+        <div className="hidden flex-col items-center justify-center rounded-lg bg-slate-100 px-5 py-3.5 pt-3 text-xs font-medium text-slate-500 sm:flex">
           <div className="hidden font-bold uppercase text-slate-400 sm:block">HOVER TIPS</div>
           <div className="block font-bold uppercase text-slate-300 sm:hidden">CLICKABLE TIPS</div>
           <div className="mt-2 flex w-full flex-row items-center justify-start whitespace-nowrap">
@@ -127,7 +127,7 @@ export default function TabMain({
               tabUpdater('microscope');
               completedTabsAdd('main');
             }}
-            className=" relative flex min-h-[200px] flex-1 cursor-pointer flex-col items-center justify-center rounded-3xl border border-gBlue bg-gBlue/5 px-5 text-gBlue shadow-md transition-all hover:scale-105 hover:border-2 hover:bg-white hover:shadow-xl xl:min-h-[230px]"
+            className="relative flex min-h-[200px] flex-1 cursor-pointer flex-col items-center justify-center rounded-3xl border border-gBlue bg-gBlue/5 px-5 text-gBlue shadow-md transition-all hover:scale-105 hover:border-2 hover:bg-white hover:shadow-xl xl:min-h-[230px]"
           >
             <div className="absolute top-2 mx-auto flex w-full justify-center">
               <div className="whitespace-nowrap rounded-full bg-gBlue px-3 py-1.5 text-[9px] font-bold uppercase leading-none text-white lg:text-[11px]">
@@ -160,7 +160,7 @@ export default function TabMain({
               tabUpdater('steer');
               completedTabsAdd('main');
             }}
-            className="flex min-h-[200px] flex-1 cursor-default flex-col items-center justify-center rounded-3xl border border-gRed bg-gRed/5 px-5 text-gRed  opacity-40 transition-all xl:min-h-[230px]"
+            className="flex min-h-[200px] flex-1 cursor-default flex-col items-center justify-center rounded-3xl border border-gRed bg-gRed/5 px-5 text-gRed opacity-40 transition-all xl:min-h-[230px]"
           >
             <div className="mb-2 text-6xl">🕹️</div>
             <div className="text-md font-bold xl:text-lg">Steer Gemma</div>

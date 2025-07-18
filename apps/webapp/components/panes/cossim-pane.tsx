@@ -98,13 +98,11 @@ export default function CosSimPane({ currentNeuron }: { currentNeuron: NeuronWit
 
   return (
     <div
-      className={`mt-2 hidden flex-col gap-x-2 overflow-hidden rounded-lg border bg-white
-                    px-3 pb-4 pt-2 text-xs shadow transition-all sm:mt-3 ${
-                      (currentNeuron?.topkCosSimIndices && currentNeuron?.topkCosSimIndices.length > 0) ||
-                      matchingSource
-                        ? 'sm:flex'
-                        : 'sm:hidden'
-                    }`}
+      className={`mt-2 hidden flex-col gap-x-2 overflow-hidden rounded-lg border bg-white px-3 pb-4 pt-2 text-xs shadow transition-all sm:mt-3 ${
+        (currentNeuron?.topkCosSimIndices && currentNeuron?.topkCosSimIndices.length > 0) || matchingSource
+          ? 'sm:flex'
+          : 'sm:hidden'
+      }`}
     >
       <div className="mb-1.5 flex w-full flex-row items-center justify-center gap-x-1 text-[10px] font-normal uppercase text-slate-400">
         Top Features by Cosine Similarity

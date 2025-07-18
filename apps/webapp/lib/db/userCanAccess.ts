@@ -21,18 +21,18 @@ export function userCanAccessClause(
       ...(allowUnlisted === AllowUnlistedFor.EVERYONE
         ? [{ visibility: Visibility.UNLISTED }]
         : // DO NOT REMOVE USER CHECK HERE - otherwise creatorId and allowedUsers will just allow everyone
-        allowUnlisted === AllowUnlistedFor.CREATOR_AND_ALLOWED_USERS && user
-        ? [
-            {
-              AND: [
-                {
-                  visibility: Visibility.UNLISTED,
-                  OR: [{ creatorId: user?.id }],
-                },
-              ],
-            },
-          ]
-        : []),
+          allowUnlisted === AllowUnlistedFor.CREATOR_AND_ALLOWED_USERS && user
+          ? [
+              {
+                AND: [
+                  {
+                    visibility: Visibility.UNLISTED,
+                    OR: [{ creatorId: user?.id }],
+                  },
+                ],
+              },
+            ]
+          : []),
       // if it's UNLISTED or PRIVATE
       // creator of model can access
       // allowedUsers can access

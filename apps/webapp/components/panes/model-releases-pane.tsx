@@ -48,14 +48,14 @@ export default function ModelReleasesPane({
             key={r.name}
             className={` ${
               i % 2 === 0 ? 'bg-slate-50' : 'bg-white'
-            } group flex w-full flex-1 cursor-pointer flex-row items-center justify-between gap-x-1 rounded-md px-5 py-3 text-xs font-medium hover:bg-sky-100  hover:text-slate-600 focus:outline-none data-[state=open]:bg-sky-100 data-[state=open]:text-slate-600`}
+            } group flex w-full flex-1 cursor-pointer flex-row items-center justify-between gap-x-1 rounded-md px-5 py-3 text-xs font-medium hover:bg-sky-100 hover:text-slate-600 focus:outline-none data-[state=open]:bg-sky-100 data-[state=open]:text-slate-600`}
           >
             <div className="flex w-full flex-col items-start justify-center gap-y-1.5 leading-tight">
               <div className="flex w-full flex-row items-center justify-between gap-x-5 text-[10.5px] text-sky-700 group-hover:text-sky-700 group-data-[state=open]:text-sky-700">
-                <div className="font-sans text-[13px] font-medium capitalize text-slate-700  group-hover:text-slate-700 group-data-[state=open]:text-slate-700 ">
+                <div className="font-sans text-[13px] font-medium capitalize text-slate-700 group-hover:text-slate-700 group-data-[state=open]:text-slate-700">
                   {r.description}
                 </div>
-                <div className="whitespace-pre font-medium  text-slate-400">
+                <div className="whitespace-pre font-medium text-slate-400">
                   {r.createdAt?.toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',

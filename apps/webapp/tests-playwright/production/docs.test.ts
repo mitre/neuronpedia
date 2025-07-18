@@ -234,17 +234,6 @@ test('test api direct link', async ({ page }) => {
   await expect(newPage).toHaveURL('https://www.neuronpedia.org/api-doc');
 });
 
-test('data exports link', async ({ page }) => {
-  await page.goto('https://docs.neuronpedia.org/api');
-
-  const [newPage] = await Promise.all([
-    page.waitForEvent('popup'),
-    page.getByText('https://neuronpedia-exports.s3.amazonaws.com/index.html').click(),
-  ]);
-
-  await expect(newPage).toHaveURL('https://neuronpedia-exports.s3.amazonaws.com/index.html');
-});
-
 test('Upload Your SAEs page', async ({ page }) => {
   await page.goto('https://docs.neuronpedia.org/upload-saes');
   await expect(page).toHaveTitle(/Upload Your SAEs | Neuronpedia Docs/);

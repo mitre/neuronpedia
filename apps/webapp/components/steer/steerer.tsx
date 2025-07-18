@@ -409,8 +409,8 @@ export default function Steerer({
             {currentlySelectedPreset()?.name
               ? `${currentlySelectedPreset()?.name} Mode Steering`
               : selectedFeatures.length > 0
-              ? `Steering ${selectedFeatures.length} Feature${selectedFeatures.length === 1 ? '' : 's'}`
-              : 'Steering Settings'}
+                ? `Steering ${selectedFeatures.length} Feature${selectedFeatures.length === 1 ? '' : 's'}`
+                : 'Steering Settings'}
             {showSettingsOnMobile ? (
               <ChevronUp className="ml-1.5 h-3.5 w-3.5" />
             ) : (
@@ -420,7 +420,7 @@ export default function Steerer({
         </div>
       </div>
       <div
-        className={` w-full flex-col overflow-hidden px-5 pt-14 sm:h-full sm:basis-1/3 sm:pt-5 ${
+        className={`w-full flex-col overflow-hidden px-5 pt-14 sm:h-full sm:basis-1/3 sm:pt-5 ${
           showSettingsOnMobile ? 'flex' : 'hidden sm:flex'
         }`}
       >
@@ -451,7 +451,7 @@ export default function Steerer({
 
         {showSearch ? (
           <div className="mt-1 flex flex-1 flex-col gap-y-3">
-            <div className="relative my-3 flex flex-col rounded-md border border-slate-200 p-3 shadow-md ">
+            <div className="relative my-3 flex flex-col rounded-md border border-slate-200 p-3 shadow-md">
               <Button
                 variant="outline"
                 className="absolute left-2 top-2 bg-slate-100 text-[11px] font-normal uppercase text-slate-500 hover:bg-slate-200"
@@ -489,7 +489,7 @@ export default function Steerer({
           </div>
         ) : showAddFeature ? (
           <div className="mt-1 flex flex-1 flex-col gap-y-3">
-            <div className="relative my-3 flex flex-col rounded-md border border-slate-200 p-3 shadow-md ">
+            <div className="relative my-3 flex flex-col rounded-md border border-slate-200 p-3 shadow-md">
               <Button
                 variant="outline"
                 className="absolute left-2 top-2 bg-slate-100 text-[11px] font-normal uppercase text-slate-500 hover:bg-slate-200"
@@ -542,7 +542,7 @@ export default function Steerer({
           </div>
         ) : showAddVector ? (
           <div className="mt-1 flex flex-1 flex-col gap-y-3">
-            <div className="relative my-3 flex flex-col rounded-md border border-slate-200 p-3 shadow-md ">
+            <div className="relative my-3 flex flex-col rounded-md border border-slate-200 p-3 shadow-md">
               <Button
                 variant="outline"
                 className="absolute left-2 top-2 bg-slate-100 text-[11px] font-normal uppercase text-slate-500 hover:bg-slate-200"
@@ -669,7 +669,7 @@ export default function Steerer({
           />
         )}
 
-        <div className=" w-full flex-row justify-center pb-20 sm:hidden">
+        <div className="w-full flex-row justify-center pb-20 sm:hidden">
           <Button
             variant={showSettingsOnMobile ? 'default' : 'outline'}
             onClick={() => {

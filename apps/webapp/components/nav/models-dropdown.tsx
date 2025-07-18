@@ -22,7 +22,7 @@ export default function ModelsDropdown({ isInBreadcrumb = false }: { isInBreadcr
       <Select.Trigger
         className={`flex cursor-pointer items-center whitespace-nowrap rounded-full px-2.5 py-1 ${
           isInBreadcrumb ? '-mx-1.5' : 'text-[13px]'
-        } transition-all hover:bg-sky-100 hover:text-sky-700 focus:outline-none data-[state=open]:bg-sky-700 data-[state=open]:text-white `}
+        } transition-all hover:bg-sky-100 hover:text-sky-700 focus:outline-none data-[state=open]:bg-sky-700 data-[state=open]:text-white`}
       >
         Models
         <Select.Icon>

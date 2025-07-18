@@ -30,8 +30,7 @@ export default function BreadcrumbsComponent({
   const searchParams = useSearchParams();
   return (
     <div
-      className={`${rootClasses} sticky top-12 z-20 hidden max-h-[36px] w-full flex-row items-center justify-between overflow-hidden border-slate-200 bg-slate-200 px-5 py-2.5 text-slate-600
-      ${searchParams.get('embed') !== 'true' && 'sm:flex'}`}
+      className={`${rootClasses} sticky top-12 z-20 hidden max-h-[36px] w-full flex-row items-center justify-between overflow-hidden border-slate-200 bg-slate-200 px-5 py-2.5 text-slate-600 ${searchParams.get('embed') !== 'true' && 'sm:flex'}`}
     >
       <Breadcrumb>
         <BreadcrumbList>

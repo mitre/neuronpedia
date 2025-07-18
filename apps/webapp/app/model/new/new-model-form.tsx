@@ -53,7 +53,7 @@ export default function NewModelForm() {
   };
 
   return (
-    <div className="w-full max-w-xl px-5  xl:px-0 ">
+    <div className="w-full max-w-xl px-5 xl:px-0">
       <h1 className="mt-5 text-center text-xl font-medium text-slate-800">Add Model</h1>
       <form onSubmit={handleSubmit}>
         <label htmlFor="id" className="mt-5 block">

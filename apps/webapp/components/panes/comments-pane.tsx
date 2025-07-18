@@ -47,7 +47,7 @@ export default function CommentsPane({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg rounded-t-none  bg-white">
+    <div className="overflow-hidden rounded-lg rounded-t-none bg-white">
       {comments.length === 0 ? (
         <div>
           <div className="flex h-16 w-full flex-col items-center justify-center">
@@ -62,7 +62,7 @@ export default function CommentsPane({
               className="relative grid-cols-[auto_1fr] gap-1.5 py-1 pl-3 pr-6 text-sm leading-tight text-slate-600"
             >
               <Link
-                className=" whitespace-nowrap text-xs font-semibold text-slate-400/70 hover:text-sky-500"
+                className="whitespace-nowrap text-xs font-semibold text-slate-400/70 hover:text-sky-500"
                 href={`/user/${comment.user?.name}`}
                 prefetch={false}
               >

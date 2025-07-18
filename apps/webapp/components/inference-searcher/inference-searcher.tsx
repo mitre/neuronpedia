@@ -283,8 +283,7 @@ export default function InferenceSearcher({
           >
             {({ submitForm, values, setFieldValue }) => (
               <Form
-                className={`flex w-full gap-x-1.5 gap-y-1.5 sm:max-w-screen-lg sm:flex-row
-                ${exploreState === InferenceActivationAllState.LOADED ? 'flex-row' : 'flex-col'}`}
+                className={`flex w-full gap-x-1.5 gap-y-1.5 sm:max-w-screen-lg sm:flex-row ${exploreState === InferenceActivationAllState.LOADED ? 'flex-row' : 'flex-col'}`}
               >
                 <div className="mt-0 flex flex-1 flex-row gap-x-2">
                   <ReactTextareaAutosize
@@ -368,7 +367,7 @@ export default function InferenceSearcher({
               >
                 <ToggleGroup.Item
                   key="showDashboards"
-                  className="flex-auto items-center rounded-l px-1 py-1 text-[10px] font-medium text-slate-500  transition-all hover:bg-slate-100 data-[state=on]:bg-white data-[state=on]:text-slate-600 sm:px-4  sm:text-[11px]"
+                  className="flex-auto items-center rounded-l px-1 py-1 text-[10px] font-medium text-slate-500 transition-all hover:bg-slate-100 data-[state=on]:bg-white data-[state=on]:text-slate-600 sm:px-4 sm:text-[11px]"
                   value="showDashboards"
                   aria-label="showDashboards"
                 >
@@ -395,7 +394,7 @@ export default function InferenceSearcher({
               >
                 <ToggleGroup.Item
                   key="show"
-                  className="flex-auto items-center rounded-l px-1 py-1 text-[10px] font-medium text-slate-500  transition-all hover:bg-slate-100 data-[state=on]:bg-white data-[state=on]:text-slate-600 sm:px-4  sm:text-[11px]"
+                  className="flex-auto items-center rounded-l px-1 py-1 text-[10px] font-medium text-slate-500 transition-all hover:bg-slate-100 data-[state=on]:bg-white data-[state=on]:text-slate-600 sm:px-4 sm:text-[11px]"
                   value="show"
                   aria-label="show"
                 >
@@ -422,7 +421,7 @@ export default function InferenceSearcher({
               >
                 <ToggleGroup.Item
                   key="show"
-                  className="flex-auto items-center rounded-l px-1 py-1 text-[10px] font-medium text-slate-500  transition-all hover:bg-slate-100 data-[state=on]:bg-white data-[state=on]:text-slate-600 sm:px-4  sm:text-[11px]"
+                  className="flex-auto items-center rounded-l px-1 py-1 text-[10px] font-medium text-slate-500 transition-all hover:bg-slate-100 data-[state=on]:bg-white data-[state=on]:text-slate-600 sm:px-4 sm:text-[11px]"
                   value="show"
                   aria-label="show"
                 >
@@ -477,7 +476,7 @@ export default function InferenceSearcher({
                       className={`flex-1 cursor-pointer whitespace-pre rounded border px-[2px] py-0.5 font-mono text-[12px] font-medium leading-none hover:border-emerald-600 ${
                         sortIndexes.indexOf(index) !== -1
                           ? 'border-emerald-600 bg-emerald-600 text-white'
-                          : 'border-slate-300 text-slate-600 '
+                          : 'border-slate-300 text-slate-600'
                       }`}
                     >
                       {replaceHtmlAnomalies(token)}

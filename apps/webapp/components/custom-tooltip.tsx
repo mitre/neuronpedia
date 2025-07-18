@@ -18,8 +18,8 @@ export default function CustomTooltip({
         <OldTooltip.Trigger asChild>{trigger}</OldTooltip.Trigger>
         <OldTooltip.Portal>
           <OldTooltip.Content
-            className={`z-50 rounded-lg border border-slate-200 bg-white px-5 py-3.5  text-xs text-slate-600 shadow ${
-              wide ? 'max-w-[640px]' : 'max-w-[320px] '
+            className={`z-50 rounded-lg border border-slate-200 bg-white px-5 py-3.5 text-xs text-slate-600 shadow ${
+              wide ? 'max-w-[640px]' : 'max-w-[320px]'
             }`}
             sideOffset={3}
           >

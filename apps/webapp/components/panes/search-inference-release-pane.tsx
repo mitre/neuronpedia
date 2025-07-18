@@ -17,7 +17,7 @@ export default function SearchInferenceReleasePane({ release }: { release?: Sour
 
   return (
     <Card className="w-full bg-white">
-      <CardHeader className="w-full pb-3  pt-5">
+      <CardHeader className="w-full pb-3 pt-5">
         <div className="flex w-full flex-row items-center justify-between">
           <CardTitle>Search via Inference</CardTitle>
           <a href="https://docs.neuronpedia.org/search" target="_blank" rel="noreferrer">

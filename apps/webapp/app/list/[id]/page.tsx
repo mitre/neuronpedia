@@ -1,5 +1,5 @@
-import UmapProvider from "@/components/provider/umap-provider";
-import List from "./list";
+import UmapProvider from '@/components/provider/umap-provider';
+import List from './list';
 
 export default async function Page({ params }: { params: { id: string } }) {
   return (
