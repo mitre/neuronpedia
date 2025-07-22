@@ -40,7 +40,7 @@ webapp-demo-build: ## Webapp: Public Demo Environment - Build
 		echo "Error: Docker is not installed. Please install Docker first."; \
 		exit 1; \
 	fi
-	ENV_FILE=.env.demo docker compose -f docker/compose.yaml build webapp
+	ENV_FILE=../.env.demo docker compose -f docker/compose.yaml build webapp
 
 webapp-demo-run: ## Webapp: Public Demo Environment - Run
 	@echo "Bringing up the webapp and connecting to the demo database..."
@@ -48,11 +48,11 @@ webapp-demo-run: ## Webapp: Public Demo Environment - Run
 		echo "Error: Docker is not installed. Please install Docker first."; \
 		exit 1; \
 	fi
-	ENV_FILE=.env.demo docker compose -f docker/compose.yaml --env-file .env.demo --env-file .env up webapp
+	ENV_FILE=../.env.demo docker compose -f docker/compose.yaml --env-file .env.demo --env-file .env up webapp
 
 webapp-demo-check: ## Webapp: Public Demo Environment - Check Config
 	@echo "Printing the webapp configuration - this is useful to see if your environment variables are set correctly."
-	ENV_FILE=.env.demo docker compose -f docker/compose.yaml config webapp
+	ENV_FILE=../.env.demo docker compose -f docker/compose.yaml config webapp
 
 CUSTOM_CA_BUNDLE ?= .nocustomca
 webapp-localhost-build: ## Webapp: Localhost Environment - Build (Production Build)
@@ -96,7 +96,7 @@ webapp-localhost-dev: ## Webapp: Localhost Environment - Run (Development Build)
 		echo "Error: Docker is not installed. Please install Docker first."; \
 		exit 1; \
 	fi
-	ENV_FILE=.env.localhost docker compose \
+	ENV_FILE=../.env.localhost docker compose \
 		-f docker/compose.yaml \
 		-f docker/compose.webapp.dev.yaml \
 		--env-file .env.localhost \
@@ -109,7 +109,7 @@ webapp-localhost-test: ## Webapp: Localhost Environment - Run (Playwright)
 		echo "Error: Docker is not installed. Please install Docker first."; \
 		exit 1; \
 	fi
-	ENV_FILE=.env.localhost docker compose \
+	ENV_FILE=../.env.localhost docker compose \
 		-f docker/compose.yaml \
 		-f docker/compose.webapp.test.yaml \
 		--env-file .env.localhost \
@@ -125,7 +125,7 @@ inference-localhost-install: ## Inference: Localhost Environment - Install Depen
 
 inference-localhost-build: ## Inference: Localhost Environment - Build
 	@echo "Building the inference server for the localhost environment..."
-	ENV_FILE=.env.localhost \
+	ENV_FILE=../.env.localhost \
 		BUILD_TYPE=$(BUILD_TYPE) \
 		docker compose \
 		-f docker/compose.yaml \
@@ -145,7 +145,7 @@ inference-localhost-dev: ## Inference: Localhost Environment - Run (Development 
 		fi; \
 		echo "Using model configuration: .env.inference.$(MODEL_SOURCESET)"; \
 		RELOAD=$$([ "$(AUTORELOAD)" = "1" ] && echo "1" || echo "0") \
-		ENV_FILE=.env.inference.$(MODEL_SOURCESET) \
+		ENV_FILE=../.env.inference.$(MODEL_SOURCESET) \
 			docker compose \
 			-f docker/compose.yaml \
 			-f docker/compose.inference.dev.yaml \
@@ -187,7 +187,7 @@ autointerp-localhost-install: ## Autointerp: Localhost Environment - Install Dep
 
 autointerp-localhost-build: ## Autointerp: Localhost Environment - Build
 	@echo "Building the autointerp server for the localhost environment..."
-	ENV_FILE=.env.localhost \
+	ENV_FILE=../.env.localhost \
 		BUILD_TYPE=$(BUILD_TYPE) \
 		docker compose \
 		-f docker-compose.yaml \
@@ -200,7 +200,7 @@ autointerp-localhost-build-gpu: ## Autointerp: Localhost Environment - Build (CU
 autointerp-localhost-dev: ## Autointerp: Localhost Environment - Run (Development Build). Usage: make autointerp-localhost-dev [AUTORELOAD=1]
 	@echo "Bringing up the autointerp server for development in the localhost environment..."
 	RELOAD=$$([ "$(AUTORELOAD)" = "1" ] && echo "1" || echo "0") \
-	ENV_FILE=.env.localhost \
+	ENV_FILE=../.env.localhost \
 		docker compose \
 		-f docker-compose.yaml \
 		-f docker-compose.autointerp.dev.yaml \
