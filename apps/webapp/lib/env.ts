@@ -1,5 +1,6 @@
 import { config } from 'dotenv';
-import { z } from 'zod/v4';
+import { z } from "zod";
+import { createEnv } from "@t3-oss/env-nextjs";
 
 // If it's not undefined, then it's a one click deploy. It doesn't matter what the value itself is.
 // Also, if it's one-click-deploy on Vercel, we always use the demo environment variables.
@@ -12,325 +13,230 @@ if (SITE_NAME_VERCEL_DEPLOY) {
   }
 }
 
-// Create schema factory to ensure fresh instance
-const createEnvSchema = () => {
-  return z
-    .object({
-      // Domain of your main site
-      NEXT_PUBLIC_URL: z.string().default(''),
+// Custom transformer for string to boolean
+const onlyBool = z
+  .string()
+  // only allow "true" or "false"
+  .refine((s) => s === 'true' || s === 'false')
+  // transform to boolean
+  .transform((v) => v === 'true');
 
-      // Auth will redirect to this domain
-      NEXTAUTH_URL: z.string().default(''),
+export const env = createEnv({
+  server: {
+    // All non-NEXT_PUBLIC_ variables go here
+    // Domain and Auth
+    NEXTAUTH_URL: z.string().default(''),
 
-      // Feature Flags
-      ENABLE_RATE_LIMITER: z.stringbool().default(false),
-      ENABLE_VERCEL_ANALYTICS: z.stringbool().default(false),
-      NEXT_PUBLIC_ENABLE_SIGNIN: z.stringbool().default(false),
+    // Feature Flags
+    ENABLE_RATE_LIMITER: onlyBool.default('false'),
+    ENABLE_VERCEL_ANALYTICS: onlyBool.default('false'),
+    
+    // Default User IDs
+    DEFAULT_CREATOR_USER_ID: z.string().default('clkht01d40000jv08hvalcvly'),
+    INFERENCE_ACTIVATION_USER_ID: z.string().default('cljgamm90000076zdchicy6zj'),
+    PUBLIC_ACTIVATIONS_USER_IDS: z
+      .string()
+      .default('')
+      .transform((v) =>
+        v ? v.split(',').map((id) => id.trim()) : ['cljj57d3c000076ei38vwnv35', 'clkht01d40000jv08hvalcvly'],
+      ),
 
-      // Default Values
-      NEXT_PUBLIC_CONTACT_EMAIL_ADDRESS: z.email().default('johnny@neuronpedia.org'),
-      NEXT_PUBLIC_DEFAULT_RELEASE_NAME: z.string().default(''),
-      NEXT_PUBLIC_DEFAULT_MODELID: z.string().default(''),
-      NEXT_PUBLIC_DEFAULT_SOURCESET: z.string().default(''),
-      NEXT_PUBLIC_DEFAULT_SOURCE: z.string().default(''),
-      NEXT_PUBLIC_DEFAULT_STEER_MODEL: z.string().default(''),
-      NEXT_PUBLIC_STEER_FORCE_ALLOW_INSTRUCT_MODELS: z
-        .string()
-        .default('')
-        .transform((v) => (v ? v.split(',').map((m) => m.trim()) : [])),
+    // Email Sending Providers
+    USE_AWS_SES: onlyBool.default('false'),
+    USE_RESEND: onlyBool.default('false'),
+    USE_SMTP: onlyBool.default('false'),
 
-      // Default User IDs
-      DEFAULT_CREATOR_USER_ID: z.string().default('clkht01d40000jv08hvalcvly'),
-      INFERENCE_ACTIVATION_USER_ID: z.string().default('cljgamm90000076zdchicy6zj'),
-      PUBLIC_ACTIVATIONS_USER_IDS: z
-        .string()
-        .default('')
-        .transform((v) =>
-          v ? v.split(',').map((id) => id.trim()) : ['cljj57d3c000076ei38vwnv35', 'clkht01d40000jv08hvalcvly'],
-        ),
+    // AWS SES
+    AWS_ACCESS_KEY_ID: z.string().default(''),
+    AWS_SECRET_ACCESS_KEY: z.string().default(''),
+    // Resend.com
+    RESEND_EMAIL_API_KEY: z.string().default(''),
+    // SMTP
+    SMTP_SERVER_HOST: z.string().default(''),
+    SMTP_SERVER_PORT: z.coerce.number().min(1).max(65535).default(25),
+    SMTP_SERVER_FROM: z.string().email().default('noreply@neuronpedia.org'),
 
-      // Email Sending Providers
-      USE_AWS_SES: z.stringbool().default(false),
-      USE_RESEND: z.stringbool().default(false),
-      USE_SMTP: z.stringbool().default(false),
+    // AI API Keys
+    OPENAI_API_KEY: z.string().default(''),
+    GEMINI_API_KEY: z.string().default(''),
+    ANTHROPIC_API_KEY: z.string().default(''),
+    OPENROUTER_API_KEY: z.string().default(''),
+    AZURE_OPENAI_API_KEY: z.string().default(''),
 
-      // AWS SES: more reliable (used if both AWS and Resend are defined)
-      AWS_ACCESS_KEY_ID: z.string().default(''),
-      AWS_SECRET_ACCESS_KEY: z.string().default(''),
-      // Resend.com: easier to setup
-      RESEND_EMAIL_API_KEY: z.string().default(''),
-      // SMTP
-      SMTP_SERVER_HOST: z.string().default(''),
-      SMTP_SERVER_PORT: z.coerce.number().min(1).max(65535).default(25),
-      SMTP_SERVER_FROM: z.email().default('noreply@neuronpedia.org'),
+    // Azure-specific provider config
+    AZURE_OPENAI_ENDPOINT: z.string().url().or(z.literal('')).default(''),
+    AZURE_API_VERSION: z.string().default('2024-02-01'),
+    OPENAI_DEPLOYMENT_NAME: z.string().default('gpt-4o-mini'),
 
-      // External Services
-      // AI API Keys (Mostly for auto-interp for whitelisted accounts)
-      OPENAI_API_KEY: z.string().default(''),
-      GEMINI_API_KEY: z.string().default(''),
-      ANTHROPIC_API_KEY: z.string().default(''),
-      OPENROUTER_API_KEY: z.string().default(''),
-      AZURE_OPENAI_API_KEY: z.string().default(''),
+    // Provider selection flags
+    USE_AZURE_OPENAI: onlyBool.default('false'),
+    USE_OPENROUTER: onlyBool.default('false'),
+    USE_OPENAI: onlyBool.default('true'),
 
-      // Azure-specific provider config parameters
-      AZURE_OPENAI_ENDPOINT: z.url().or(z.literal('')).default(''),
-      AZURE_API_VERSION: z.string().default('2024-02-01'),
-      OPENAI_DEPLOYMENT_NAME: z.string().default('gpt-4o-mini'),
+    // Support Servers - Inference
+    USE_LOCALHOST_INFERENCE: onlyBool.default('false'),
+    INFERENCE_SERVER_SECRET: z.string().default(''),
 
-      // Provider selection flags
-      USE_AZURE_OPENAI: z.stringbool().default(false),
-      USE_OPENROUTER: z.stringbool().default(false),
-      USE_OPENAI: z.stringbool().default(true),
+    // Support Servers - Autointerp
+    USE_LOCALHOST_AUTOINTERP: onlyBool.default('false'),
+    AUTOINTERP_SERVER: z.string().default(''),
+    AUTOINTERP_SERVER_SECRET: z.string().default(''),
 
-      // Support Servers
-      // Inference Server
-      USE_LOCALHOST_INFERENCE: z.stringbool().default(false),
-      INFERENCE_SERVER_SECRET: z.string().default(''),
-      NEXT_PUBLIC_SEARCH_TOPK_MAX_CHAR_LENGTH: z
-        .string()
-        .transform((v) => (v ? parseInt(v, 10) : 1024))
-        .default(1024),
+    // Support Servers - Graph
+    USE_LOCALHOST_GRAPH: onlyBool.default('false'),
+    GRAPH_SERVER: z.string().default(''),
+    GRAPH_SERVER_SECRET: z.string().default(''),
+    USE_RUNPOD_GRAPH: onlyBool.default('false'),
+    GRAPH_RUNPOD_SECRET: z.string().default(''),
+    GRAPH_RUNPOD_SERVER: z.string().default(''),
 
-      // Autointerp Server
-      USE_LOCALHOST_AUTOINTERP: z.stringbool().default(false),
-      AUTOINTERP_SERVER: z.string().default(''),
-      AUTOINTERP_SERVER_SECRET: z.string().default(''),
+    // Authentication - Apple
+    APPLE_CLIENT_ID: z.string().default(''),
+    APPLE_CLIENT_SECRET: z.string().default(''),
+    // Authentication - GitHub
+    GITHUB_ID: z.string().default(''),
+    GITHUB_SECRET: z.string().default(''),
+    // Authentication - Google
+    GOOGLE_CLIENT_ID: z.string().default(''),
+    GOOGLE_CLIENT_SECRET: z.string().default(''),
 
-      // Graph Server
-      USE_LOCALHOST_GRAPH: z.stringbool().default(false),
-      GRAPH_SERVER: z.string().default(''),
-      GRAPH_SERVER_SECRET: z.string().default(''),
-
-      // Runpod Graph
-      USE_RUNPOD_GRAPH: z.stringbool().default(false),
-      GRAPH_RUNPOD_SECRET: z.string().default(''),
-      GRAPH_RUNPOD_SERVER: z.string().default(''),
-
-      // Authentication Methods
-      // Apple
-      APPLE_CLIENT_ID: z.string().default(''),
-      APPLE_CLIENT_SECRET: z.string().default(''),
-      // GitHub
-      GITHUB_ID: z.string().default(''),
-      GITHUB_SECRET: z.string().default(''),
-      // Google
-      GOOGLE_CLIENT_ID: z.string().default(''),
-      GOOGLE_CLIENT_SECRET: z.string().default(''),
-
-      // Misc
-      NODE_ENV: z.string().default(''),
-      IS_DOCKER_COMPOSE: z.stringbool().default(false),
-      NEXT_PUBLIC_DEMO_MODE: z.stringbool().default(false),
-      GRAPH_ADMIN_BROWSE_KEY: z.string().default(''),
-      HIGHER_LIMIT_API_TOKENS: z
-        .string()
-        .default('')
-        .transform((v) => (v ? v.split(',').map((t) => t.trim()) : [])),
-    })
-    .check((ctx) => {
-      const {
-        USE_AZURE_OPENAI,
-        USE_OPENROUTER,
-        USE_OPENAI,
-        OPENAI_API_KEY,
-        OPENROUTER_API_KEY,
-        AZURE_OPENAI_API_KEY,
-        AZURE_OPENAI_ENDPOINT,
-        OPENAI_DEPLOYMENT_NAME,
-      } = ctx.value;
-
-      // Only one provider check
-      const trueCount = [USE_AZURE_OPENAI, USE_OPENROUTER, USE_OPENAI].filter(Boolean).length;
-      if (trueCount !== 1) {
-        ctx.issues.push({
-          code: 'custom',
-          message: 'Exactly one provider must be enabled',
-          path: ['envFile'],
-          input: {
-            USE_AZURE_OPENAI,
-            USE_OPENROUTER,
-            USE_OPENAI,
-          },
-        });
-      }
-
-      // OpenAI configuration check
-      if (USE_OPENAI && !OPENAI_API_KEY) {
-        console.error('START :: AN ERROR OCCURRED!');
-        ctx.issues.push({
-          code: 'custom',
-          message: 'OPENAI_API_KEY is required when USE_OPENAI is enabled',
-          path: ['OPENAI_API_KEY'],
-          input: { USE_OPENAI, OPENAI_API_KEY },
-        });
-        console.error('END :: AN ERROR OCCURRED!');
-      }
-
-      // OpenRouter configuration check
-      if (USE_OPENROUTER && !OPENROUTER_API_KEY) {
-        ctx.issues.push({
-          code: 'custom',
-          message: 'OPENROUTER_API_KEY is required when USE_OPENROUTER is enabled',
-          path: ['OPENROUTER_API_KEY'],
-          input: { USE_OPENROUTER, OPENROUTER_API_KEY },
-        });
-      }
-
-      // Azure OpenAI configuration check
-      if (USE_AZURE_OPENAI) {
-        if (!AZURE_OPENAI_API_KEY) {
-          ctx.issues.push({
-            code: 'custom',
-            message: 'AZURE_OPENAI_API_KEY is required when USE_AZURE_OPENAI is enabled',
-            path: ['AZURE_OPENAI_API_KEY'],
-            input: { USE_AZURE_OPENAI, AZURE_OPENAI_API_KEY },
-          });
-        }
-        if (!AZURE_OPENAI_ENDPOINT) {
-          ctx.issues.push({
-            code: 'custom',
-            message: 'AZURE_OPENAI_ENDPOINT is required when USE_AZURE_OPENAI is enabled',
-            path: ['AZURE_OPENAI_ENDPOINT'],
-            input: { USE_AZURE_OPENAI, AZURE_OPENAI_ENDPOINT },
-          });
-        }
-        if (!OPENAI_DEPLOYMENT_NAME) {
-          ctx.issues.push({
-            code: 'custom',
-            message: 'OPENAI_DEPLOYMENT_NAME is required when USE_AZURE_OPENAI is enabled',
-            path: ['OPENAI_DEPLOYMENT_NAME'],
-            input: { USE_AZURE_OPENAI, OPENAI_DEPLOYMENT_NAME },
-          });
-        }
-      }
-    })
-    .check((ctx) => {
-      const {
-        USE_AWS_SES,
-        USE_RESEND,
-        USE_SMTP,
-        AWS_ACCESS_KEY_ID,
-        AWS_SECRET_ACCESS_KEY,
-        RESEND_EMAIL_API_KEY,
-        SMTP_SERVER_HOST,
-        SMTP_SERVER_PORT,
-        SMTP_SERVER_FROM,
-      } = ctx.value;
-
-      // Only one email provider check
-      const trueCount = [USE_AWS_SES, USE_RESEND, USE_SMTP].filter(Boolean).length;
-      if (trueCount > 1) {
-        ctx.issues.push({
-          code: 'custom',
-          message: 'Only one email provider can be enabled at a time',
-          path: [],
-          input: {
-            USE_AWS_SES,
-            USE_RESEND,
-            USE_SMTP,
-          },
-        });
-      }
-
-      // AWS SES configuration check
-      if (USE_AWS_SES) {
-        if (!AWS_ACCESS_KEY_ID) {
-          ctx.issues.push({
-            code: 'custom',
-            message: 'AWS_ACCESS_KEY_ID is required when USE_AWS_SES is enabled',
-            path: ['AWS_ACCESS_KEY_ID'],
-            input: { USE_AWS_SES, AWS_ACCESS_KEY_ID },
-          });
-        }
-        if (!AWS_SECRET_ACCESS_KEY) {
-          ctx.issues.push({
-            code: 'custom',
-            message: 'AWS_SECRET_ACCESS_KEY is required when USE_AWS_SES is enabled',
-            path: ['AWS_SECRET_ACCESS_KEY'],
-            input: { USE_AWS_SES, AWS_SECRET_ACCESS_KEY },
-          });
-        }
-      }
-
-      // Resend configuration check
-      if (USE_RESEND && !RESEND_EMAIL_API_KEY) {
-        ctx.issues.push({
-          code: 'custom',
-          message: 'RESEND_EMAIL_API_KEY is required when USE_RESEND is enabled',
-          path: ['RESEND_EMAIL_API_KEY'],
-          input: { USE_RESEND, RESEND_EMAIL_API_KEY },
-        });
-      }
-
-      // SMTP configuration check
-      if (USE_SMTP) {
-        if (!SMTP_SERVER_HOST) {
-          ctx.issues.push({
-            code: 'custom',
-            message: 'SMTP_SERVER_HOST is required when USE_SMTP is enabled',
-            path: ['SMTP_SERVER_HOST'],
-            input: { USE_SMTP, SMTP_SERVER_HOST },
-          });
-        }
-        if (!SMTP_SERVER_PORT) {
-          ctx.issues.push({
-            code: 'custom',
-            message: 'SMTP_SERVER_PORT is required when USE_SMTP is enabled',
-            path: ['SMTP_SERVER_PORT'],
-            input: { USE_SMTP, SMTP_SERVER_PORT },
-          });
-        }
-        if (!SMTP_SERVER_FROM) {
-          ctx.issues.push({
-            code: 'custom',
-            message: 'SMTP_SERVER_FROM is required when USE_SMTP is enabled',
-            path: ['SMTP_SERVER_FROM'],
-            input: { USE_SMTP, SMTP_SERVER_FROM },
-          });
-        }
-      }
-    })
-    .check((ctx) => {
-      const { USE_RUNPOD_GRAPH, USE_LOCALHOST_GRAPH } = ctx.value;
-
-      // Runtime validation
-      if (USE_RUNPOD_GRAPH && USE_LOCALHOST_GRAPH) {
-        ctx.issues.push({
-          code: 'custom',
-          message: 'USE_LOCALHOST_GRAPH and USE_RUNPOD_GRAPH cannot both be true.',
-          path: ['USE_LOCALHOST_GRAPH', 'USE_RUNPOD_GRAPH'],
-          input: { USE_LOCALHOST_GRAPH, USE_RUNPOD_GRAPH },
-        });
-      }
-    });
-};
-
-// Parse environment variables with a fresh schema instance
-const parseEnvironment = () => {
-  try {
-    // Create a fresh schema instance for this parse
-    const schema = createEnvSchema();
-
-    // Use safeParse to avoid the context contamination issue
-    const result = schema.safeParse(process.env);
-
-    if (!result.success) {
-      console.error('Environment validation failed:', z.prettifyError(result.error));
-      throw result.error;
-    }
-
-    console.log('Parsed environment variables successfully.');
-    return result.data;
-  } catch (error) {
-    console.error('Failed to parse environment:', error);
+    // Misc
+    NODE_ENV: z.string().default(''),
+    IS_DOCKER_COMPOSE: onlyBool.default('false'),
+    GRAPH_ADMIN_BROWSE_KEY: z.string().default(''),
+    HIGHER_LIMIT_API_TOKENS: z
+      .string()
+      .default('')
+      .transform((v) => (v ? v.split(',').map((t) => t.trim()) : [])),
+  },
+  client: {
+    // All NEXT_PUBLIC_ prefixed variables go here
+    NEXT_PUBLIC_URL: z.string().default(''),
+    NEXT_PUBLIC_ENABLE_SIGNIN: onlyBool.default('false'),
+    
+    // Default Values
+    NEXT_PUBLIC_CONTACT_EMAIL_ADDRESS: z.string().email().default('johnny@neuronpedia.org'),
+    NEXT_PUBLIC_DEFAULT_RELEASE_NAME: z.string().default(''),
+    NEXT_PUBLIC_DEFAULT_MODELID: z.string().default(''),
+    NEXT_PUBLIC_DEFAULT_SOURCESET: z.string().default(''),
+    NEXT_PUBLIC_DEFAULT_SOURCE: z.string().default(''),
+    NEXT_PUBLIC_DEFAULT_STEER_MODEL: z.string().default(''),
+    NEXT_PUBLIC_STEER_FORCE_ALLOW_INSTRUCT_MODELS: z
+      .string()
+      .default('')
+      .transform((v) => (v ? v.split(',').map((m) => m.trim()) : [])),
+    
+    NEXT_PUBLIC_SEARCH_TOPK_MAX_CHAR_LENGTH: z
+      .string()
+      .transform((v) => (v ? parseInt(v, 10) : 1024))
+      .default('1024'),
+    
+    NEXT_PUBLIC_DEMO_MODE: onlyBool.default('false'),
+  },
+  // For Next.js >= 13.4.4, we only need to specify client variables
+  experimental__runtimeEnv: {
+    NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
+    NEXT_PUBLIC_ENABLE_SIGNIN: process.env.NEXT_PUBLIC_ENABLE_SIGNIN,
+    NEXT_PUBLIC_CONTACT_EMAIL_ADDRESS: process.env.NEXT_PUBLIC_CONTACT_EMAIL_ADDRESS,
+    NEXT_PUBLIC_DEFAULT_RELEASE_NAME: process.env.NEXT_PUBLIC_DEFAULT_RELEASE_NAME,
+    NEXT_PUBLIC_DEFAULT_MODELID: process.env.NEXT_PUBLIC_DEFAULT_MODELID,
+    NEXT_PUBLIC_DEFAULT_SOURCESET: process.env.NEXT_PUBLIC_DEFAULT_SOURCESET,
+    NEXT_PUBLIC_DEFAULT_SOURCE: process.env.NEXT_PUBLIC_DEFAULT_SOURCE,
+    NEXT_PUBLIC_DEFAULT_STEER_MODEL: process.env.NEXT_PUBLIC_DEFAULT_STEER_MODEL,
+    NEXT_PUBLIC_STEER_FORCE_ALLOW_INSTRUCT_MODELS: process.env.NEXT_PUBLIC_STEER_FORCE_ALLOW_INSTRUCT_MODELS,
+    NEXT_PUBLIC_SEARCH_TOPK_MAX_CHAR_LENGTH: process.env.NEXT_PUBLIC_SEARCH_TOPK_MAX_CHAR_LENGTH,
+    NEXT_PUBLIC_DEMO_MODE: process.env.NEXT_PUBLIC_DEMO_MODE,
+  },
+  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
+  onValidationError: (error: any) => {
+    console.error('Environment validation failed:', error);
     throw error;
+  },
+  onInvalidAccess: (_variable: any) => {
+    // We don't need onInvalidAccess because Next.js already handles the security by setting 
+    // server-only variables to undefined on the client. Since the code is open source, 
+    // clients knowing the variable names is not a security issue - they just can't access 
+    // the values. The Zod default values ensure the app doesn't crash when these are undefined.
+    // console.warn(
+    //   `❌ Attempted to access server-side environment variable '${_variable}' on the client.`
+    // );
+  },
+});
+
+// Validation logic after parsing
+const IS_SERVER = typeof window === 'undefined';
+if (IS_SERVER) {
+  // Provider validation
+  const trueCount = [env.USE_AZURE_OPENAI, env.USE_OPENROUTER, env.USE_OPENAI].filter(Boolean).length;
+  if (trueCount !== 1) {
+    throw new Error('Exactly one provider must be enabled');
   }
-};
 
-// Parse and validate environment variables
-const env = parseEnvironment();
+  // OpenAI validation
+  if (env.USE_OPENAI && !env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is required when USE_OPENAI is enabled');
+  }
 
-// Destructure all environment variables at once
+  // OpenRouter validation
+  if (env.USE_OPENROUTER && !env.OPENROUTER_API_KEY) {
+    throw new Error('OPENROUTER_API_KEY is required when USE_OPENROUTER is enabled');
+  }
+
+  // Azure OpenAI validation
+  if (env.USE_AZURE_OPENAI) {
+    if (!env.AZURE_OPENAI_API_KEY) {
+      throw new Error('AZURE_OPENAI_API_KEY is required when USE_AZURE_OPENAI is enabled');
+    }
+    if (!env.AZURE_OPENAI_ENDPOINT) {
+      throw new Error('AZURE_OPENAI_ENDPOINT is required when USE_AZURE_OPENAI is enabled');
+    }
+    if (!env.OPENAI_DEPLOYMENT_NAME) {
+      throw new Error('OPENAI_DEPLOYMENT_NAME is required when USE_AZURE_OPENAI is enabled');
+    }
+  }
+
+  // Email provider validation
+  const emailProviderCount = [env.USE_AWS_SES, env.USE_RESEND, env.USE_SMTP].filter(Boolean).length;
+  if (emailProviderCount > 1) {
+    throw new Error('Only one email provider can be enabled at a time');
+  }
+
+  // AWS SES validation
+  if (env.USE_AWS_SES) {
+    if (!env.AWS_ACCESS_KEY_ID) {
+      throw new Error('AWS_ACCESS_KEY_ID is required when USE_AWS_SES is enabled');
+    }
+    if (!env.AWS_SECRET_ACCESS_KEY) {
+      throw new Error('AWS_SECRET_ACCESS_KEY is required when USE_AWS_SES is enabled');
+    }
+  }
+
+  // Resend validation
+  if (env.USE_RESEND && !env.RESEND_EMAIL_API_KEY) {
+    throw new Error('RESEND_EMAIL_API_KEY is required when USE_RESEND is enabled');
+  }
+
+  // SMTP validation
+  if (env.USE_SMTP) {
+    if (!env.SMTP_SERVER_HOST) {
+      throw new Error('SMTP_SERVER_HOST is required when USE_SMTP is enabled');
+    }
+    if (!env.SMTP_SERVER_PORT) {
+      throw new Error('SMTP_SERVER_PORT is required when USE_SMTP is enabled');
+    }
+    if (!env.SMTP_SERVER_FROM) {
+      throw new Error('SMTP_SERVER_FROM is required when USE_SMTP is enabled');
+    }
+  }
+
+  // Graph server validation
+  if (env.USE_RUNPOD_GRAPH && env.USE_LOCALHOST_GRAPH) {
+    throw new Error('USE_LOCALHOST_GRAPH and USE_RUNPOD_GRAPH cannot both be true');
+  }
+}
+
+// Export all variables with their original names for backward compatibility
+// TODO stop exporting each of these. Instead import ``env`` in target modules and index into the desired key, e.g. ``env.OPENAI_API_KEY``
 export const {
   // Domain and Auth
   NEXT_PUBLIC_URL,
