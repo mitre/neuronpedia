@@ -45,7 +45,9 @@ export interface OpenAIClientConfig {
  */
 export class OpenAIClient {
   private client: OpenAI | AzureOpenAI;
+
   private provider: Provider;
+
   private defaultDeploymentName?: string;
 
   constructor(config?: OpenAIClientConfig) {
