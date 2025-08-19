@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db';
 import { getSourceSet } from '@/lib/db/source';
 import { getUserById } from '@/lib/db/user';
-import { PUBLIC_ACTIVATIONS_USER_IDS } from '@/lib/env';
+import { env } from '@/lib/env';
 import { getOAIEmbedding } from '@/lib/external/embedding';
 import { getSourceSetNameFromSource } from '@/lib/utils/source';
 import { RequestAuthedUser, withAuthedUser } from '@/lib/with-user';
@@ -261,7 +261,7 @@ export const POST = withAuthedUser(async (request: RequestAuthedUser) => {
         index: feature.index.toString(),
         layer: parsedBody.source,
         modelId: parsedBody.modelId,
-        creatorId: PUBLIC_ACTIVATIONS_USER_IDS[0],
+        creatorId: env.PUBLIC_ACTIVATIONS_USER_IDS[0],
         maxValueTokenIndex: activation.values.indexOf(Math.max(...activation.values)),
         maxValue: Math.max(...activation.values),
         minValue: Math.min(...activation.values),

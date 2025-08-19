@@ -1,5 +1,5 @@
 import { newList, updateListMetadata } from '@/lib/db/list';
-import { NEXT_PUBLIC_URL } from '@/lib/env';
+import { env } from '@/lib/env';
 import { ListWithPartialRelationsAndUrl } from '@/lib/utils/list';
 import { RequestAuthedUser, withAuthedUser } from '@/lib/with-user';
 import { NextResponse } from 'next/server';
@@ -74,7 +74,7 @@ export const POST = withAuthedUser(async (request: RequestAuthedUser) => {
 
     const listWithUrl: ListWithPartialRelationsAndUrl = {
       ...list,
-      url: `${NEXT_PUBLIC_URL}/list/${list.id}`,
+      url: `${env.NEXT_PUBLIC_URL}/list/${list.id}`,
     };
 
     return NextResponse.json(listWithUrl);

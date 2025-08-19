@@ -1,5 +1,5 @@
 import { getUserById } from '@/lib/db/user';
-import { DEMO_MODE, IS_LOCALHOST } from '@/lib/env';
+import { env } from '@/lib/env';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../api/auth/[...nextauth]/authOptions';
 import ManageSourcesPane from './manage-sources-pane';
@@ -15,7 +15,7 @@ export default async function Page() {
       console.error('Not admin user', error);
     }
   }
-  if (!DEMO_MODE && !IS_LOCALHOST && !isAdminUser) {
+  if (!env.DEMO_MODE && !env.IS_LOCALHOST && !isAdminUser) {
     return <div>Not authorized</div>;
   }
   return <ManageSourcesPane />;

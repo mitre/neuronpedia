@@ -6,7 +6,7 @@
 import { prisma } from '@/lib/db';
 import { getModelById } from '@/lib/db/model';
 import { neuronExistsAndUserHasAccess } from '@/lib/db/neuron';
-import { DEMO_MODE, NEXT_PUBLIC_URL } from '@/lib/env';
+import { env } from '@/lib/env';
 import { steerCompletionChat } from '@/lib/utils/inference';
 import {
   ChatMessage,
@@ -135,7 +135,7 @@ async function saveSteerChatOutput(
       toReturnResult.id = dbResult.id;
       console.log(`steer saved: ${dbResult.id}`);
       // eslint-disable-next-line no-param-reassign
-      toReturnResult.shareUrl = `${NEXT_PUBLIC_URL}/steer/${dbResult.id}`;
+      toReturnResult.shareUrl = `${env.NEXT_PUBLIC_URL}/steer/${dbResult.id}`;
     }
 
     // update saved steered output with connected default output id
@@ -287,7 +287,7 @@ async function* generateResponse(
 
   // Save final results after all streams are complete
   if (streamProcessors.every((processor) => processor.done)) {
-    if (DEMO_MODE) {
+    if (env.DEMO_MODE) {
       console.log('skipping saveSteerChatOutput in demo mode');
     } else {
       toReturnResult = await saveSteerChatOutput(
@@ -734,7 +734,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
         chatTemplate: JSON.parse(savedSteerSteeredOutputs[0].outputTextChatTemplate || '[]'),
       };
       toReturnResult.id = savedSteerSteeredOutputs[0].id;
-      toReturnResult.shareUrl = `${NEXT_PUBLIC_URL}/steer/${savedSteerSteeredOutputs[0].id}`;
+      toReturnResult.shareUrl = `${env.NEXT_PUBLIC_URL}/steer/${savedSteerSteeredOutputs[0].id}`;
 
       steerTypesToRun = steerTypesToRun.filter((type) => type !== SteerOutputType.STEERED);
     }

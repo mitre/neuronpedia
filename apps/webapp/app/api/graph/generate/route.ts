@@ -5,7 +5,7 @@ import {
   NP_GRAPH_BUCKET,
 } from '@/app/[modelId]/graph/utils';
 import { prisma } from '@/lib/db';
-import { USE_RUNPOD_GRAPH } from '@/lib/env';
+import { env } from '@/lib/env';
 import {
   checkRunpodQueueJobs,
   generateGraphAndUploadToS3,
@@ -244,7 +244,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
     });
 
     // check the queue
-    if (USE_RUNPOD_GRAPH) {
+    if (env.USE_RUNPOD_GRAPH) {
       const queueNumber = await checkRunpodQueueJobs();
       if (queueNumber > MAX_RUNPOD_JOBS_IN_QUEUE) {
         // console.log('larger than queue but continuing');

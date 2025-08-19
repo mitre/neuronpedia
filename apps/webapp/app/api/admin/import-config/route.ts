@@ -1,10 +1,10 @@
 import { importConfigFromS3 } from '@/lib/db/import';
-import { IS_LOCALHOST } from '@/lib/env';
+import { env } from '@/lib/env';
 import { getAuthedAdminUser, RequestAuthedAdminUser, RequestOptionalUser, withOptionalUser } from '@/lib/with-user';
 import { NextResponse } from 'next/server';
 
 export const GET = withOptionalUser(async (request: RequestOptionalUser) => {
-  if (!IS_LOCALHOST && request.user && !(await getAuthedAdminUser(request as RequestAuthedAdminUser))) {
+  if (!env.IS_LOCALHOST && request.user && !(await getAuthedAdminUser(request as RequestAuthedAdminUser))) {
     return NextResponse.json({ error: 'This route is only available on localhost or to admin users' }, { status: 400 });
   }
 

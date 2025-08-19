@@ -1,6 +1,6 @@
 'use client';
 
-import { DEFAULT_RELEASE_NAME } from '@/lib/env';
+import { env } from '@/lib/env';
 import { SourceReleaseWithPartialRelations } from '@/prisma/generated/zod';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { ChevronDownIcon } from 'lucide-react';
@@ -18,7 +18,7 @@ export default function ReleaseSelector({
   const getReleaseForName = (releaseName: string) =>
     releases.find((r) => r.name === releaseName) as SourceReleaseWithPartialRelations;
   const [release, setRelease] = useState<SourceReleaseWithPartialRelations | undefined>(
-    defaultReleaseName ? getReleaseForName(defaultReleaseName) : getReleaseForName(DEFAULT_RELEASE_NAME),
+    defaultReleaseName ? getReleaseForName(defaultReleaseName) : getReleaseForName(env.DEFAULT_RELEASE_NAME),
   );
 
   return (

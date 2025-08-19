@@ -3,7 +3,7 @@
 
 import { prisma } from '@/lib/db';
 import { importConfigFromS3, importJsonlString } from '@/lib/db/import';
-import { IS_LOCALHOST } from '@/lib/env';
+import { env } from '@/lib/env';
 import {
   DATASET_BASE_PATH,
   downloadAndDecompressFile,
@@ -31,7 +31,7 @@ export const GET = withOptionalUser(async (request: RequestOptionalUser) => {
   const path = `${DATASET_BASE_PATH}${modelId}/${sourceId}`;
   console.log('Importing data from', path);
 
-  if (!IS_LOCALHOST && request.user && !(await getAuthedAdminUser(request as RequestAuthedAdminUser))) {
+  if (!env.IS_LOCALHOST && request.user && !(await getAuthedAdminUser(request as RequestAuthedAdminUser))) {
     return NextResponse.json({ error: 'This route is only available on localhost or to admin users' }, { status: 400 });
   }
 

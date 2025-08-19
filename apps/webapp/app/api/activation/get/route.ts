@@ -1,4 +1,4 @@
-import { PUBLIC_ACTIVATIONS_USER_IDS } from '@/lib/env';
+import { env } from '@/lib/env';
 import { RequestOptionalUser, withOptionalUser } from '@/lib/with-user';
 import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
@@ -65,7 +65,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
         layer: source,
         index,
         creatorId: {
-          in: PUBLIC_ACTIVATIONS_USER_IDS,
+          in: env.PUBLIC_ACTIVATIONS_USER_IDS,
         },
       },
     });

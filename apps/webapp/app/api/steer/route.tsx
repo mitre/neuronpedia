@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db';
 import { getModelById } from '@/lib/db/model';
 import { neuronExistsAndUserHasAccess } from '@/lib/db/neuron';
-import { DEMO_MODE, NEXT_PUBLIC_URL } from '@/lib/env';
+import { env } from '@/lib/env';
 import { steerCompletion } from '@/lib/utils/inference';
 import {
   STEER_FREQUENCY_PENALTY_MAX,
@@ -98,7 +98,7 @@ async function* generateResponse(
       yield toReturnResult;
     }
   }
-  if (DEMO_MODE) {
+  if (env.DEMO_MODE) {
     console.log('skipping saveSteerOutput in demo mode');
   } else {
     // eslint-disable-next-line
@@ -200,7 +200,7 @@ async function saveSteerOutput(
       // eslint-disable-next-line
       toReturnResult.id = saveResult.id;
       // eslint-disable-next-line
-      toReturnResult.shareUrl = `${NEXT_PUBLIC_URL}/steer/${saveResult.id}`;
+      toReturnResult.shareUrl = `${env.NEXT_PUBLIC_URL}/steer/${saveResult.id}`;
     }
   }
   console.log('SAVING AND RETURNING');
@@ -408,7 +408,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
     if (savedSteereds.length > 0) {
       toReturnResult[SteerOutputType.STEERED] = savedSteereds[0].outputText;
       toReturnResult.id = savedSteereds[0].id;
-      toReturnResult.shareUrl = `${NEXT_PUBLIC_URL}/steer/${savedSteereds[0].id}`;
+      toReturnResult.shareUrl = `${env.NEXT_PUBLIC_URL}/steer/${savedSteereds[0].id}`;
       steerTypesToRun = steerTypesToRun.filter((type) => type !== SteerOutputType.STEERED);
     }
     if (savedDefault.length > 0) {

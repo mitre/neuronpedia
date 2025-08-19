@@ -1,7 +1,7 @@
 import { getModelById } from '@/lib/db/model';
 import { upsertVector } from '@/lib/db/neuron';
 import { upsertSourceForVector } from '@/lib/db/source';
-import { NEXT_PUBLIC_URL } from '@/lib/env';
+import { env } from '@/lib/env';
 import { VECTOR_VALID_HOOK_TYPE_TO_DETAILS } from '@/lib/utils/neuron-vector';
 import { STEER_STRENGTH_MAX, STEER_STRENGTH_MIN } from '@/lib/utils/steer';
 import { RequestAuthedUser, withAuthedUser } from '@/lib/with-user';
@@ -133,7 +133,7 @@ export const POST = withAuthedUser(async (request: RequestAuthedUser) => {
 
     return NextResponse.json({
       message: 'Success',
-      url: `${NEXT_PUBLIC_URL}/${vector.modelId}/${vector.layer}/${vector.index}`,
+      url: `${env.NEXT_PUBLIC_URL}/${vector.modelId}/${vector.layer}/${vector.index}`,
       vector: {
         modelId: vector.modelId,
         source: vector.layer,

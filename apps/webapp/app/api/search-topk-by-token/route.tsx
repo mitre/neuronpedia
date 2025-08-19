@@ -1,6 +1,6 @@
 import { getNeuronsForTopkSearcherExplanationOnly } from '@/lib/db/neuron';
 import { assertUserCanAccessModelAndSource } from '@/lib/db/userCanAccess';
-import { NEXT_PUBLIC_SEARCH_TOPK_MAX_CHAR_LENGTH } from '@/lib/env';
+import { env } from '@/lib/env';
 import { getActivationsTopKByToken, SearchTopKResult } from '@/lib/utils/inference';
 import { RequestOptionalUser, withOptionalUser } from '@/lib/with-user';
 import { ActivationTopkByTokenPost200Response } from 'neuronpedia-inference-client';
@@ -15,7 +15,7 @@ const DEFAULT_DENSITY_THRESHOLD = 0.01;
 const searchWithTopKRequestSchema = object({
   modelId: string().required().max(50),
   source: string().required().max(50),
-  text: string().required().max(NEXT_PUBLIC_SEARCH_TOPK_MAX_CHAR_LENGTH),
+  text: string().required().max(env.NEXT_PUBLIC_SEARCH_TOPK_MAX_CHAR_LENGTH),
   numResults: number().optional().min(1).max(20).default(NUMBER_TOPK_RESULTS),
   ignoreBos: boolean().optional().default(true),
   densityThreshold: number().optional().default(DEFAULT_DENSITY_THRESHOLD),

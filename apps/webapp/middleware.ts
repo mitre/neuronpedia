@@ -1,7 +1,7 @@
 import { Ratelimit } from '@upstash/ratelimit';
 import { kv } from '@vercel/kv';
 import { NextRequest, NextResponse } from 'next/server';
-import { API_KEY_HEADER_NAME, CONTACT_EMAIL_ADDRESS, ENABLE_RATE_LIMITER, HIGHER_LIMIT_API_TOKENS } from './lib/env';
+import { env } from './lib/env';
 
 const RATE_LIMIT_WINDOW = '60 m';
 
@@ -70,7 +70,7 @@ export default async function middleware(request: NextRequest) {
   const isEmbed = isEmbedSearchParam === 'true' || pathname.startsWith('/embed/');
   requestHeaders.set('x-is-embed', isEmbed ? 'true' : 'false');
 
-  if (!ENABLE_RATE_LIMITER) {
+  if (!env.ENABLE_RATE_LIMITER) {
     const res = NextResponse.next({
       request: {
         headers: requestHeaders,
@@ -88,9 +88,9 @@ export default async function middleware(request: NextRequest) {
   let foundEndpointLimit = 0;
   const remaining = 0;
 
-  const apiKey = request.headers.get(API_KEY_HEADER_NAME);
+  const apiKey = request.headers.get(env.API_KEY_HEADER_NAME);
   const rateLimitersToUse =
-    apiKey && HIGHER_LIMIT_API_TOKENS.includes(apiKey) ? higherRateLimiters : normalRateLimiters;
+    apiKey && env.HIGHER_LIMIT_API_TOKENS.includes(apiKey) ? higherRateLimiters : normalRateLimiters;
 
   // eslint-disable-next-line no-restricted-syntax
   for (const { endpoint, limiter } of rateLimitersToUse) {
@@ -114,7 +114,7 @@ export default async function middleware(request: NextRequest) {
         limitPerWindow: foundEndpointLimit,
         requestWindow: RATE_LIMIT_WINDOW,
         remainingRequests: remaining,
-        error: `Rate limit exceeded for this endpoint. The limit for this endpoint (${foundEndpoint}) is ${foundEndpointLimit} requests per ${RATE_LIMIT_WINDOW}. Contact ${CONTACT_EMAIL_ADDRESS} to increase your rate limit.`,
+        error: `Rate limit exceeded for this endpoint. The limit for this endpoint (${foundEndpoint}) is ${foundEndpointLimit} requests per ${RATE_LIMIT_WINDOW}. Contact ${env.CONTACT_EMAIL_ADDRESS} to increase your rate limit.`,
       },
       { status: 429 },
     );

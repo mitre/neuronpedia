@@ -2,7 +2,7 @@ import { getBlogDateString, getPostBySlug, PostMetaData } from '@/app/blog/blog-
 import BreadcrumbsComponent from '@/components/breadcrumbs-component';
 import { BreadcrumbLink } from '@/components/shadcn/breadcrumbs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/shadcn/card';
-import { ASSET_BASE_URL } from '@/lib/env';
+import { env } from '@/lib/env';
 import { Metadata } from 'next';
 import Image from 'next/image';
 import BlogSidebar from '../blog-sidebar';
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           url: meta.imagePreview,
         },
         {
-          url: `${ASSET_BASE_URL}/blog/the-residual-stream.jpg`,
+          url: `${env.ASSET_BASE_URL}/blog/the-residual-stream.jpg`,
         },
       ],
     },
@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           url: meta.imagePreview,
         },
         {
-          url: `${ASSET_BASE_URL}/blog/the-residual-stream.jpg`,
+          url: `${env.ASSET_BASE_URL}/blog/the-residual-stream.jpg`,
         },
       ],
       locale: 'en_US',
