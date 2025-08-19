@@ -5,7 +5,7 @@ import { sendLoginEmail, sendWelcomeEmail } from '@/lib/email/email';
 import { env } from '@/lib/env';
 import { User, UserSecretType } from '@prisma/client';
 import crypto from 'crypto';
-import type { NextAuthOptions } from 'next-auth/index';
+import type { NextAuthOptions } from 'next-auth';
 import AppleProvider from 'next-auth/providers/apple';
 import Email from 'next-auth/providers/email';
 import GithubProvider, { GithubProfile } from 'next-auth/providers/github';
