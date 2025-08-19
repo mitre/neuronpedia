@@ -2,11 +2,8 @@ import { createEnv } from "@t3-oss/env-nextjs";
 import { config } from 'dotenv';
 import { z } from "zod";
 
-// If it's not undefined, then it's a one click deploy. It doesn't matter what the value itself is.
-// Also, if it's one-click-deploy on Vercel, we always use the demo environment variables.
-export const SITE_NAME_VERCEL_DEPLOY = process.env.NEXT_PUBLIC_SITE_NAME_VERCEL_DEPLOY;
-export const IS_ONE_CLICK_VERCEL_DEPLOY = SITE_NAME_VERCEL_DEPLOY !== undefined;
-if (SITE_NAME_VERCEL_DEPLOY) {
+// If it's a one-click deploy on Vercel, we always use the demo environment variables.
+if (process.env.NEXT_PUBLIC_SITE_NAME_VERCEL_DEPLOY) {
   // @ts-ignore
   if (typeof EdgeRuntime !== 'string') {
     config({ path: '.env.demo', override: true });
@@ -92,11 +89,37 @@ export const env = createEnv({
       .string()
       .default('')
       .transform((v) => (v ? v.split(',').map((t) => t.trim()) : [])),
+
+    // Computed/derived values
+    IS_ONE_CLICK_VERCEL_DEPLOY: z
+      .string()
+      .optional()
+      .transform(() => process.env.NEXT_PUBLIC_SITE_NAME_VERCEL_DEPLOY !== undefined),
+    IS_LOCALHOST: z
+      .string()
+      .default('')
+      .transform(() => process.env.NEXT_PUBLIC_URL === 'http://localhost:3000'),
+    IS_ACTUALLY_NEURONPEDIA_ORG: z
+      .string()
+      .default('')
+      .transform(() =>
+        process.env.NEXT_PUBLIC_URL === 'https://neuronpedia.org' ||
+        process.env.NEXT_PUBLIC_URL === 'https://www.neuronpedia.org'
+      ),
+    DEMO_MODE: z
+      .string()
+      .default('')
+      .transform(() =>
+        process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ||
+        process.env.NEXT_PUBLIC_SITE_NAME_VERCEL_DEPLOY !== undefined
+      ),
   },
   client: {
     // All NEXT_PUBLIC_ prefixed variables go here
     NEXT_PUBLIC_URL: z.string().default(''),
-    NEXT_PUBLIC_ENABLE_SIGNIN: onlyBool.default('false'),
+    NEXT_PUBLIC_ENABLE_SIGNIN: onlyBool
+      .default('false')
+      .transform((v) => v && !process.env.NEXT_PUBLIC_SITE_NAME_VERCEL_DEPLOY),
     
     // Default Values
     NEXT_PUBLIC_CONTACT_EMAIL_ADDRESS: z.string().email().default('johnny@neuronpedia.org'),
@@ -116,6 +139,7 @@ export const env = createEnv({
       .default('1024'),
     
     NEXT_PUBLIC_DEMO_MODE: onlyBool.default('false'),
+    NEXT_PUBLIC_SITE_NAME_VERCEL_DEPLOY: z.string().optional(),
   },
   // For Next.js >= 13.4.4, we only need to specify client variables
   experimental__runtimeEnv: {
@@ -130,55 +154,42 @@ export const env = createEnv({
     NEXT_PUBLIC_STEER_FORCE_ALLOW_INSTRUCT_MODELS: process.env.NEXT_PUBLIC_STEER_FORCE_ALLOW_INSTRUCT_MODELS,
     NEXT_PUBLIC_SEARCH_TOPK_MAX_CHAR_LENGTH: process.env.NEXT_PUBLIC_SEARCH_TOPK_MAX_CHAR_LENGTH,
     NEXT_PUBLIC_DEMO_MODE: process.env.NEXT_PUBLIC_DEMO_MODE,
+    NEXT_PUBLIC_SITE_NAME_VERCEL_DEPLOY: process.env.NEXT_PUBLIC_SITE_NAME_VERCEL_DEPLOY,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   onValidationError: (error: any) => {
     console.error('Environment validation failed:', error);
     throw error;
   },
-  onInvalidAccess: (_variable: any) => {
+  onInvalidAccess: ((variable: string) => {
     // We don't need onInvalidAccess because Next.js already handles the security by setting 
     // server-only variables to undefined on the client. Since the code is open source, 
     // clients knowing the variable names is not a security issue - they just can't access 
     // the values. The Zod default values ensure the app doesn't crash when these are undefined.
-    // console.warn(
-    //   `❌ Attempted to access server-side environment variable '${_variable}' on the client.`
-    // );
-  },
+    console.warn(
+      `⚠️ Attempted to access server-side environment variable '${variable}' on the client.`
+    );
+  }) as (variable: string) => never,
 });
 
-// Validation logic after parsing
+/** ********* POST PARSING VALIDATION LOGIC ********* */
 const IS_SERVER = typeof window === 'undefined';
 if (IS_SERVER) {
   // Provider validation
   const trueCount = [env.OPENAI_API_KEY, env.OPENROUTER_API_KEY].filter(Boolean).length;
-  if (trueCount == 0) {
+  if (trueCount === 0) {
     throw new Error('At least one OpenAI provider must be enabled');
   }
 
   // Email provider validation
-  const awsSesIsEnabled = [env.AWS_ACCESS_KEY_ID, env.AWS_SECRET_ACCESS_KEY].filter(Boolean).length === 2;
-  const resendDotComIsEnabled = [env.RESEND_EMAIL_API_KEY].filter(Boolean).length === 1;
-  if (!awsSesIsEnabled && !resendDotComIsEnabled) {
-    throw new Error('At least one email provider must be enabled');
-  }
+  // const awsSesIsEnabled = [env.AWS_ACCESS_KEY_ID, env.AWS_SECRET_ACCESS_KEY].filter(Boolean).length === 2;
+  // const resendDotComIsEnabled = [env.RESEND_EMAIL_API_KEY].filter(Boolean).length === 1;
+  // if (!awsSesIsEnabled && !resendDotComIsEnabled) {
+  //   throw new Error('At least one email provider must be enabled');
+  // }
 
   // Graph server validation
   if (env.USE_RUNPOD_GRAPH && env.USE_LOCALHOST_GRAPH) {
     throw new Error('USE_LOCALHOST_GRAPH and USE_RUNPOD_GRAPH cannot both be true');
   }
 }
-
-// Helper to extract specific values for derived calculations
-const NEXT_PUBLIC_ENABLE_SIGNIN_RAW = env.NEXT_PUBLIC_ENABLE_SIGNIN;
-
-// Derived values that depend on other variables
-export const NEXT_PUBLIC_ENABLE_SIGNIN = NEXT_PUBLIC_ENABLE_SIGNIN_RAW && !IS_ONE_CLICK_VERCEL_DEPLOY;
-export const IS_LOCALHOST = env.NEXT_PUBLIC_URL === 'http://localhost:3000';
-export const IS_ACTUALLY_NEURONPEDIA_ORG =
-  env.NEXT_PUBLIC_URL === 'https://neuronpedia.org' || env.NEXT_PUBLIC_URL === 'https://www.neuronpedia.org';
-export const DEMO_MODE = env.NEXT_PUBLIC_DEMO_MODE || IS_ONE_CLICK_VERCEL_DEPLOY;
-
-// Constants
-export const ASSET_BASE_URL = 'https://neuronpedia.s3.us-east-1.amazonaws.com/site-assets';
-export const API_KEY_HEADER_NAME = 'x-api-key';
