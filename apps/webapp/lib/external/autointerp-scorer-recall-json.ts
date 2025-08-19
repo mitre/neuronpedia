@@ -1,8 +1,9 @@
 import { prisma } from '@/lib/db';
+import { OPENROUTER_BASE_URL } from '@/lib/constants';
 import { ActivationPartial } from '@/prisma/generated/zod';
 import { Activation, Explanation, ExplanationScoreModel, UserSecretType } from '@prisma/client';
 import OpenAI from 'openai';
-import { ERROR_RECALL_ALT_FAILED, OPENROUTER_BASE_URL } from '../utils/autointerp';
+import { ERROR_RECALL_ALT_FAILED } from '../utils/autointerp';
 import { AuthenticatedUser } from '../with-user';
 import { makeOaiMessage } from './autointerp-shared';
 

@@ -43,8 +43,8 @@ export default function FeatureSelector({
   exclusiveCallback?: boolean;
 }) {
   const { getSourceSetsForModelId, getFirstSourceForSourceSet, globalModels, getDefaultModel } = useGlobalContext();
-  const [modelId, setModelId] = useState(defaultModelId || getDefaultModel()?.id || env.DEFAULT_MODELID);
-  const [sourceSet, setSourceSet] = useState(defaultSourceSet || env.DEFAULT_SOURCESET);
+  const [modelId, setModelId] = useState(defaultModelId || getDefaultModel()?.id || env.NEXT_PUBLIC_DEFAULT_MODELID);
+  const [sourceSet, setSourceSet] = useState(defaultSourceSet || env.NEXT_PUBLIC_DEFAULT_SOURCESET);
   const [source, setSource] = useState(defaultSource);
   const [index, setIndex] = useState<string | undefined>(defaultIndex);
   const router = useRouter();

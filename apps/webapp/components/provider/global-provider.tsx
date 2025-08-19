@@ -211,7 +211,7 @@ export default function GlobalProvider({
   };
 
   const getInferenceEnabledForModel = (modelId: string) => {
-    if (env.STEER_FORCE_ALLOW_INSTRUCT_MODELS.includes(modelId)) {
+    if (env.NEXT_PUBLIC_STEER_FORCE_ALLOW_INSTRUCT_MODELS.includes(modelId)) {
       return true;
     }
     const model = globalModels[modelId];

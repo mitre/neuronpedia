@@ -56,11 +56,11 @@ export default function SearchTopkByToken({
   // Use a ref to track initialization state - won't trigger re-renders
   const isInitializedRef = useRef(false);
 
-  const [modelId, setModelId] = useState(initialModelId || env.DEFAULT_MODELID);
+  const [modelId, setModelId] = useState(initialModelId || env.NEXT_PUBLIC_DEFAULT_MODELID);
   const [sourceSet, setSourceSet] = useState<string>(
-    initialSource ? getSourceSetNameFromSource(initialSource) : env.DEFAULT_SOURCESET,
+    initialSource ? getSourceSetNameFromSource(initialSource) : env.NEXT_PUBLIC_DEFAULT_SOURCESET,
   );
-  const [source, setSource] = useState<string>(initialSource || env.DEFAULT_SOURCE);
+  const [source, setSource] = useState<string>(initialSource || env.NEXT_PUBLIC_DEFAULT_SOURCE);
   const [searchQuery, setSearchQuery] = useState<string>(initialText || '');
   const [topkResult, setTopkResult] = useState<SearchTopKResult | undefined>();
   const [topkFeatures, setTopkFeatures] = useState<TopKFeature[] | undefined>(undefined);

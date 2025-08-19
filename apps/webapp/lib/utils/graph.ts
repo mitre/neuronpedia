@@ -159,7 +159,7 @@ export const getGraphTokenize = async (
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-secret-key': env.env.GRAPH_SERVER_SECRET,
+        'x-secret-key': env.GRAPH_SERVER_SECRET,
       },
       body: JSON.stringify(body),
     });
@@ -236,7 +236,7 @@ export const generateGraphAndUploadToS3 = async (
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-secret-key': env.env.GRAPH_SERVER_SECRET,
+        'x-secret-key': env.GRAPH_SERVER_SECRET,
       },
       body: JSON.stringify(body),
     });
@@ -368,7 +368,7 @@ export const steerLogits = async (
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-secret-key': env.env.GRAPH_SERVER_SECRET,
+        'x-secret-key': env.GRAPH_SERVER_SECRET,
       },
       body: JSON.stringify(body),
     });

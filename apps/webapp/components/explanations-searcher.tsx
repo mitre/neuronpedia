@@ -87,21 +87,21 @@ export default function ExplanationsSearcher({
     setFeatureModalFeature,
     setFeatureModalOpen,
   } = useGlobalContext();
-  const [modelId, setModelId] = useState(initialModelId || env.DEFAULT_MODELID || getDefaultModel()?.id || env.DEFAULT_MODELID);
+  const [modelId, setModelId] = useState(initialModelId || env.NEXT_PUBLIC_DEFAULT_MODELID || getDefaultModel()?.id || env.NEXT_PUBLIC_DEFAULT_MODELID);
   const [sourceSet, setSourceSet] = useState(
     initialSourceSetName ||
       (modelId
         ? getSourceSetsForModelId(modelId).length > 0
           ? getSourceSetsForModelId(modelId)[0].name
-          : env.DEFAULT_SOURCESET
-        : env.DEFAULT_SOURCESET),
+          : env.NEXT_PUBLIC_DEFAULT_SOURCESET
+        : env.NEXT_PUBLIC_DEFAULT_SOURCESET),
   );
   const [selectedLayers, setSelectedLayers] = useState<string[] | undefined>(initialSelectedLayers);
   const [needsReloadSearch, setNeedsReloadSearch] = useState(false);
   const [showDashboards, setShowDashboards] = useState(true);
   const [selectedTab, setSelectedTab] = useState<SearchExplanationsType>(defaultTab);
   const [selectedRelease, setSelectedRelease] = useState<string>(
-    initialReleaseName || filterToRelease || env.DEFAULT_RELEASE_NAME,
+    initialReleaseName || filterToRelease || env.NEXT_PUBLIC_DEFAULT_RELEASE_NAME,
   );
   const [loadedResults, setLoadedResults] = useState<ExplanationWithPartialRelations[]>([]);
   const [hasMore, setHasMore] = useState(true);

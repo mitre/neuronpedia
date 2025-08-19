@@ -6,7 +6,7 @@ import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 import { useGlobalContext } from '../provider/global-provider';
 
 export default function ModelSelector({
-  modelId = env.DEFAULT_MODELID,
+  modelId = env.NEXT_PUBLIC_DEFAULT_MODELID,
   modelIdChangedCallback,
   filterToInferenceEnabled = false,
   filterToRelease,

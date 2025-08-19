@@ -89,7 +89,7 @@ export default function Browser({
         setLayer(getFirstSourceForSourceSet(newModelId, newSourceSet.name));
       }
     } else {
-      setSourceSet(env.DEFAULT_SOURCESET);
+      setSourceSet(env.NEXT_PUBLIC_DEFAULT_SOURCESET);
     }
   };
 

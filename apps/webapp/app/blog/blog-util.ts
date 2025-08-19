@@ -1,4 +1,4 @@
-import { env } from '@/lib/env';
+import { ASSET_BASE_URL } from '@/lib/constants';
 import fs from 'fs';
 import { compileMDX } from 'next-mdx-remote/rsc';
 import path from 'path';
@@ -35,7 +35,7 @@ export const getPostBySlug = async (slug: string): Promise<{ meta: PostMetaData;
   const formattedSlug = slug.replace(/\.mdx$/, '');
   const filePath = path.join(rootDir, `${formattedSlug}.mdx`);
   let fileContent = fs.readFileSync(filePath, { encoding: 'utf8' });
-  fileContent = fileContent.replaceAll('ASSET_BASE_URL', env.ASSET_BASE_URL);
+  fileContent = fileContent.replaceAll('ASSET_BASE_URL', ASSET_BASE_URL);
   const { frontmatter, content } = await compileMDX({
     source: fileContent,
     options: {

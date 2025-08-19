@@ -27,10 +27,10 @@ export default function NavBarButtons({ session }: { session: Session | null }) 
   const { getSourceSetsForModelId, globalModels, releases, getDefaultModel, getFirstSourceForSourceSet } =
     useGlobalContext();
   const [jumpToOpen, setJumpToOpen] = useState(false);
-  const [jumpToModelModelId, setJumpToModelModelId] = useState(env.DEFAULT_MODELID || getDefaultModel()?.id || '');
+  const [jumpToModelModelId, setJumpToModelModelId] = useState(env.NEXT_PUBLIC_DEFAULT_MODELID || getDefaultModel()?.id || '');
 
   const defaultSource =
-    env.DEFAULT_SOURCE ||
+    env.NEXT_PUBLIC_DEFAULT_SOURCE ||
     (getSourceSetsForModelId(jumpToModelModelId, true).length > 0
       ? getFirstSourceForSourceSet(jumpToModelModelId, getSourceSetsForModelId(jumpToModelModelId, true)[0].name)
       : '');
@@ -336,7 +336,7 @@ export default function NavBarButtons({ session }: { session: Session | null }) 
                 }),
               )}
               <Link
-                href={env.IS_LOCALHOST ? '/sae/new' : 'https://forms.gle/Yg51TYFutJysiyDP7'}
+                href={env.IS_LOCALHOST ? 'env./sae/new' : 'https://forms.gle/Yg51TYFutJysiyDP7'}
                 target={env.IS_LOCALHOST ? undefined : '_blank'}
                 prefetch={false}
                 rel="noreferrer"

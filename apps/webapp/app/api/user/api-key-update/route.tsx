@@ -1,5 +1,6 @@
 import { removeUserSecret, updateUserSecret } from '@/lib/db/userSecret';
-import { RequestAuthedUser, withAuthedUser } from '@/lib/with-user';
+import { OPENROUTER_BASE_URL } from '@/lib/constants';
+import { withAuthedUser } from '@/lib/with-user';
 import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { UserSecretType } from '@prisma/client';

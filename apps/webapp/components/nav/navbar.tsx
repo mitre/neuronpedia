@@ -47,7 +47,7 @@ export default function NavBar({ session }: { session: Session | null }) {
         <div className="relative flex h-12 items-center justify-between sm:mx-auto sm:h-12">
           <div className="flex flex-row gap-8 sm:mt-0">
             <Link href="/#" className="flex items-center justify-center text-base sm:text-[16px]">
-              {!env.SITE_NAME_VERCEL_DEPLOY && (
+              {!env.NEXT_PUBLIC_SITE_NAME_VERCEL_DEPLOY && (
                 <div className="mr-1.5 h-6 w-6 sm:h-5 sm:w-5">
                   <Image
                     src="/logo.png"
@@ -58,8 +58,8 @@ export default function NavBar({ session }: { session: Session | null }) {
                   />
                 </div>
               )}
-              {env.SITE_NAME_VERCEL_DEPLOY ? (
-                <p className="ml-1.5 font-medium text-[#7B3F00] sm:mt-0">{env.SITE_NAME_VERCEL_DEPLOY}</p>
+              {env.NEXT_PUBLIC_SITE_NAME_VERCEL_DEPLOY ? (
+                <p className="ml-1.5 font-medium text-[#7B3F00] sm:mt-0">{env.NEXT_PUBLIC_SITE_NAME_VERCEL_DEPLOY}</p>
               ) : (
                 <p className="font-normal text-sky-800 sm:mt-0">
                   Neuronpedia

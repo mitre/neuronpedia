@@ -1,7 +1,8 @@
+import { API_KEY_HEADER_NAME } from '@/lib/constants';
+import { env } from '@/lib/env';
 import { Ratelimit } from '@upstash/ratelimit';
 import { kv } from '@vercel/kv';
 import { NextRequest, NextResponse } from 'next/server';
-import { env } from './lib/env';
 
 const RATE_LIMIT_WINDOW = '60 m';
 
@@ -88,7 +89,7 @@ export default async function middleware(request: NextRequest) {
   let foundEndpointLimit = 0;
   const remaining = 0;
 
-  const apiKey = request.headers.get(env.API_KEY_HEADER_NAME);
+  const apiKey = request.headers.get(API_KEY_HEADER_NAME);
   const rateLimitersToUse =
     apiKey && env.HIGHER_LIMIT_API_TOKENS.includes(apiKey) ? higherRateLimiters : normalRateLimiters;
 
@@ -114,7 +115,7 @@ export default async function middleware(request: NextRequest) {
         limitPerWindow: foundEndpointLimit,
         requestWindow: RATE_LIMIT_WINDOW,
         remainingRequests: remaining,
-        error: `Rate limit exceeded for this endpoint. The limit for this endpoint (${foundEndpoint}) is ${foundEndpointLimit} requests per ${RATE_LIMIT_WINDOW}. Contact ${env.CONTACT_EMAIL_ADDRESS} to increase your rate limit.`,
+        error: `Rate limit exceeded for this endpoint. The limit for this endpoint (${foundEndpoint}) is ${foundEndpointLimit} requests per ${RATE_LIMIT_WINDOW}. Contact ${env.NEXT_PUBLIC_CONTACT_EMAIL_ADDRESS} to increase your rate limit.`,
       },
       { status: 429 },
     );

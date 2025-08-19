@@ -19,8 +19,8 @@ export default async function Page({ searchParams }: { searchParams?: { [key: st
       <h2 className="mb-3 font-bold">Invalid Unsubscribe Link</h2>
       <p>
         Sorry, that unsubscribe link seems to be invalid. Please either email us at{' '}
-        <a href={`mailto:${env.CONTACT_EMAIL_ADDRESS}`} className="text-sky-600">
-          {env.CONTACT_EMAIL_ADDRESS}
+        <a href={`mailto:${env.NEXT_PUBLIC_CONTACT_EMAIL_ADDRESS}`} className="text-sky-600">
+          {env.NEXT_PUBLIC_CONTACT_EMAIL_ADDRESS}
         </a>
         , or log in and unsubscribe via Settings.
       </p>

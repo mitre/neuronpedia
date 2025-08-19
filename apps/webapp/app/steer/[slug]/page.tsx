@@ -11,7 +11,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
     },
   });
   // CASE: this is /steer/[steer-model-id] - redirect to the new steer page
-  if (isInferenceEnabledModel || env.STEER_FORCE_ALLOW_INSTRUCT_MODELS.includes(params.slug)) {
+  if (isInferenceEnabledModel || env.NEXT_PUBLIC_STEER_FORCE_ALLOW_INSTRUCT_MODELS.includes(params.slug)) {
     permanentRedirect(`/${params.slug}/steer`);
   } else {
     // CASE: this is /steer/[steerOutputId] - redirect to the new steer page and load the steer

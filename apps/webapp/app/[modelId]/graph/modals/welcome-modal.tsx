@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/shadcn/dialog';
-import { env } from '@/lib/env';
+import { ASSET_BASE_URL } from '@/lib/constants';
 import { MagicWandIcon } from '@radix-ui/react-icons';
 import { BookOpen, ChevronRight, Circle, GithubIcon, NewspaperIcon, NotebookIcon } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
@@ -36,12 +36,12 @@ export default function WelcomeModal({ hasSlug }: { hasSlug: boolean }) {
 
   // Array of images for each step
   const stepImages = [
-    `${env.ASSET_BASE_URL}/graph/explainer-new.jpg`, // Getting Started
-    `${env.ASSET_BASE_URL}/graph/explainer-top.jpg`, // Choose or Generate a Graph
-    `${env.ASSET_BASE_URL}/graph/tl.jpg`, // Link/Attribution Graph
-    `${env.ASSET_BASE_URL}/graph/tr.jpg`, // Connections
-    `${env.ASSET_BASE_URL}/graph/subgraph-demo.mp4`, // Subgraph
-    `${env.ASSET_BASE_URL}/graph/br.jpg`, // Feature Details
+    `${ASSET_BASE_URL}/graph/explainer-new.jpg`, // Getting Started
+    `${ASSET_BASE_URL}/graph/explainer-top.jpg`, // Choose or Generate a Graph
+    `${ASSET_BASE_URL}/graph/tl.jpg`, // Link/Attribution Graph
+    `${ASSET_BASE_URL}/graph/tr.jpg`, // Connections
+    `${ASSET_BASE_URL}/graph/subgraph-demo.mp4`, // Subgraph
+    `${ASSET_BASE_URL}/graph/br.jpg`, // Feature Details
   ];
 
   // Array of alt text for each step

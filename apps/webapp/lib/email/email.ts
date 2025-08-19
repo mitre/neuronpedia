@@ -46,13 +46,13 @@ export const sendEmail = async (
   // try aws first
   if (awsSesClient) {
     const command = new SendEmailCommand({
-      FromEmailAddress: `Neuronpedia <${env.CONTACT_EMAIL_ADDRESS}>`,
-      FeedbackForwardingEmailAddress: env.CONTACT_EMAIL_ADDRESS,
+      FromEmailAddress: `Neuronpedia <${env.NEXT_PUBLIC_CONTACT_EMAIL_ADDRESS}>`,
+      FeedbackForwardingEmailAddress: env.NEXT_PUBLIC_CONTACT_EMAIL_ADDRESS,
       ConfigurationSetName: 'Neuronpedia',
       Destination: {
         ToAddresses: [emailAddress],
       },
-      ReplyToAddresses: [env.CONTACT_EMAIL_ADDRESS],
+      ReplyToAddresses: [env.NEXT_PUBLIC_CONTACT_EMAIL_ADDRESS],
       Content: {
         Simple: {
           Subject: {
@@ -83,7 +83,7 @@ export const sendEmail = async (
     }
   } else if (resendClient) {
     const result = await resendClient.emails.send({
-      from: `Neuronpedia <${env.CONTACT_EMAIL_ADDRESS}>`,
+      from: `Neuronpedia <${env.NEXT_PUBLIC_CONTACT_EMAIL_ADDRESS}>`,
       to: emailAddress,
       subject,
       html,
