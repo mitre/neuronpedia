@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/db';
 import { UserSecretType } from '@prisma/client';
 
-
 export const createUser = async (email: string, name: string, image: string, emailVerified: Date | null) =>
   prisma.user.create({
     data: {

@@ -194,7 +194,9 @@ export default function Page() {
         <div className="mb-2 mt-0 flex flex-col items-center justify-center text-center text-sm sm:text-base">
           <div className="text-lg font-medium text-slate-800 sm:text-xl">
             {env.NEXT_PUBLIC_SITE_NAME_VERCEL_DEPLOY ? (
-              <div className="pb-1 text-4xl font-semibold text-[#7B3F00]">{env.NEXT_PUBLIC_SITE_NAME_VERCEL_DEPLOY}</div>
+              <div className="pb-1 text-4xl font-semibold text-[#7B3F00]">
+                {env.NEXT_PUBLIC_SITE_NAME_VERCEL_DEPLOY}
+              </div>
             ) : (
               <>
                 Neuronpedia is an{' '}
@@ -408,7 +410,11 @@ export default function Page() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-1 flex-col items-start justify-start gap-x-3 pl-10">
-                <JumpToSAE modelId={env.NEXT_PUBLIC_DEFAULT_MODELID || ''} layer={env.NEXT_PUBLIC_DEFAULT_SOURCE || ''} modelOnSeparateRow />
+                <JumpToSAE
+                  modelId={env.NEXT_PUBLIC_DEFAULT_MODELID || ''}
+                  layer={env.NEXT_PUBLIC_DEFAULT_SOURCE || ''}
+                  modelOnSeparateRow
+                />
                 <div className="mt-4 flex w-full cursor-pointer flex-col items-start justify-start border-t border-b-slate-100 pt-4 text-sm font-medium text-sky-700 outline-none">
                   <div className="text-[10px] font-medium uppercase text-slate-500">Jump to Feature</div>
                   <FeatureSelector
@@ -425,7 +431,10 @@ export default function Page() {
                 {env.NEXT_PUBLIC_DEFAULT_MODELID && env.NEXT_PUBLIC_DEFAULT_SOURCE && (
                   <div className="mt-4 flex w-full flex-col border-t pt-4">
                     <div className="mb-1 font-sans text-[9px] font-medium uppercase text-slate-500">Jump to Random</div>
-                    <RandomFeatureLink modelId={env.NEXT_PUBLIC_DEFAULT_MODELID || ''} source={env.NEXT_PUBLIC_DEFAULT_SOURCE || ''} />
+                    <RandomFeatureLink
+                      modelId={env.NEXT_PUBLIC_DEFAULT_MODELID || ''}
+                      source={env.NEXT_PUBLIC_DEFAULT_SOURCE || ''}
+                    />
                   </div>
                 )}
               </CardContent>

@@ -4,8 +4,8 @@ import { prisma } from '@/lib/db';
 import { ActivationPartial } from '@/prisma/generated/zod';
 import { Activation, Explanation } from '@prisma/client';
 import OpenAI from 'openai';
-import { AutoInterpModelType, getAutoInterpModelTypeFromModelId } from '../utils/autointerp';
 import { AuthenticatedUser } from '../types/auth';
+import { AutoInterpModelType, getAutoInterpModelTypeFromModelId } from '../utils/autointerp';
 import { makeOaiMessage } from './autointerp-shared';
 
 const openai = new OpenAI();

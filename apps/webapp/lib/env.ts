@@ -1,6 +1,6 @@
-import { createEnv } from "@t3-oss/env-nextjs";
+import { createEnv } from '@t3-oss/env-nextjs';
 import { config } from 'dotenv';
-import { z } from "zod";
+import { z } from 'zod';
 
 // If it's a one-click deploy on Vercel, we always use the demo environment variables.
 if (process.env.NEXT_PUBLIC_SITE_NAME_VERCEL_DEPLOY) {
@@ -27,7 +27,7 @@ export const env = createEnv({
     // Feature Flags
     ENABLE_RATE_LIMITER: onlyBool.default('false'),
     ENABLE_VERCEL_ANALYTICS: onlyBool.default('false'),
-    
+
     // Default User IDs
     DEFAULT_CREATOR_USER_ID: z.string().default('clkht01d40000jv08hvalcvly'),
     INFERENCE_ACTIVATION_USER_ID: z.string().default('cljgamm90000076zdchicy6zj'),
@@ -102,16 +102,17 @@ export const env = createEnv({
     IS_ACTUALLY_NEURONPEDIA_ORG: z
       .string()
       .default('')
-      .transform(() =>
-        process.env.NEXT_PUBLIC_URL === 'https://neuronpedia.org' ||
-        process.env.NEXT_PUBLIC_URL === 'https://www.neuronpedia.org'
+      .transform(
+        () =>
+          process.env.NEXT_PUBLIC_URL === 'https://neuronpedia.org' ||
+          process.env.NEXT_PUBLIC_URL === 'https://www.neuronpedia.org',
       ),
     DEMO_MODE: z
       .string()
       .default('')
-      .transform(() =>
-        process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ||
-        process.env.NEXT_PUBLIC_SITE_NAME_VERCEL_DEPLOY !== undefined
+      .transform(
+        () =>
+          process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || process.env.NEXT_PUBLIC_SITE_NAME_VERCEL_DEPLOY !== undefined,
       ),
   },
   client: {
@@ -120,7 +121,7 @@ export const env = createEnv({
     NEXT_PUBLIC_ENABLE_SIGNIN: onlyBool
       .default('false')
       .transform((v) => v && !process.env.NEXT_PUBLIC_SITE_NAME_VERCEL_DEPLOY),
-    
+
     // Default Values
     NEXT_PUBLIC_CONTACT_EMAIL_ADDRESS: z.string().email().default('johnny@neuronpedia.org'),
     NEXT_PUBLIC_DEFAULT_RELEASE_NAME: z.string().default(''),
@@ -132,12 +133,12 @@ export const env = createEnv({
       .string()
       .default('')
       .transform((v) => (v ? v.split(',').map((m) => m.trim()) : [])),
-    
+
     NEXT_PUBLIC_SEARCH_TOPK_MAX_CHAR_LENGTH: z
       .string()
       .transform((v) => (v ? parseInt(v, 10) : 1024))
       .default('1024'),
-    
+
     NEXT_PUBLIC_DEMO_MODE: onlyBool.default('false'),
     NEXT_PUBLIC_SITE_NAME_VERCEL_DEPLOY: z.string().optional(),
   },
@@ -162,13 +163,11 @@ export const env = createEnv({
     throw error;
   },
   onInvalidAccess: ((variable: string) => {
-    // We don't need onInvalidAccess because Next.js already handles the security by setting 
-    // server-only variables to undefined on the client. Since the code is open source, 
-    // clients knowing the variable names is not a security issue - they just can't access 
+    // We don't need onInvalidAccess because Next.js already handles the security by setting
+    // server-only variables to undefined on the client. Since the code is open source,
+    // clients knowing the variable names is not a security issue - they just can't access
     // the values. The Zod default values ensure the app doesn't crash when these are undefined.
-    console.warn(
-      `⚠️ Attempted to access server-side environment variable '${variable}' on the client.`
-    );
+    console.warn(`⚠️ Attempted to access server-side environment variable '${variable}' on the client.`);
   }) as (variable: string) => never,
 });
 

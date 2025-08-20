@@ -1,7 +1,7 @@
 import { AuthenticatedUser, RequestAuthedAdminUser, RequestAuthedUser, RequestOptionalUser } from '@/lib/types/auth';
 import { NextResponse } from 'next/server';
-import { API_KEY_HEADER_NAME } from './constants';
 import { getAuthenticatedUserFromApiKey, makeAuthedUserFromSessionOrReturnNull } from './auth/utils';
+import { API_KEY_HEADER_NAME } from './constants';
 import { getUserById } from './db/user';
 
 // ================ MARK: Optionally Authenticated User ================

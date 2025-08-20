@@ -1,5 +1,5 @@
-import { getNeuronOptimized, neuronExistsAndUserHasAccess } from '@/lib/db/neuron';
 import { makeAuthedUserFromSessionOrReturnNull } from '@/lib/auth/utils';
+import { getNeuronOptimized, neuronExistsAndUserHasAccess } from '@/lib/db/neuron';
 import { NeuronWithPartialRelations } from '@/prisma/generated/zod';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';

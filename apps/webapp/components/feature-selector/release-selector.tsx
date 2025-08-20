@@ -18,7 +18,9 @@ export default function ReleaseSelector({
   const getReleaseForName = (releaseName: string) =>
     releases.find((r) => r.name === releaseName) as SourceReleaseWithPartialRelations;
   const [release, setRelease] = useState<SourceReleaseWithPartialRelations | undefined>(
-    defaultReleaseName ? getReleaseForName(defaultReleaseName) : getReleaseForName(env.NEXT_PUBLIC_DEFAULT_RELEASE_NAME),
+    defaultReleaseName
+      ? getReleaseForName(defaultReleaseName)
+      : getReleaseForName(env.NEXT_PUBLIC_DEFAULT_RELEASE_NAME),
   );
 
   return (

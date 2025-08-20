@@ -1,6 +1,6 @@
 import { getPostsMetaData } from '@/app/blog/blog-util';
-import { env } from '@/lib/env';
 import { ASSET_BASE_URL } from '@/lib/constants';
+import { env } from '@/lib/env';
 import RSS from 'rss';
 
 export async function GET() {

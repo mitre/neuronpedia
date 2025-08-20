@@ -1,6 +1,6 @@
+import { env } from '@/lib/env';
 import { UserSecretType } from '@prisma/client';
 import { BASE_PATH, Configuration, DefaultApi } from 'neuronpedia-autointerp-client';
-import { env } from '@/lib/env';
 
 export const AUTOINTERP_SERVER_API = new DefaultApi(
   new Configuration({

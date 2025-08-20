@@ -3,10 +3,10 @@ import { Neuron } from '@prisma/client';
 import { ActivationAllPost200Response, ActivationTopkByTokenPost200Response } from 'neuronpedia-inference-client';
 import { NeuronWithPartialRelations } from 'prisma/generated/zod';
 import { env } from '../env';
+import { AuthenticatedUser } from '../types/auth';
 import { EXPLANATIONTYPE_HUMAN } from '../utils/autointerp';
 import { NeuronIdentifier } from '../utils/neuron-identifier';
 import { getSourceSetNameFromSource, isNeuronLayerSource, NEURONS_SOURCESET } from '../utils/source';
-import { AuthenticatedUser } from '../types/auth';
 import {
   assertUserCanAccessModel,
   assertUserCanAccessModelAndSource,

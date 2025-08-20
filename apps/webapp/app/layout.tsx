@@ -2,6 +2,7 @@ import Navbar from '@/components/nav/navbar';
 import AuthProvider from '@/components/provider/auth-provider';
 import { Providers } from '@/components/provider/providers';
 import Toast from '@/components/toast';
+import { makeAuthedUserFromSessionOrReturnNull } from '@/lib/auth/utils';
 import {
   getExplanationModels,
   getExplanationScoreModelTypes,
@@ -9,7 +10,6 @@ import {
   getExplanationTypes,
 } from '@/lib/db/explanation-type';
 import { getGlobalSourceReleases } from '@/lib/db/source';
-import { makeAuthedUserFromSessionOrReturnNull } from '@/lib/auth/utils';
 import { env } from '@/lib/env';
 import { formatToGlobalModels } from '@/lib/utils/general';
 import { Analytics } from '@vercel/analytics/react';

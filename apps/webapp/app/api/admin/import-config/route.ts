@@ -1,6 +1,6 @@
 import { importConfigFromS3 } from '@/lib/db/import';
 import { env } from '@/lib/env';
-import { RequestOptionalUser, RequestAuthedAdminUser } from '@/lib/types/auth';
+import { RequestAuthedAdminUser, RequestOptionalUser } from '@/lib/types/auth';
 import { getAuthedAdminUser, withOptionalUser } from '@/lib/with-user';
 import { NextResponse } from 'next/server';
 

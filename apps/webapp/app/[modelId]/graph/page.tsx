@@ -152,8 +152,7 @@ export default async function Page({
   }
 
   // always get the user's graphMetadatas from our database
-  const graphMetadatas =
-    session?.user?.id ? await getGraphMetadataWithUser({ userId: session.user.id }) : [];
+  const graphMetadatas = session?.user?.id ? await getGraphMetadataWithUser({ userId: session.user.id }) : [];
 
   // add those graphmetadatas to the modelIdToGraphMetadatasMap too
   graphMetadatas.forEach((graphMetadata) => {

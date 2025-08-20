@@ -27,7 +27,9 @@ export default function NavBarButtons({ session }: { session: Session | null }) 
   const { getSourceSetsForModelId, globalModels, releases, getDefaultModel, getFirstSourceForSourceSet } =
     useGlobalContext();
   const [jumpToOpen, setJumpToOpen] = useState(false);
-  const [jumpToModelModelId, setJumpToModelModelId] = useState(env.NEXT_PUBLIC_DEFAULT_MODELID || getDefaultModel()?.id || '');
+  const [jumpToModelModelId, setJumpToModelModelId] = useState(
+    env.NEXT_PUBLIC_DEFAULT_MODELID || getDefaultModel()?.id || '',
+  );
 
   const defaultSource =
     env.NEXT_PUBLIC_DEFAULT_SOURCE ||

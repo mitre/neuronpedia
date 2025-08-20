@@ -87,7 +87,9 @@ export default function ExplanationsSearcher({
     setFeatureModalFeature,
     setFeatureModalOpen,
   } = useGlobalContext();
-  const [modelId, setModelId] = useState(initialModelId || env.NEXT_PUBLIC_DEFAULT_MODELID || getDefaultModel()?.id || env.NEXT_PUBLIC_DEFAULT_MODELID);
+  const [modelId, setModelId] = useState(
+    initialModelId || env.NEXT_PUBLIC_DEFAULT_MODELID || getDefaultModel()?.id || env.NEXT_PUBLIC_DEFAULT_MODELID,
+  );
   const [sourceSet, setSourceSet] = useState(
     initialSourceSetName ||
       (modelId

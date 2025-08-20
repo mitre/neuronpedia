@@ -66,7 +66,9 @@ export default function InferenceSearcher({
   } = useInferenceActivationAllContext();
   const { getSourcesForSourceSet, getDefaultModel, globalModels } = useGlobalContext();
   const [sortIndexes, setSortIndexes] = useState<number[]>(initialSortIndexes || []);
-  const [modelId, setModelId] = useState(initialModelId || env.NEXT_PUBLIC_DEFAULT_MODELID || getDefaultModel()?.id || env.NEXT_PUBLIC_DEFAULT_MODELID);
+  const [modelId, setModelId] = useState(
+    initialModelId || env.NEXT_PUBLIC_DEFAULT_MODELID || getDefaultModel()?.id || env.NEXT_PUBLIC_DEFAULT_MODELID,
+  );
   const [sourceSet, setSourceSet] = useState(initialSourceSet || env.NEXT_PUBLIC_DEFAULT_SOURCESET);
   const [selectedLayers, setSelectedLayers] = useState<string[] | undefined>(initialSelectedLayers);
   const [ignoreBos, setIgnoreBos] = useState(initialIgnoreBos !== undefined ? initialIgnoreBos : true);
