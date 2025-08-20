@@ -4,7 +4,7 @@ import { GraphStateProvider } from '@/components/provider/graph-state-provider';
 import { prisma } from '@/lib/db';
 import { getModelById } from '@/lib/db/model';
 import { Metadata } from 'next';
-import { getServerSession } from 'next-auth/next';
+import { getServerSession, Session } from 'next-auth';
 import { notFound } from 'next/navigation';
 import {
   ANT_BUCKET_URL,
@@ -120,7 +120,7 @@ export default async function Page({
   };
 }) {
   const { modelId } = params;
-  const session = await getServerSession(authOptions);
+  const session: Session | null = await getServerSession(authOptions);
 
   const embedParam = searchParams.embed as string | undefined;
   const embed = embedParam === 'true';

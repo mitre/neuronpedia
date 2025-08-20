@@ -1,11 +1,11 @@
 import { getUserById } from '@/lib/db/user';
 import { env } from '@/lib/env';
-import { getServerSession } from 'next-auth';
+import { getServerSession, Session } from 'next-auth';
 import { authOptions } from '../api/auth/[...nextauth]/authOptions';
 import ManageSourcesPane from './manage-sources-pane';
 
 export default async function Page() {
-  const session = await getServerSession(authOptions);
+  const session: Session | null = await getServerSession(authOptions);
   let isAdminUser = false;
   if (session?.user?.id) {
     try {
