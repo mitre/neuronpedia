@@ -9,7 +9,7 @@ import {
   getExplanationTypes,
 } from '@/lib/db/explanation-type';
 import { getGlobalSourceReleases } from '@/lib/db/source';
-import { makeAuthedUserFromSessionOrReturnNull } from '@/lib/db/user';
+import { makeAuthedUserFromSessionOrReturnNull } from '@/lib/auth/utils';
 import { env } from '@/lib/env';
 import { formatToGlobalModels } from '@/lib/utils/general';
 import { Analytics } from '@vercel/analytics/react';

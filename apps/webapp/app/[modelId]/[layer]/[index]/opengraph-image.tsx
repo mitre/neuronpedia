@@ -4,7 +4,7 @@
 
 import { getNeuronOptimized } from '@/lib/db/neuron';
 import { getSourceSet } from '@/lib/db/source';
-import { makeAuthedUserFromSessionOrReturnNull } from '@/lib/db/user';
+import { makeAuthedUserFromSessionOrReturnNull } from '@/lib/auth/utils';
 import { env } from '@/lib/env';
 import { makeActivationBackgroundColorWithDFA, replaceHtmlAnomalies } from '@/lib/utils/activations';
 import { Activation } from '@prisma/client';

@@ -6,7 +6,7 @@ import SearchInferenceModelPane from '@/components/panes/search-inference-model-
 import { BreadcrumbItem, BreadcrumbLink, BreadcrumbPage } from '@/components/shadcn/breadcrumbs';
 import { getModelById, getModelByIdWithSourceSets } from '@/lib/db/model';
 import { getSourceRelease } from '@/lib/db/source';
-import { makeAuthedUserFromSessionOrReturnNull } from '@/lib/db/user';
+import { makeAuthedUserFromSessionOrReturnNull } from '@/lib/auth/utils';
 import { getLayerNumAsStringFromSource } from '@/lib/utils/source';
 import { SourceReleaseWithRelations } from '@/prisma/generated/zod';
 import { Metadata } from 'next';
