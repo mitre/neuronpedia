@@ -1,8 +1,9 @@
 import { getNeuronsForTopkSearcherExplanationOnly } from '@/lib/db/neuron';
 import { assertUserCanAccessModelAndSource } from '@/lib/db/userCanAccess';
 import { env } from '@/lib/env';
+import { RequestOptionalUser } from '@/lib/types/auth';
 import { getActivationsTopKByToken, SearchTopKResult } from '@/lib/utils/inference';
-import { RequestOptionalUser, withOptionalUser } from '@/lib/with-user';
+import { withOptionalUser } from '@/lib/with-user';
 import { ActivationTopkByTokenPost200Response } from 'neuronpedia-inference-client';
 import { NextResponse } from 'next/server';
 import { boolean, number, object, string, ValidationError } from 'yup';

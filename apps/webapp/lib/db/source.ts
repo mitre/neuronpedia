@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db';
 import { getSourceSetNameFromSource } from '@/lib/utils/source';
-import { AuthenticatedUser } from '@/lib/with-user';
+import { AuthenticatedUser } from '@/lib/types/auth';
 import { Source, SourceRelease, SourceSet, Visibility } from '@prisma/client';
 import { env } from '../env';
 

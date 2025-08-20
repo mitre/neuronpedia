@@ -6,7 +6,7 @@ import { env } from '../env';
 import { EXPLANATIONTYPE_HUMAN } from '../utils/autointerp';
 import { NeuronIdentifier } from '../utils/neuron-identifier';
 import { getSourceSetNameFromSource, isNeuronLayerSource, NEURONS_SOURCESET } from '../utils/source';
-import { AuthenticatedUser } from '../with-user';
+import { AuthenticatedUser } from '../types/auth';
 import {
   assertUserCanAccessModel,
   assertUserCanAccessModelAndSource,

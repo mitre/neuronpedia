@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db';
 import { getModelById } from '@/lib/db/model';
 import { neuronExistsAndUserHasAccess } from '@/lib/db/neuron';
 import { env } from '@/lib/env';
+import { AuthenticatedUser, RequestOptionalUser } from '@/lib/types/auth';
 import { steerCompletion } from '@/lib/utils/inference';
 import {
   STEER_FREQUENCY_PENALTY_MAX,
@@ -15,7 +16,7 @@ import {
   STEER_TEMPERATURE_MAX,
   SteerFeature,
 } from '@/lib/utils/steer';
-import { AuthenticatedUser, RequestOptionalUser, withOptionalUser } from '@/lib/with-user';
+import { withOptionalUser } from '@/lib/with-user';
 import { SteerOutputType } from '@prisma/client';
 import { EventSourceMessage, EventSourceParserStream } from 'eventsource-parser/stream';
 import { NPSteerMethod, SteerCompletionPost200Response } from 'neuronpedia-inference-client';

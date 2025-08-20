@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db';
 import { getActivationForFeature } from '@/lib/utils/inference';
 import { ListWithPartialRelations } from '@/prisma/generated/zod';
 import { ListNeuronToAdd, MAX_LIST_FEATURES_FOR_TEST_TEXT, MAX_LIST_TEST_TEXT_LENGTH_CHARS } from '../utils/list';
-import { AuthenticatedUser } from '../with-user';
+import { AuthenticatedUser } from '../types/auth';
 import { AllowUnlistedFor, assertUserCanAccessModelAndSourceSet, userCanAccessClause } from './userCanAccess';
 
 export const assertUserOwnsList = async (listId: string, user: AuthenticatedUser) => {

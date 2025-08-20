@@ -1,7 +1,8 @@
 import { prisma } from '@/lib/db';
 import { env } from '@/lib/env';
+import { RequestAuthedAdminUser } from '@/lib/types/auth';
 import { getSourceSetNameFromSource } from '@/lib/utils/source';
-import { RequestAuthedAdminUser, withAuthedAdminUser } from '@/lib/with-user';
+import { withAuthedAdminUser } from '@/lib/with-user';
 import { Visibility } from '@prisma/client';
 import { NextResponse } from 'next/server';
 

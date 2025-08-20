@@ -1,6 +1,7 @@
 import { importConfigFromS3 } from '@/lib/db/import';
 import { env } from '@/lib/env';
-import { getAuthedAdminUser, RequestAuthedAdminUser, RequestOptionalUser, withOptionalUser } from '@/lib/with-user';
+import { RequestOptionalUser, RequestAuthedAdminUser } from '@/lib/types/auth';
+import { getAuthedAdminUser, withOptionalUser } from '@/lib/with-user';
 import { NextResponse } from 'next/server';
 
 export const GET = withOptionalUser(async (request: RequestOptionalUser) => {

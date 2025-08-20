@@ -3,8 +3,9 @@
 
 import { importJsonlString } from '@/lib/db/import';
 import { env } from '@/lib/env';
+import { RequestOptionalUser, RequestAuthedAdminUser } from '@/lib/types/auth';
 import { downloadAndDecompressFile } from '@/lib/utils/s3';
-import { getAuthedAdminUser, RequestAuthedAdminUser, RequestOptionalUser, withOptionalUser } from '@/lib/with-user';
+import { getAuthedAdminUser, withOptionalUser } from '@/lib/with-user';
 import { NextResponse } from 'next/server';
 
 // Hobby plans don't support > 60 seconds

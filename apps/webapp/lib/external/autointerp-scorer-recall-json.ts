@@ -4,7 +4,7 @@ import { ActivationPartial } from '@/prisma/generated/zod';
 import { Activation, Explanation, ExplanationScoreModel, UserSecretType } from '@prisma/client';
 import OpenAI from 'openai';
 import { ERROR_RECALL_ALT_FAILED } from '../utils/autointerp';
-import { AuthenticatedUser } from '../with-user';
+import { AuthenticatedUser } from '../types/auth';
 import { makeOaiMessage } from './autointerp-shared';
 
 const ERROR_ON_RECALL_REQUEST = 'Error';

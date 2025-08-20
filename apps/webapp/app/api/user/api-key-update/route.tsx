@@ -1,6 +1,6 @@
 import { OPENROUTER_BASE_URL } from '@/lib/constants';
 import { removeUserSecret, updateUserSecret } from '@/lib/db/userSecret';
-import { OPENROUTER_BASE_URL } from '@/lib/constants';
+import { RequestAuthedUser } from '@/lib/types/auth';
 import { withAuthedUser } from '@/lib/with-user';
 import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';

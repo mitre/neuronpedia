@@ -4,13 +4,14 @@
 import { prisma } from '@/lib/db';
 import { importConfigFromS3, importJsonlString } from '@/lib/db/import';
 import { env } from '@/lib/env';
+import { RequestAuthedAdminUser, RequestOptionalUser } from '@/lib/types/auth';
 import {
   DATASET_BASE_PATH,
   downloadAndDecompressFile,
   downloadFileJsonlParsedLines,
   getFilesInPath,
 } from '@/lib/utils/s3';
-import { getAuthedAdminUser, RequestAuthedAdminUser, RequestOptionalUser, withOptionalUser } from '@/lib/with-user';
+import { getAuthedAdminUser, withOptionalUser } from '@/lib/with-user';
 import { NextResponse } from 'next/server';
 
 // Hobby plans don't support > 60 seconds

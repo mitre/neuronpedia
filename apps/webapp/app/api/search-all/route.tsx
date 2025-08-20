@@ -9,8 +9,9 @@ import { createInferenceActivationsAndReturn } from '@/lib/db/activation';
 import { getNeuronsForSearcher } from '@/lib/db/neuron';
 import { assertUserCanAccessModelAndSourceSet } from '@/lib/db/userCanAccess';
 import { env } from '@/lib/env';
+import { RequestOptionalUser } from '@/lib/types/auth';
 import { runInferenceActivationAll } from '@/lib/utils/inference';
-import { RequestOptionalUser, withOptionalUser } from '@/lib/with-user';
+import { withOptionalUser } from '@/lib/with-user';
 import { ActivationAllPost200Response } from 'neuronpedia-inference-client';
 import { NextResponse } from 'next/server';
 
@@ -319,7 +320,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
       var userIdForSearch = request.user.id;
     } else {
       // eslint-disable-next-line
-      var userIdForSearch = env.INFERENCE_ACTIVATION_USER_ID_DO_NOT_INCLUDE_IN_PUBLIC_ACTIVATIONS;
+      var userIdForSearch = env.INFERENCE_ACTIVATION_USER_ID;
     }
 
     // create all the activations first

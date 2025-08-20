@@ -9,7 +9,7 @@ import { getTransformerLensModelIdIfExists } from '@/lib/db/model';
 import { getNeuronOnly } from '@/lib/db/neuron';
 import { getSourceSetNameFromSource } from '@/lib/utils/source';
 import { ChatMessage, replaceSteerModelIdIfNeeded, STEER_METHOD, SteerFeature } from '@/lib/utils/steer';
-import { AuthenticatedUser } from '@/lib/with-user';
+import { AuthenticatedUser } from '@/lib/types/auth';
 import { NeuronPartial, NeuronPartialWithRelations } from '@/prisma/generated/zod';
 import { SteerOutputType } from '@prisma/client';
 import {

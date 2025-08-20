@@ -7,7 +7,8 @@ import {
 import { prisma } from '@/lib/db';
 import { getUserByName } from '@/lib/db/user';
 import { env } from '@/lib/env';
-import { RequestAuthedUser, withAuthedUser } from '@/lib/with-user';
+import { RequestAuthedUser } from '@/lib/types/auth';
+import { withAuthedUser } from '@/lib/with-user';
 import Ajv from 'ajv';
 import { NextResponse } from 'next/server';
 import { object, string } from 'yup';

@@ -1,5 +1,6 @@
 import { env } from '@/lib/env';
-import { RequestOptionalUser, withOptionalUser } from '@/lib/with-user';
+import { RequestOptionalUser } from '@/lib/types/auth';
+import { withOptionalUser } from '@/lib/with-user';
 import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
 

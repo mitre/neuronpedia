@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db';
 import { UserSecretType } from '@prisma/client';
 import { env } from '../env';
-import { AuthenticatedUser } from '../with-user';
+import { AuthenticatedUser } from '../types/auth';
 import { getUserByName } from './user';
 
 export const getUserSecret = async (username: string, type: UserSecretType) =>

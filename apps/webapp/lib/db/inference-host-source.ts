@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db';
 import { InferenceHostSource, InferenceHostSourceOnSource } from '@prisma/client';
 import { env } from '../env';
-import { AuthenticatedUser } from '../with-user';
+import { AuthenticatedUser } from '../types/auth';
 import { getSourceInferenceHosts } from './source';
 import { userCanAccessModelAndSourceSet } from './userCanAccess';
 

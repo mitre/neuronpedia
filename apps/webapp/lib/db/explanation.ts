@@ -5,8 +5,8 @@ import { getGlobalModels } from '@/lib/db/model';
 import { Explanation, Prisma } from '@prisma/client';
 import { ExplanationPartial, ExplanationPartialWithRelations, NeuronWithPartialRelations } from 'prisma/generated/zod';
 import { env } from '../env';
+import { AuthenticatedUser } from '../types/auth';
 import { getSourceSetNameFromSource } from '../utils/source';
-import { AuthenticatedUser } from '../with-user';
 import {
   assertUserCanAccessModelAndSource,
   assertUserCanAccessModelAndSourceSet,

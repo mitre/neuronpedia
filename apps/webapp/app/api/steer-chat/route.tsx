@@ -7,6 +7,7 @@ import { prisma } from '@/lib/db';
 import { getModelById } from '@/lib/db/model';
 import { neuronExistsAndUserHasAccess } from '@/lib/db/neuron';
 import { env } from '@/lib/env';
+import { AuthenticatedUser, RequestOptionalUser } from '@/lib/types/auth';
 import { steerCompletionChat } from '@/lib/utils/inference';
 import {
   ChatMessage,
@@ -20,7 +21,7 @@ import {
   STEER_TEMPERATURE_MAX,
   SteerFeature,
 } from '@/lib/utils/steer';
-import { AuthenticatedUser, RequestOptionalUser, withOptionalUser } from '@/lib/with-user';
+import { withOptionalUser } from '@/lib/with-user';
 import { SteerOutputToNeuronWithPartialRelations } from '@/prisma/generated/zod';
 import { SteerOutputType } from '@prisma/client';
 import { EventSourceMessage } from 'eventsource-parser';

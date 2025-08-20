@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db';
 import { env } from '@/lib/env';
-import { RequestOptionalUser, withOptionalUser } from '@/lib/with-user';
+import { RequestOptionalUser } from '@/lib/types/auth';
+import { withOptionalUser } from '@/lib/with-user';
 import { SteerOutputType } from '@prisma/client';
 import { NPSteerMethod } from 'neuronpedia-inference-client';
 import { NextResponse } from 'next/server';

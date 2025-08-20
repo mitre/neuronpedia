@@ -1,8 +1,9 @@
 import { addNeuronsToList, newList, updateListMetadata } from '@/lib/db/list';
 import { neuronExistsAndUserHasAccess } from '@/lib/db/neuron';
 import { env } from '@/lib/env';
+import { RequestAuthedUser } from '@/lib/types/auth';
 import { ListWithPartialRelationsAndUrl } from '@/lib/utils/list';
-import { RequestAuthedUser, withAuthedUser } from '@/lib/with-user';
+import { withAuthedUser } from '@/lib/with-user';
 import { NextResponse } from 'next/server';
 import { array, number, object, string, ValidationError } from 'yup';
 
