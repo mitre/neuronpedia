@@ -25,7 +25,7 @@ const HIGHER_RATE_LIMITS = [
   { endpoint: '/', limit: 25000 },
   { endpoint: '/api', limit: 25000 },
   { endpoint: '/api/activation/new', limit: 1200 }, // higher
-  { endpoint: '/api/explanation/search', limit: 2000 }, // higher
+  { endpoint: '/api/explanation/search', limit: 3000 }, // higher
   { endpoint: '/api/steer', limit: 1000 }, // higher
   { endpoint: '/api/search-topk-by-token', limit: 1200 }, // higher
   { endpoint: '/api/search-all', limit: 1600 },

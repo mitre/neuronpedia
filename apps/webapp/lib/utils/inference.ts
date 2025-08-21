@@ -9,7 +9,13 @@ import { getTransformerLensModelIdIfExists } from '@/lib/db/model';
 import { getNeuronOnly } from '@/lib/db/neuron';
 import { AuthenticatedUser } from '@/lib/types/auth';
 import { getSourceSetNameFromSource } from '@/lib/utils/source';
-import { ChatMessage, replaceSteerModelIdIfNeeded, STEER_METHOD, SteerFeature } from '@/lib/utils/steer';
+import {
+  ChatMessage,
+  replaceSteerModelIdIfNeeded,
+  STEER_METHOD,
+  STEER_N_LOGPROBS,
+  SteerFeature,
+} from '@/lib/utils/steer';
 import { NeuronPartial, NeuronPartialWithRelations } from '@/prisma/generated/zod';
 import { SteerOutputType } from '@prisma/client';
 import {
@@ -237,6 +243,7 @@ export const steerCompletion = async (
   user: AuthenticatedUser | null,
   steerMethod: NPSteerMethod = STEER_METHOD,
   stream: boolean = true,
+  n_logprobs: number = STEER_N_LOGPROBS,
 ) => {
   // get the sae set's host
   const firstFeatureLayer = steerFeatures[0].layer;
@@ -284,6 +291,7 @@ export const steerCompletion = async (
       steer_method: steerMethod,
       normalize_steering: false,
       stream,
+      n_logprobs,
     }),
   });
   if (!response.body) {
@@ -313,6 +321,7 @@ export const steerCompletionChat = async (
   user: AuthenticatedUser | null,
   stream: boolean,
   steerMethod: NPSteerMethod = STEER_METHOD,
+  n_logprobs: number = STEER_N_LOGPROBS,
 ) => {
   // record start time
   const startTime = new Date().getTime();
@@ -371,6 +380,7 @@ export const steerCompletionChat = async (
             steer_method: steerMethod,
             normalize_steering: false,
             stream: true,
+            n_logprobs,
           }),
         },
       );
@@ -410,6 +420,7 @@ export const steerCompletionChat = async (
           steerSpecialTokens,
           steerMethod,
           normalizeSteering: false,
+          nLogprobs: n_logprobs,
         },
       });
     }
@@ -439,6 +450,7 @@ export const steerCompletionChat = async (
           steerSpecialTokens,
           steerMethod,
           normalizeSteering: false,
+          nLogprobs: n_logprobs,
         },
       });
     }

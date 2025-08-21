@@ -3,7 +3,9 @@
 - [repo status](#repo-status)
 - [what this is](#what-this-is)
 - [simple non-docker setup](#simple-non-docker-setup)
+- [Documentation / Usage (Swagger)](#documentation--usage-swagger)
 - [some docker commands for reference](#some-docker-commands-for-reference)
+- [Testing, Linting, and Formatting](#testing-linting-and-formatting)
 
 ## repo status
 
@@ -32,6 +34,15 @@ as much as possible we try to use classes/types from the `packages/python/neuron
    # with auto-reload
    poetry run uvicorn server:app --host 0.0.0.0 --port 5003 --workers 1 --reload
    ```
+
+## Documentation / Usage (Swagger)
+
+FastAPI has a built-in docs + endpoint tester. After running the server, to see interactive docs, go to [http://localhost:5003/docs](http://localhost:5003/docs)
+
+Notes/Caveats:
+
+- You will need to set the YOUR_OPENROUTER_KEY in your test requests.
+- If you set a SECRET (not set by default) in your `.env` file, you'll need to add a `x-secret-key` header.
 
 ## some docker commands for reference
 

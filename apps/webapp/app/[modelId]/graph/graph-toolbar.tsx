@@ -3,6 +3,7 @@ import {
   CLTGraph,
   FilterGraphType,
   getGraphBaseUrlToName,
+  modelIdAndSchemaToTranscoders,
   modelIdToModelDisplayName,
 } from '@/app/[modelId]/graph/utils';
 import { useGlobalContext } from '@/components/provider/global-provider';
@@ -117,7 +118,7 @@ export default function GraphToolbar() {
           className="relative hidden h-12 items-center justify-center whitespace-nowrap border-sky-500 bg-sky-50 text-xs font-medium leading-none text-sky-600 hover:bg-sky-100 hover:text-sky-700 sm:flex"
           onClick={() => setIsWelcomeModalOpen(true)}
         >
-          <BookOpenIcon className="mr-1.5 h-4 w-4" /> User Guide
+          <BookOpenIcon className="mr-1.5 h-4 w-4" /> Guide
           {(() => {
             try {
               const hasVisited = localStorage.getItem('circuit-tracer-visited');
@@ -142,7 +143,7 @@ export default function GraphToolbar() {
           <Plus className="mr-1.5 h-4 w-4" /> New<span className="hidden pl-[3px] sm:inline">Graph</span>
         </Button>
 
-        <div className="hidden flex-col sm:flex">
+        <div className="flex flex-col">
           <div className="w-full pb-0.5 text-center text-[9px] font-medium uppercase text-slate-400">Select Model</div>
           <Select.Root
             value={selectedModelId}
@@ -157,7 +158,7 @@ export default function GraphToolbar() {
                   e.stopPropagation();
                 }
               }}
-              className="inline-flex h-12 w-40 max-w-40 items-center justify-between gap-1 rounded border border-slate-300 bg-white px-4 py-2 pr-2 text-sm leading-none focus:outline-none focus:ring-0"
+              className="inline-flex h-12 w-32 max-w-32 items-center justify-between gap-1 rounded border border-slate-300 bg-white px-4 py-2 pr-2 text-sm leading-none focus:outline-none focus:ring-0 sm:w-40 sm:max-w-40"
             >
               <Select.Value>
                 <div className="flex flex-col items-start justify-start gap-y-0.5 text-left">
@@ -166,11 +167,16 @@ export default function GraphToolbar() {
                       globalModels[selectedModelId]?.displayName ||
                       selectedModelId}
                   </div>
-                  {globalModels[selectedModelId]?.owner && (
+                  {modelIdAndSchemaToTranscoders.get(selectedModelId)?.map((trans) => (
+                    <div key={trans.name} className="w-full text-[9px] font-normal text-slate-400">
+                      {trans.name}
+                    </div>
+                  ))}
+                  {/* {globalModels[selectedModelId]?.owner && (
                     <div className="w-full text-[9px] font-normal text-slate-400">
                       {globalModels[selectedModelId]?.owner}
                     </div>
-                  )}
+                  )} */}
                   {selectedModelId === 'jackl-circuits-runs-1-4-sofa-v3_0' && (
                     <div className="w-full text-[9px] font-normal text-slate-400">Anthropic</div>
                   )}
@@ -195,23 +201,44 @@ export default function GraphToolbar() {
                     <Select.Item
                       key={modelId}
                       value={modelId}
-                      className="relative flex h-12 w-full cursor-pointer select-none items-center overflow-x-hidden whitespace-pre rounded py-0 pl-4 pr-6 text-xs hover:bg-slate-100 data-[highlighted]:bg-slate-100 data-[highlighted]:outline-none"
+                      className="relative flex h-12 w-full cursor-pointer select-none flex-row items-center overflow-x-hidden whitespace-pre rounded py-0 pl-4 pr-6 text-xs hover:bg-slate-100 data-[highlighted]:bg-slate-100 data-[highlighted]:outline-none"
                     >
-                      <Select.ItemText className="w-full">
-                        <div className="flex w-full flex-col items-start justify-start gap-y-0">
-                          <div className="w-full truncate text-left">
-                            {modelIdToModelDisplayName.get(modelId) || globalModels[modelId]?.displayName || modelId}
-                          </div>
-                          {globalModels[modelId]?.owner && (
+                      <Select.ItemText className="flex w-full flex-1">
+                        <div className="flex w-full flex-1 flex-row items-center gap-x-3">
+                          <div className="flex w-full flex-1 flex-col items-start justify-start gap-y-0">
+                            <div className="w-full truncate text-left">
+                              {modelIdToModelDisplayName.get(modelId) || globalModels[modelId]?.displayName || modelId}
+                            </div>
+                            {modelIdAndSchemaToTranscoders.get(modelId)?.map((trans) => (
+                              <div key={trans.name} className="w-full text-[9px] font-normal text-slate-400">
+                                {trans.name}
+                              </div>
+                            ))}
+                            {/* {globalModels[modelId]?.owner && (
                             <div className="w-full text-[9px] font-normal text-slate-400">
                               {globalModels[modelId]?.owner}
                             </div>
-                          )}
-                          {modelId === 'jackl-circuits-runs-1-4-sofa-v3_0' && (
-                            <div className="w-full text-[9px] font-normal text-slate-400">Anthropic</div>
-                          )}
+                          )} */}
+                            {modelId === 'jackl-circuits-runs-1-4-sofa-v3_0' && (
+                              <div className="w-full text-[9px] font-normal text-slate-400">Anthropic</div>
+                            )}
+                          </div>
                         </div>
                       </Select.ItemText>
+                      {/* {modelIdToTranscoders.get(modelId)?.[0]?.hfUrl && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="z-[99999] h-6 w-6 p-0 text-slate-400 hover:text-slate-700"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            window.open(modelIdToTranscoders.get(modelId)?.[0]?.hfUrl, '_blank');
+                          }}
+                        >
+                          <ExternalLinkIcon className="h-4 w-4" />
+                        </Button>
+                      )} */}
                     </Select.Item>
                   ))}
                 </Select.Viewport>

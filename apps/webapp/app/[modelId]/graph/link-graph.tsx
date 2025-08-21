@@ -3,9 +3,9 @@
 import { useGraphContext } from '@/components/provider/graph-provider';
 import { useGraphStateContext } from '@/components/provider/graph-state-provider';
 import { useScreenSize } from '@/lib/hooks/use-screen-size';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import d3 from './d3-jetpack';
-import GraphControls from './graph-controls';
+import GraphControls, { MIN_TOKENS_TO_ALLOW_HORIZONTAL_SCROLL } from './graph-controls';
 import {
   clientCheckClaudeMode,
   CLTGraphExtended,
@@ -18,6 +18,10 @@ import {
   isHideLayer,
   showTooltip,
 } from './utils';
+
+const PERCENT_INCREASE_PER_ADDITIONAL_TOKEN = 0.03;
+const X_LABEL_ROTATION_DEGREES = 30;
+const X_LABEL_OFFSET = '-12,8';
 
 const MAX_LUMINANCE_LINK_GRAPH = 0.9;
 const MINIMUM_LINK_GRAPH_STROKE_WIDTH = 0.5;
@@ -114,8 +118,10 @@ export default function LinkGraph() {
   const svgRef = useRef<SVGSVGElement>(null);
   const middleRef = useRef<SVGSVGElement>(null);
   const bottomRef = useRef<SVGSVGElement>(null);
+  const [allowScroll, setAllowScroll] = useState(false);
   const canvasRefs = useRef<Array<HTMLCanvasElement | null>>([null, null, null, null, null]);
-  const { visState, selectedGraph, updateVisStateField, isEditingLabel, makeTooltipText } = useGraphContext();
+  const { visState, selectedGraph, updateVisStateField, togglePin, isEditingLabel, makeTooltipText } =
+    useGraphContext();
   const {
     hoveredIdRef,
     updateHoverState,
@@ -386,8 +392,8 @@ export default function LinkGraph() {
       // const margin = {
       //   left: isHideLayer(data.metadata.scan) ? 0 : 30,
       //   right: 20,
-      //   top: 0,
-      //   bottom: 45,
+      //   top: 30,
+      //   bottom: 35,
       // };
 
       // hoveredCtx.clearRect(-margin.left, -margin.top, width, height);
@@ -435,8 +441,8 @@ export default function LinkGraph() {
       const margin = {
         left: isHideLayer(data.metadata.scan) ? 0 : 30,
         right: 20,
-        top: 0,
-        bottom: 45,
+        top: 30,
+        bottom: 35,
       };
 
       pinnedCtx.clearRect(-margin.left, -margin.top, width, height);
@@ -603,8 +609,8 @@ export default function LinkGraph() {
       const margin = {
         left: isHideLayer(data.metadata.scan) ? 0 : 30,
         right: 20,
-        top: 0,
-        bottom: 45,
+        top: 30,
+        bottom: 35,
       };
 
       clickedCtx.clearRect(-margin.left, -margin.top, width, height);
@@ -720,8 +726,8 @@ export default function LinkGraph() {
     const margin = {
       left: isHideLayer(data.metadata.scan) ? 0 : 30,
       right: 20,
-      top: 0,
-      bottom: 45,
+      top: 30,
+      bottom: 35,
     };
 
     const svgBot = bottomContainer.append('g').attr('class', 'svg-bot');
@@ -1098,16 +1104,7 @@ export default function LinkGraph() {
           // eslint-disable-next-line
           if (event.metaKey || event.ctrlKey) {
             // Toggle pinned state with meta/ctrl key
-            const pinnedIndex = visState.pinnedIds.indexOf(closestNode.nodeId || '');
-            const newPinnedIds = [...visState.pinnedIds];
-
-            if (pinnedIndex === -1 && closestNode.nodeId) {
-              newPinnedIds.push(closestNode.nodeId);
-            } else if (pinnedIndex !== -1) {
-              newPinnedIds.splice(pinnedIndex, 1);
-            }
-
-            updateVisStateField('pinnedIds', newPinnedIds);
+            const newPinnedIds = togglePin(closestNode.nodeId || '');
 
             // Update pinned visualization
             nodeSel.classed('pinned', (d) => Boolean(d.nodeId && newPinnedIds.includes(d.nodeId)));
@@ -1156,13 +1153,13 @@ export default function LinkGraph() {
     xTickSel
       .filter((d) => d.hasEmbed)
       .append('g')
-      .attr('transform', 'translate(-12,8)')
+      .attr('transform', `translate(${X_LABEL_OFFSET})`)
       .append('text')
       .text((d) => d.token)
       .attr('x', -3)
       .attr('y', 10)
       .attr('text-anchor', 'middle')
-      .attr('transform', 'rotate(-30)')
+      .attr('transform', `rotate(-${X_LABEL_ROTATION_DEGREES})`)
       .attr('dominant-baseline', 'middle')
       .attr('font-size', 10)
       .attr('fill', '#334155');
@@ -1218,10 +1215,32 @@ export default function LinkGraph() {
     visState.linkType,
     visState.pinnedIds,
     visState.subgraph,
+    allowScroll,
   ]);
 
+  const shouldDoHorizontalScroll = useMemo(() => {
+    if (!selectedGraph) return false;
+    const numTokens = selectedGraph?.metadata.prompt_tokens.length || 0;
+    return allowScroll && numTokens > MIN_TOKENS_TO_ALLOW_HORIZONTAL_SCROLL;
+  }, [selectedGraph, allowScroll]);
+
+  const svgWidth = useMemo(() => {
+    if (!selectedGraph) return 100;
+    const numTokens = selectedGraph?.metadata.prompt_tokens.length || 0;
+    if (!shouldDoHorizontalScroll) return 100;
+    return 100 + 100 * PERCENT_INCREASE_PER_ADDITIONAL_TOKEN * (numTokens - MIN_TOKENS_TO_ALLOW_HORIZONTAL_SCROLL);
+  }, [selectedGraph, allowScroll]);
+
   return (
-    <div className="link-graph relative -mr-4 mt-3 flex-1 select-none sm:mr-0">
+    <div
+      className={`link-graph relative -mr-4 flex-1 select-none overscroll-none sm:mr-0 ${shouldDoHorizontalScroll ? 'forceShowScrollBarHorizontal mt-1 max-w-full overflow-y-hidden overflow-x-scroll' : 'mt-1 w-full'}`}
+      style={{
+        ...(shouldDoHorizontalScroll && {
+          WebkitMask: 'linear-gradient(to right, black calc(100% - 25px), transparent 100%)',
+          mask: 'linear-gradient(to right, black calc(100% - 25px), transparent 100%)',
+        }),
+      }}
+    >
       {/* <div className="mb-3 mt-2 flex w-full flex-row items-center justify-start gap-x-2">
         <div className="text-sm font-bold text-slate-600">Link Graph</div>
         <CustomTooltip wide trigger={<QuestionMarkCircledIcon className="h-4 w-4 text-slate-500" />}>
@@ -1231,11 +1250,51 @@ export default function LinkGraph() {
         </CustomTooltip>
       </div> */}
 
-      <GraphControls selectedGraph={selectedGraph} visState={visState} updateVisStateField={updateVisStateField} />
+      <GraphControls
+        selectedGraph={selectedGraph}
+        visState={visState}
+        updateVisStateField={updateVisStateField}
+        allowScroll={allowScroll}
+        setAllowScroll={setAllowScroll}
+        shouldDoHorizontalScroll={shouldDoHorizontalScroll}
+      />
       <div className="tooltip tooltip-hidden" />
-      <svg className="absolute top-5 z-0 h-full w-full" ref={bottomRef} />
-      <svg className="absolute top-5 z-0 h-full w-full" ref={middleRef} />
-      <svg className="absolute top-5 z-0 h-full w-full" ref={svgRef} />
+      <svg
+        className="absolute top-0 z-0 h-full"
+        style={{
+          ...(shouldDoHorizontalScroll
+            ? {
+                overflowX: 'scroll',
+                width: `${svgWidth}%`,
+              }
+            : { width: '100%', height: 'calc(100% - 6px)' }),
+        }}
+        ref={bottomRef}
+      />
+      <svg
+        className="absolute top-0 z-0 h-full"
+        style={{
+          ...(shouldDoHorizontalScroll
+            ? {
+                overflowX: 'scroll',
+                width: `${svgWidth}%`,
+              }
+            : { width: '100%', height: 'calc(100% - 6px)' }),
+        }}
+        ref={middleRef}
+      />
+      <svg
+        className="absolute top-0 z-0 h-full"
+        style={{
+          ...(shouldDoHorizontalScroll
+            ? {
+                overflowX: 'scroll',
+                width: `${svgWidth}%`,
+              }
+            : { width: '100%', height: 'calc(100% - 6px)' }),
+        }}
+        ref={svgRef}
+      />
     </div>
   );
 }

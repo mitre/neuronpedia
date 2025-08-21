@@ -433,7 +433,7 @@ export default function ActivationsList({
                 }}
                 className="rounded bg-slate-200 px-3.5 py-2 text-center text-xs font-medium text-slate-500 hover:bg-slate-300"
               >
-                Show {activations.length - items.length} Hidden
+                Show {activations.length - items.length} Duplicates
               </button>
             </div>
           )}

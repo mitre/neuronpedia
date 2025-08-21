@@ -8,9 +8,10 @@ import { STEER_MAX_PROMPT_CHARS, SteerFeature } from '@/lib/utils/steer';
 import copy from 'copy-to-clipboard';
 import { EventSourceParserStream } from 'eventsource-parser/stream';
 import { ArrowUp, RotateCcw, Share, X } from 'lucide-react';
-import { NPSteerMethod } from 'neuronpedia-inference-client';
+import { NPLogprob, NPSteerMethod } from 'neuronpedia-inference-client';
 import { useRef } from 'react';
 import ReactTextareaAutosize from 'react-textarea-autosize';
+import CustomTooltip from '../custom-tooltip';
 
 export default function SteerCompletion({
   showSettingsOnMobile,
@@ -18,8 +19,12 @@ export default function SteerCompletion({
   setIsSteering,
   defaultCompletionText,
   setDefaultCompletionText,
+  defaultCompletionLogProbs,
+  setDefaultCompletionLogProbs,
   steeredCompletionText,
   setSteeredCompletionText,
+  steeredCompletionLogProbs,
+  setSteeredCompletionLogProbs,
   modelId,
   selectedFeatures,
   typedInText,
@@ -41,8 +46,12 @@ export default function SteerCompletion({
   setIsSteering: (isSteering: boolean) => void;
   defaultCompletionText: string;
   setDefaultCompletionText: (text: string) => void;
+  defaultCompletionLogProbs: NPLogprob[] | null;
+  setDefaultCompletionLogProbs: (logprobs: NPLogprob[] | null) => void;
   steeredCompletionText: string;
   setSteeredCompletionText: (text: string) => void;
+  steeredCompletionLogProbs: NPLogprob[] | null;
+  setSteeredCompletionLogProbs: (logprobs: NPLogprob[] | null) => void;
   modelId: string;
   selectedFeatures: SteerFeature[];
   typedInText: string;
@@ -81,6 +90,8 @@ export default function SteerCompletion({
 
     setDefaultCompletionText(typedInText);
     setSteeredCompletionText(typedInText);
+    setDefaultCompletionLogProbs(null);
+    setSteeredCompletionLogProbs(null);
 
     // check for character limit
     if (typedInText.length >= STEER_MAX_PROMPT_CHARS) {
@@ -89,6 +100,8 @@ export default function SteerCompletion({
       );
       setDefaultCompletionText('');
       setSteeredCompletionText('');
+      setDefaultCompletionLogProbs(null);
+      setSteeredCompletionLogProbs(null);
       setIsSteering(false);
       return;
     }
@@ -132,6 +145,8 @@ export default function SteerCompletion({
         setIsSteering(false);
         setDefaultCompletionText('');
         setSteeredCompletionText('');
+        setDefaultCompletionLogProbs(null);
+        setSteeredCompletionLogProbs(null);
         return;
       }
       // check if the response is a stream
@@ -153,6 +168,8 @@ export default function SteerCompletion({
           const data = JSON.parse(value.data) as SteerResult;
           setDefaultCompletionText(data.DEFAULT || '');
           setSteeredCompletionText(data.STEERED || '');
+          setDefaultCompletionLogProbs(data.defaultLogProbs || null);
+          setSteeredCompletionLogProbs(data.steeredLogProbs || null);
           if (data.id) {
             setUrl(data.id || '');
           }
@@ -163,6 +180,8 @@ export default function SteerCompletion({
         setSteeredCompletionText(data.STEERED || '');
         setUrl(data.id || '');
         setIsSteering(false);
+        setDefaultCompletionLogProbs(data.defaultLogProbs || null);
+        setSteeredCompletionLogProbs(data.steeredLogProbs || null);
       }
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
@@ -175,6 +194,57 @@ export default function SteerCompletion({
         showToastServerError();
       }
     }
+  }
+
+  function makeCompletionText(text: string, logprobs: NPLogprob[] | null) {
+    const endText =
+      logprobs && logprobs.length > 0
+        ? logprobs.map((logprob) => (logprob.topLogprobs ? (logprob.token ? logprob.token : '') : '')).join('')
+        : '';
+    const truncatedText = endText.length > 0 ? text.slice(0, -endText.length) : text;
+    const logprobSpans =
+      logprobs && logprobs.length > 0
+        ? logprobs.map((logprob, index) => (
+            <>
+              <CustomTooltip
+                key={index}
+                side="top"
+                trigger={
+                  <span className="cursor-pointer whitespace-pre rounded hover:bg-slate-300/70">
+                    {logprob.token.replaceAll('\n', '⏎')}
+                  </span>
+                }
+              >
+                {logprob.topLogprobs ? (
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="mb-1 text-[10px] font-medium uppercase text-slate-400">Top Logprobs</div>
+                    {logprob.topLogprobs.map((topLogprob, i) => (
+                      <div
+                        key={topLogprob.token + i}
+                        className="flex w-full flex-row items-center justify-between gap-x-5"
+                      >
+                        <div className="whitespace-pre rounded-md bg-slate-200 px-1 py-0.5 font-mono">
+                          {topLogprob.token.replaceAll('\n', '⏎')}
+                        </div>
+                        <div className="font-mono">{topLogprob.logprob.toFixed(2)}</div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  ''
+                )}
+              </CustomTooltip>
+
+              {logprob.token.includes('\n') ? <br /> : ''}
+            </>
+          ))
+        : null;
+    return (
+      <>
+        {truncatedText}
+        {logprobSpans}
+      </>
+    );
   }
 
   return (
@@ -194,7 +264,15 @@ export default function SteerCompletion({
               <div className="mt-2 text-sm text-slate-500">{`I'm the default, non-steered model.`}</div>
             </div>
           )}
-          <div className="whitespace-pre-wrap break-words">{defaultCompletionText}</div>
+          <div className="whitespace-pre-wrap break-words">
+            {defaultCompletionText
+              ? defaultCompletionLogProbs && defaultCompletionLogProbs.length > 0
+                ? makeCompletionText(defaultCompletionText, defaultCompletionLogProbs)
+                : defaultCompletionText
+              : isSteering
+                ? typedInText
+                : defaultCompletionText}
+          </div>
           {isSteering && <LoadingSquare className="px-0 py-3" />}
         </div>
       </div>
@@ -231,7 +309,15 @@ export default function SteerCompletion({
               )}
             </div>
           )}
-          <div className="whitespace-pre-wrap break-words">{steeredCompletionText}</div>
+          <div className="whitespace-pre-wrap break-words">
+            {steeredCompletionText
+              ? steeredCompletionLogProbs && steeredCompletionLogProbs.length > 0
+                ? makeCompletionText(steeredCompletionText, steeredCompletionLogProbs)
+                : steeredCompletionText
+              : isSteering
+                ? typedInText
+                : steeredCompletionText}
+          </div>
           {isSteering && <LoadingSquare className="px-0 py-3" />}
         </div>
       </div>

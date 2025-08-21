@@ -4,17 +4,16 @@ import FeatureDashboard from '@/app/[modelId]/[layer]/[index]/feature-dashboard'
 import {
   ANT_MODEL_ID_TO_NEURONPEDIA_MODEL_ID,
   CLTGraphNode,
-  getAnthropicFeatureIdFromLayerAndIndex,
-  getIndexFromAnthropicFeatureId,
-  getLayerFromAnthropicFeatureId,
-  MODEL_DIGITS_IN_FEATURE_ID,
+  getFeatureIdFromLayerAndIndex,
+  getIndexFromFeatureAndGraph,
+  getLayerFromFeatureAndGraph,
   MODEL_TO_SOURCESET_ID,
   nodeTypeHasFeatureDetail,
 } from '@/app/[modelId]/graph/utils';
 import CustomTooltip from '@/components/custom-tooltip';
 import ExplanationsSearcher from '@/components/explanations-searcher';
 import { useGraphModalContext } from '@/components/provider/graph-modal-provider';
-import { PREFERRED_EXPLANATION_TYPE_NAME, useGraphContext } from '@/components/provider/graph-provider';
+import { PREFERRED_EXPLANATION_TYPES_NAMES, useGraphContext } from '@/components/provider/graph-provider';
 import { Button } from '@/components/shadcn/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/shadcn/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/shadcn/dialog';
@@ -87,13 +86,13 @@ export default function SteerModal() {
 
   const makeNodeSteerIdentifier = (node: CLTGraphNode): SteeredPositionIdentifier => ({
     modelId,
-    layer: getLayerFromAnthropicFeatureId(modelId, node.feature),
-    index: getIndexFromAnthropicFeatureId(modelId, node.feature),
+    layer: getLayerFromFeatureAndGraph(modelId, node, selectedGraph),
+    index: getIndexFromFeatureAndGraph(modelId, node, selectedGraph),
     tokenActivePosition: node.ctx_idx,
   });
 
   const makeNodeSourceId = (node: CLTGraphNode): string =>
-    `${getLayerFromAnthropicFeatureId(modelId, node.feature)}-${MODEL_TO_SOURCESET_ID[selectedGraph?.metadata.scan as keyof typeof MODEL_TO_SOURCESET_ID]}`;
+    `${getLayerFromFeatureAndGraph(modelId, node, selectedGraph)}-${MODEL_TO_SOURCESET_ID[selectedGraph?.metadata.scan as keyof typeof MODEL_TO_SOURCESET_ID]}`;
 
   // checks if a node (identified by layer, index, and token active position) is steered at all
   const isSteered = useCallback(
@@ -109,7 +108,21 @@ export default function SteerModal() {
 
   const getTopActivationValue = useCallback((node: CLTGraphNode) => {
     if (node.featureDetailNP && node.featureDetailNP?.activations && node.featureDetailNP.activations.length > 0) {
-      return node.featureDetailNP.activations[0].maxValue || 0;
+      // iterate through the activations and find the one with the highest maxValue - don't trust that the first one is necessarily the highest
+      const maxActivation = node.featureDetailNP.activations.reduce(
+        (max, activation) => Math.max(max, activation.maxValue || 0),
+        0,
+      );
+      return maxActivation;
+    }
+    if (
+      node.featureDetail &&
+      node.featureDetail.examples_quantiles &&
+      node.featureDetail.examples_quantiles.length > 0 &&
+      node.featureDetail.examples_quantiles[0].examples &&
+      node.featureDetail.examples_quantiles[0].examples.length > 0
+    ) {
+      return Math.max(...node.featureDetail.examples_quantiles[0].examples[0].tokens_acts_list);
     }
     return 0;
   }, []);
@@ -418,16 +431,16 @@ export default function SteerModal() {
       if (steerGeneratedTokens) {
         return nodesInSupernode.some(
           (node) =>
-            f.layer === getLayerFromAnthropicFeatureId(modelId, node.feature) &&
-            f.index === getIndexFromAnthropicFeatureId(modelId, node.feature) &&
+            f.layer === getLayerFromFeatureAndGraph(modelId, node, selectedGraph) &&
+            f.index === getIndexFromFeatureAndGraph(modelId, node, selectedGraph) &&
             f.steer_generated_tokens &&
             f.token_active_position === node.ctx_idx,
         );
       }
       return nodesInSupernode.some(
         (node) =>
-          f.layer === getLayerFromAnthropicFeatureId(modelId, node.feature) &&
-          f.index === getIndexFromAnthropicFeatureId(modelId, node.feature) &&
+          f.layer === getLayerFromFeatureAndGraph(modelId, node, selectedGraph) &&
+          f.index === getIndexFromFeatureAndGraph(modelId, node, selectedGraph) &&
           f.steer_position === position &&
           f.token_active_position === node.ctx_idx,
       );
@@ -436,12 +449,17 @@ export default function SteerModal() {
   };
 
   const lastSupernodeIsSteered = (supernode: string[]) => {
-    const lastNode = supernode[supernode.length - 1];
-    const node = getFeatureNodeForNodeId(lastNode);
-    if (!node) {
+    // Filter to nodes that have feature details
+    const nodesWithFeatures = supernode
+      .map((nodeId) => getFeatureNodeForNodeId(nodeId))
+      .filter((node) => node !== null);
+
+    if (nodesWithFeatures.length === 0) {
       return false;
     }
-    return isSteered(makeNodeSteerIdentifier(node));
+
+    const lastNode = nodesWithFeatures[nodesWithFeatures.length - 1];
+    return isSteered(makeNodeSteerIdentifier(lastNode));
   };
 
   const resetSteerSettings = () => {
@@ -674,18 +692,26 @@ export default function SteerModal() {
                           if (queuedAddFeature.neuron?.explanations) {
                             queuedAddFeature.neuron.explanations = [
                               {
-                                typeName: PREFERRED_EXPLANATION_TYPE_NAME,
+                                typeName:
+                                  PREFERRED_EXPLANATION_TYPES_NAMES.length > 0
+                                    ? PREFERRED_EXPLANATION_TYPES_NAMES[0]
+                                    : '',
                                 description: queuedAddFeature.description,
                               },
                             ];
                           }
+                          if (!selectedGraph?.metadata.scan) {
+                            console.error('No scan found');
+                            return;
+                          }
                           // make a fake CLTGraphNode so we can steer it
                           const node: CLTGraphNode = {
                             nodeId: `${queuedAddFeature.neuron?.modelId}-${queuedAddFeature.neuron?.layer}-${queuedAddFeature.neuron?.index}`,
-                            feature: getAnthropicFeatureIdFromLayerAndIndex(
-                              queuedAddFeature.neuron?.modelId as keyof typeof MODEL_DIGITS_IN_FEATURE_ID,
+                            feature: getFeatureIdFromLayerAndIndex(
+                              selectedGraph?.metadata.scan,
                               getLayerNumFromSource(queuedAddFeature.neuron?.layer || ''),
                               parseInt(queuedAddFeature.neuron?.index || '0', 10),
+                              selectedGraph,
                             ),
                             layer: getLayerNumFromSource(queuedAddFeature.neuron?.layer || '').toString(),
                             ctx_idx: index,
@@ -818,8 +844,12 @@ export default function SteerModal() {
                           .then((n: NeuronWithPartialRelations) => {
                             const explanation =
                               n.explanations && n.explanations.length > 0
-                                ? n.explanations.find((e) => e.typeName === PREFERRED_EXPLANATION_TYPE_NAME)
-                                  ? n.explanations.find((e) => e.typeName === PREFERRED_EXPLANATION_TYPE_NAME)
+                                ? n.explanations.find((e) =>
+                                    PREFERRED_EXPLANATION_TYPES_NAMES.includes(e.typeName || ''),
+                                  )
+                                  ? n.explanations.find((e) =>
+                                      PREFERRED_EXPLANATION_TYPES_NAMES.includes(e.typeName || ''),
+                                    )
                                   : n.explanations.length > 0
                                     ? n.explanations[0]
                                     : null
@@ -833,7 +863,11 @@ export default function SteerModal() {
                             setQueuedAddFeature({
                               neuron: n,
                               description: explanation?.description || 'No Label Found',
-                              typeName: explanation?.typeName || PREFERRED_EXPLANATION_TYPE_NAME,
+                              typeName:
+                                explanation?.typeName ||
+                                (PREFERRED_EXPLANATION_TYPES_NAMES.length > 0
+                                  ? PREFERRED_EXPLANATION_TYPES_NAMES[0]
+                                  : ''),
                               explanationModelName: explanation?.explanationModelName || '',
                               id: explanation?.id || '',
                               modelId: explanation?.modelId || '',
@@ -928,12 +962,12 @@ export default function SteerModal() {
                                 <NodeToSteer
                                   nodeSteerIdentifier={{
                                     modelId,
-                                    layer: getLayerFromAnthropicFeatureId(modelId, customNode.feature),
-                                    index: getIndexFromAnthropicFeatureId(modelId, customNode.feature),
+                                    layer: getLayerFromFeatureAndGraph(modelId, customNode, selectedGraph),
+                                    index: getIndexFromFeatureAndGraph(modelId, customNode, selectedGraph),
                                     tokenActivePosition: customNode.ctx_idx,
                                   }}
                                   isCustomSteerNode
-                                  sourceId={`${getLayerFromAnthropicFeatureId(modelId, customNode.feature)}-${MODEL_TO_SOURCESET_ID[selectedGraph?.metadata.scan as keyof typeof MODEL_TO_SOURCESET_ID]}`}
+                                  sourceId={`${getLayerFromFeatureAndGraph(modelId, customNode, selectedGraph)}-${MODEL_TO_SOURCESET_ID[selectedGraph?.metadata.scan as keyof typeof MODEL_TO_SOURCESET_ID]}`}
                                   node={customNode}
                                   label={getOverrideClerpForNode(customNode) || ''}
                                   selectedGraph={selectedGraph}
@@ -962,20 +996,22 @@ export default function SteerModal() {
                                     steeredPositions.some(
                                       (f) =>
                                         f.layer ===
-                                          getLayerFromAnthropicFeatureId(
+                                          getLayerFromFeatureAndGraph(
                                             ANT_MODEL_ID_TO_NEURONPEDIA_MODEL_ID[
                                               selectedGraph?.metadata
                                                 .scan as keyof typeof ANT_MODEL_ID_TO_NEURONPEDIA_MODEL_ID
                                             ] as keyof typeof ANT_MODEL_ID_TO_NEURONPEDIA_MODEL_ID,
-                                            customNode.feature,
+                                            customNode,
+                                            selectedGraph,
                                           ) &&
                                         f.index ===
-                                          getIndexFromAnthropicFeatureId(
+                                          getIndexFromFeatureAndGraph(
                                             ANT_MODEL_ID_TO_NEURONPEDIA_MODEL_ID[
                                               selectedGraph?.metadata
                                                 .scan as keyof typeof ANT_MODEL_ID_TO_NEURONPEDIA_MODEL_ID
                                             ] as keyof typeof ANT_MODEL_ID_TO_NEURONPEDIA_MODEL_ID,
-                                            customNode.feature,
+                                            customNode,
+                                            selectedGraph,
                                           ) &&
                                         f.token_active_position === customNode.ctx_idx,
                                     )
@@ -1016,7 +1052,7 @@ export default function SteerModal() {
                             </div>
                             {isAtLeastOneNodeInSupernodeSteered(supernode) && lastSupernodeIsSteered(supernode) ? (
                               <div
-                                className={`absolute left-7 top-[62px] z-0 h-[calc(100%_-_264px)] w-[1px] bg-sky-700 ${
+                                className={`absolute left-7 top-[62px] z-0 h-[calc(100%_-_263px)] w-[1px] bg-sky-700 ${
                                   isSteering ? 'opacity-50' : ''
                                 }`}
                               />

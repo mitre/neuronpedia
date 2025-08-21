@@ -57,6 +57,7 @@ def process_features_vectorized(features: list[NPSteerFeature]):
     return features
 
 
+# TODO: We should have a more generic way to handle this
 def convert_to_chat_array(
     text: str,
     tokenizer: PreTrainedTokenizerBase | None,
@@ -123,7 +124,36 @@ def convert_to_chat_array(
                 )
             )
 
-    # only other one right now is Gemma 2 Instruct
+    # no chat template, assume we are using the generic chat template to generate the conversation
+    elif not hasattr(tokenizer, "chat_template") or tokenizer.chat_template is None:
+        # the chat template is format <|im_start|>{role}\n{content}<|im_end|>\n
+        # Parse the text directly using string methods
+        # Split by <|im_start|> to get conversation turns
+        parts = text.split("<|im_start|>")
+
+        for part in parts[1:]:  # Skip first empty part
+            if not part.strip():
+                continue
+
+            # Find the end marker
+            if "<|im_end|>" in part:
+                content_part = part.split("<|im_end|>")[0]
+
+                # Split by first newline to separate role from content
+                if "\n" in content_part:
+                    role, content = content_part.split("\n", 1)
+                    role = role.strip()
+                    content = content.strip()
+
+                    if role and content:
+                        conversation.append(
+                            NPSteerChatMessage(
+                                role=role,
+                                content=content,
+                            )
+                        )
+
+    # only other one right now is Gemma 2 Instruct (2B and 9B)
     else:
         # Get special token IDs directly from the tokenizer
         special_token_ids = config.steer_special_token_ids
@@ -160,6 +190,32 @@ def convert_to_chat_array(
             )
 
     return conversation
+
+
+def apply_generic_chat_template(
+    messages: list[dict[str, str]], add_generation_prompt: bool = True
+) -> str:
+    """
+    In case the model's tokenizer does not come with a chat template, we apply a generic chatML template.
+
+    Args:
+        messages: List of message dictionaries with 'role' and 'content' keys
+        add_generation_prompt: Whether to add the assistant generation prompt
+
+    Returns:
+        str: Formatted chat string ready for tokenization
+    """
+    formatted_text = ""
+
+    for message in messages:
+        role = message["role"]
+        content = message["content"]
+        formatted_text += f"<|im_start|>{role}\n{content}<|im_end|>\n"
+
+    if add_generation_prompt:
+        formatted_text += "<|im_start|>assistant\n"
+
+    return formatted_text
 
 
 class OrthogonalProjector:

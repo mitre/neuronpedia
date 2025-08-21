@@ -81,7 +81,8 @@ I enjoy watching movies with my family.
 Explanation of neuron 1 behavior: `;
 
 const firstAssistantMessage = `Method 1 fails: MAX_ACTIVATING_TOKENS (She, enjoy) are not similar tokens.
-Method 2 succeeds: All TOKENS_AFTER_MAX_ACTIVATING_TOKEN have a pattern in common: they all start with "w". Explanation: say "w" words`;
+Method 2 succeeds: All TOKENS_AFTER_MAX_ACTIVATING_TOKEN have a pattern in common: they all start with "w".
+Explanation: say "w" words`;
 
 const secondUserMessage = `
 
@@ -129,8 +130,8 @@ I enjoy eating fresh strawberries, blueberries, and mangoes during the summer mo
 
 Explanation of neuron 2 behavior: `;
 
-const secondAssistantMessage =
-  'Method 1 succeeds: All MAX_ACTIVATING_TOKENS (banana, blueberries) are fruits. Explanation: fruits';
+const secondAssistantMessage = `Method 1 succeeds: All MAX_ACTIVATING_TOKENS (banana, blueberries) are fruits.
+Explanation: fruits`;
 
 const thirdUserMessage = `
 
@@ -178,7 +179,8 @@ And the garden has roses and tulips and daisies and sunflowers blooming together
 
 Explanation of neuron 3 behavior: `;
 
-const thirdAssistantMessage = 'Method 1 succeeds: All MAX_ACTIVATING_TOKENS are the word "and". Explanation: and';
+const thirdAssistantMessage = `Method 1 succeeds: All MAX_ACTIVATING_TOKENS are the word "and".
+Explanation: and`;
 
 const fourthUserMessage = `
 
@@ -228,7 +230,8 @@ Explanation of neuron 4 behavior: `;
 
 const fourthAssistantMessage = `Method 1 fails: MAX_ACTIVATING_TOKENS (war, some) are not all the same token.
 Method 2 fails: TOKENS_AFTER_MAX_ACTIVATING_TOKEN (was, places) are not all similar tokens and don't have a text pattern in common.
-Method 3 succeeds: All TOP_POSITIVE_LOGITS are the number 4. Explanation: 4`;
+Method 3 succeeds: All TOP_POSITIVE_LOGITS are the number 4.
+Explanation: 4`;
 
 const formatTokensAfterMaxActivatingToken = (activations: Activation[]): string => {
   const formattedTexts: string[] = [];

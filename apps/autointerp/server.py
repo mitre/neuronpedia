@@ -4,6 +4,7 @@ import os
 from collections.abc import Awaitable, Callable
 
 import sentry_sdk
+from fastapi import Body
 import torch
 import uvicorn
 from dotenv import load_dotenv
@@ -67,7 +68,22 @@ def initialize_globals():
 
 
 @router.post("/explain/default")
-async def explanation_endpoint(request: ExplainDefaultPostRequest):
+async def explanation_endpoint(
+    request: ExplainDefaultPostRequest = Body(
+        ...,
+        example={
+            "activations": [
+                {
+                    "tokens": ["The", "cat", "sat", "on", "the", "mat"],
+                    "values": [0.0, 0.8, 0.0, 0.0, 0.0, 0.0],
+                },
+                {"tokens": ["I", " like", " felines"], "values": [0, 0, 0.9]},
+            ],
+            "openrouter_key": "YOUR_OPENROUTER_KEY",
+            "model": "openai/gpt-4o-mini",
+        },
+    ),
+):
     print("Explain Default Called")
     return await explain_default(request)
 

@@ -138,7 +138,7 @@ export default function GraphNodeConnections() {
   const {
     visState,
     selectedGraph,
-    updateVisStateField,
+    togglePin,
     isEditingLabel,
     getNodeSupernodeAndOverrideLabel,
     setFullNPFeatureDetail,
@@ -190,7 +190,8 @@ export default function GraphNodeConnections() {
   const handleClickNode = (node: CLTGraphNode, addToPinned: boolean) => {
     if (addToPinned && node.nodeId) {
       // If control or command key is pressed, add to pinnedIds
-      updateVisStateField('pinnedIds', [...(visState.pinnedIds || []), node.nodeId]);
+      // if pinned, remove it
+      togglePin(node.nodeId);
     } else if (node.nodeId) {
       updateClickedState(node);
     }
@@ -209,7 +210,7 @@ export default function GraphNodeConnections() {
       <div className="flex w-full flex-col text-slate-700">
         {clickedNode ? (
           <div className="flex flex-row items-center gap-x-2 text-xs font-medium text-slate-600">
-            {!clickedNode?.featureDetailNP && <div className="">F#{clickedNode?.feature}</div>}
+            {/* {!clickedNode?.featureDetailNP && <div className="">F#{clickedNode?.feature}</div>} */}
             <Circle className="h-3.5 max-h-3.5 min-h-3.5 w-3.5 min-w-3.5 max-w-3.5 text-[#f0f]" />
             <div className="flex-1 leading-tight">{getNodeSupernodeAndOverrideLabel(clickedNode)}</div>
             <GraphFeatureLink selectedGraph={selectedGraph} node={clickedNode} />

@@ -914,6 +914,8 @@ model SteerOutput {
   creatorId              String?
   creator                User?                 @relation(fields: [creatorId], references: [id], onDelete: SetNull)
   version                Int                   @default(1)
+  // JSON string
+  logprobs               String?
 
   // this is only set for STEERED outputs. it points to the DEFAULT output that was associated with it
   // one STEERED output can only be connected to one DEFAULT output

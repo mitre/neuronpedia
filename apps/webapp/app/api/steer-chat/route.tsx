@@ -26,7 +26,12 @@ import { SteerOutputToNeuronWithPartialRelations } from '@/prisma/generated/zod'
 import { SteerOutputType } from '@prisma/client';
 import { EventSourceMessage } from 'eventsource-parser';
 import { EventSourceParserStream } from 'eventsource-parser/stream';
-import { NPSteerChatMessage, NPSteerMethod, SteerCompletionChatPost200Response } from 'neuronpedia-inference-client';
+import {
+  NPLogprob,
+  NPSteerChatMessage,
+  NPSteerMethod,
+  SteerCompletionChatPost200Response,
+} from 'neuronpedia-inference-client';
 import { NextResponse } from 'next/server';
 import { array, bool, InferType, number, object, string, ValidationError } from 'yup';
 
@@ -84,6 +89,7 @@ async function saveSteerChatOutput(
           steerSpecialTokens: body.steer_special_tokens,
           steerMethod: body.steer_method,
           toNeurons: {},
+          logprobs: output.logprobs ? JSON.stringify(output.logprobs) : null,
         },
       });
       // update the default saved output id since we just saved it
@@ -129,6 +135,7 @@ async function saveSteerChatOutput(
               strength: neuron.strength,
             })),
           },
+          logprobs: output.logprobs ? JSON.stringify(output.logprobs) : null,
         },
       });
 
@@ -191,6 +198,7 @@ async function* transformStream(
               content: message.content,
             })),
             type: output.type,
+            logprobs: output.logprobs ? output.logprobs : null,
           };
           return op;
         }),
@@ -276,6 +284,7 @@ async function* generateResponse(
       toReturnResult[processor.steerType] = {
         raw: output.raw,
         chatTemplate: output.chatTemplate,
+        logprobs: output.logprobs ? output.logprobs : null,
       };
       hasNewContent = true;
     }
@@ -308,10 +317,12 @@ export type SteerResultChat = {
   [SteerOutputType.STEERED]: {
     raw: string;
     chatTemplate: NPSteerChatMessage[] | undefined | null;
+    logprobs: NPLogprob[] | null;
   } | null;
   [SteerOutputType.DEFAULT]: {
     raw: string;
     chatTemplate: NPSteerChatMessage[] | undefined | null;
+    logprobs: NPLogprob[] | null;
   } | null;
   inputText?: string | null;
   id: string | null;
@@ -398,7 +409,7 @@ export type SteerSchemaTypeChat = InferType<typeof steerSchema>;
         },
         {}
       ],
-      "description": "Given chat messages and a set of SAE features, steer a model to generate both its default and steered chat completions. This is for chat, not completions.",
+      "description": "Given chat messages and a set of SAE features, steer a model to generate both its default and steered chat completions, as well as logprobs for each generated token. This is for chat, not completions.",
       "requestBody": {
         "required": true,
         "content": {
@@ -676,6 +687,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
       toReturnResult[SteerOutputType.DEFAULT] = {
         raw: savedSteerDefaultOutput.outputText,
         chatTemplate: JSON.parse(savedSteerDefaultOutput.outputTextChatTemplate || '[]'),
+        logprobs: savedSteerDefaultOutput.logprobs ? JSON.parse(savedSteerDefaultOutput.logprobs) : null,
       };
       steerTypesToRun = steerTypesToRun.filter((type) => type !== SteerOutputType.DEFAULT);
     }
@@ -733,6 +745,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
       toReturnResult[SteerOutputType.STEERED] = {
         raw: savedSteerSteeredOutputs[0].outputText,
         chatTemplate: JSON.parse(savedSteerSteeredOutputs[0].outputTextChatTemplate || '[]'),
+        logprobs: savedSteerSteeredOutputs[0].logprobs ? JSON.parse(savedSteerSteeredOutputs[0].logprobs) : null,
       };
       toReturnResult.id = savedSteerSteeredOutputs[0].id;
       toReturnResult.shareUrl = `${env.NEXT_PUBLIC_URL}/steer/${savedSteerSteeredOutputs[0].id}`;
@@ -787,11 +800,13 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
           toReturnResult[SteerOutputType.DEFAULT] = {
             raw: output.raw,
             chatTemplate: output.chatTemplate,
+            logprobs: output.logprobs ? output.logprobs : null,
           };
         } else if (output.type === SteerOutputType.STEERED) {
           toReturnResult[SteerOutputType.STEERED] = {
             raw: output.raw,
             chatTemplate: output.chatTemplate,
+            logprobs: output.logprobs ? output.logprobs : null,
           };
         }
       }
@@ -821,6 +836,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
       console.log('validation error', error);
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
+    console.log('unknown error', error);
     return NextResponse.json({ message: 'Unknown Error' }, { status: 500 });
   }
 });

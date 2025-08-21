@@ -33,6 +33,7 @@ export const STEER_METHOD = NPSteerMethod.SimpleAdditive;
 export const STEER_TOPK_LOGITS = 5;
 export const STEER_TOPK_LOGITS_MAX = 10;
 export const STEER_FREEZE_ATTENTION = true;
+export const STEER_N_LOGPROBS = 5;
 
 export function replaceSteerModelIdIfNeeded(modelId: string) {
   if (env.NEXT_PUBLIC_STEER_FORCE_ALLOW_INSTRUCT_MODELS.includes(modelId)) {

@@ -3,7 +3,7 @@ from typing import Any
 
 import einops
 import torch
-from fastapi import APIRouter
+from fastapi import APIRouter, Body
 from fastapi.responses import JSONResponse
 from neuronpedia_inference_client.models.activation_single_post200_response import (
     ActivationSinglePost200Response,
@@ -28,7 +28,15 @@ router = APIRouter()
 @router.post("/activation/single")
 @with_request_lock()
 async def activation_single(
-    request: ActivationSinglePostRequest,
+    request: ActivationSinglePostRequest = Body(
+        ...,
+        example={
+            "prompt": "The Jedi in Star Wars wield lightsabers.",
+            "model": "gpt2-small",
+            "source": "0-res-jb",
+            "index": "14057",
+        },
+    ),
 ):
     model = Model.get_instance()
     config = Config.get_instance()

@@ -7,10 +7,12 @@ export default function CustomTooltip({
   trigger,
   wide = false,
   children,
+  side,
 }: {
   trigger: React.ReactNode;
   children: React.ReactNode;
   wide?: boolean;
+  side?: 'top' | 'bottom' | 'left' | 'right';
 }) {
   return (
     <OldTooltip.Provider delayDuration={0} skipDelayDuration={0}>
@@ -22,6 +24,7 @@ export default function CustomTooltip({
               wide ? 'max-w-[640px]' : 'max-w-[320px]'
             }`}
             sideOffset={3}
+            side={side}
           >
             {children}
           </OldTooltip.Content>

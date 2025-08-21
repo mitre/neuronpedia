@@ -35,10 +35,10 @@ Create an `.env` file with `SECRET` and `HF_TOKEN` (see `.env.example`)
 # Only run one of the following, depending on which model you want to run.
 
 # Run with Gemma-2-2B model with the Gemmascope transcoders
-poetry run python neuronpedia_graph/server.py google/gemma-2-2b
+poetry run python start.py --model_id google/gemma-2-2b
 
 # Run with Llama-3.2-1B model with transcoders trained by Anthropic Fellows
-poetry run python neuronpedia_graph/server.py meta-llama/Llama-3.2-1B
+poetry run python start.py --model_id meta-llama/Llama-3.2-1B
 ```
 
 ### Example Request - Output Graph JSON Directly
@@ -283,6 +283,14 @@ Response (Arrays Truncated)
   ]
 }
 ```
+
+## Documentation / Usage (Swagger)
+
+FastAPI has a built-in docs + endpoint tester. After running the server, to see interactive docs, go to [http://localhost:5004/docs](http://localhost:5004/docs)
+
+Notes/Caveats:
+
+- If you set a SECRET (not set by default) in your `.env` file, you'll need to add a `x-secret-key` header.
 
 ### Runpod Serverless
 

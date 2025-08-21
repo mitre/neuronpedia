@@ -21,7 +21,7 @@ export default function MiniDashboardHoverCard({
   const { setFeatureModalFeature, setFeatureModalOpen } = useGlobalContext();
   const [hoveredFeature, setHoveredFeature] = useState<NeuronWithPartialRelations | undefined>();
   return (
-    <HoverCard openDelay={0} closeDelay={0}>
+    <HoverCard openDelay={300} closeDelay={0}>
       <HoverCardTrigger asChild>
         <Button
           onMouseEnter={() => {

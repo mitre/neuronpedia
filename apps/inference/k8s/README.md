@@ -109,6 +109,7 @@ kubectl apply -k k8s/overlays/gpu/gemma-2-2b-it-public && \
 kubectl apply -k k8s/overlays/gpu/gemma-2-9b-it-a && \
 kubectl apply -k k8s/overlays/gpu/gemma-2-9b-it-b && \
 kubectl apply -k k8s/overlays/gpu/gemma-2-2b && \
+kubectl apply -k k8s/overlays/gpu/gemma-2-2b-2 && \
 kubectl apply -k k8s/overlays/gpu/gemma-2-9b && \
 kubectl apply -k k8s/overlays/gpu/deepseek-r1-llama-8b-a && \
 kubectl apply -k k8s/overlays/gpu/deepseek-r1-llama-8b-b && \
@@ -130,7 +131,8 @@ kubectl rollout restart deployment gemma-2-2b-public-gpu-lite-neuronpedia-infere
 kubectl rollout restart deployment gemma-2-2b-it-public-gpu-lite-neuronpedia-inference && \
 kubectl rollout restart deployment gemma-2-9b-it-a-gpu-neuronpedia-inference && \
 kubectl rollout restart deployment gemma-2-9b-it-b-gpu-neuronpedia-inference && \
-kubectl rollout restart deployment gemma-2-2b-gpu-neuronpedia-inference && \
+kubectl rollout restart deployment gemma-2-2b-gpu-lite-neuronpedia-inference && \
+kubectl rollout restart deployment gemma-2-2b-2-gpu-lite-neuronpedia-inference && \
 kubectl rollout restart deployment gemma-2-9b-gpu-neuronpedia-inference && \
 kubectl rollout restart deployment deepseek-r1-llama-8b-a-gpu-lite-neuronpedia-inference && \
 kubectl rollout restart deployment deepseek-r1-llama-8b-b-gpu-lite-neuronpedia-inference && \

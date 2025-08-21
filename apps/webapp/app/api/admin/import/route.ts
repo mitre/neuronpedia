@@ -159,7 +159,7 @@ export const GET = withOptionalUser(async (request: RequestOptionalUser) => {
           console.error('Error importing inference host source connections:', error);
         }
 
-        // /* FEATURES */
+        /* FEATURES */
         const featuresPaths = await getFilesInPath(`${path}/features`, '.jsonl.gz');
         for (const [index, featuresPath] of featuresPaths.entries()) {
           enqueueProgress(controller, index / featuresPaths.length, `(2 of 4) Importing Features...`);

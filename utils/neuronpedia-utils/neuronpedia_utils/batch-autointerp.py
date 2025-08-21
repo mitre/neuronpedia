@@ -33,11 +33,11 @@ from neuron_explainer.api_client import ApiClient
 from neuron_explainer.explanations.explainer import (
     AttentionHeadExplainer,
     MaxActivationAndLogitsExplainer,
+    MaxActivationExplainer,
     TokenActivationPairExplainer,
 )
 from neuron_explainer.explanations.prompt_builder import PromptFormat
 
-SAVE_DIR_BASE = "./export-autointerp"
 UPLOAD_EXPLANATION_AUTHORID = os.getenv("DEFAULT_CREATOR_ID")
 if UPLOAD_EXPLANATION_AUTHORID is None:
     raise ValueError(
@@ -51,6 +51,7 @@ VALID_EXPLAINER_TYPE_NAMES = [
     "oai_token-act-pair",
     "oai_attention-head",
     "np_max-act-logits",
+    "np_max-act",
 ]
 
 # you can change this yourself if you want to experiment with other models
@@ -226,7 +227,7 @@ async def call_autointerp_openai_for_activations(
                 explanations = await asyncio.wait_for(
                     explainer.generate_explanations(
                         all_activation_records=activationRecords,
-                        max_tokens=60,
+                        max_tokens=200,
                         max_activation=calculate_max_activation(activationRecords),
                         top_positive_logits=feature.pos_str,
                         num_samples=1,
@@ -243,13 +244,47 @@ async def call_autointerp_openai_for_activations(
 
                 print(f"Traceback: {traceback.format_exc()}")
                 raise  # Re-raise to be caught by the outer try-except block
+        elif EXPLAINER_TYPE_NAME == "np_max-act":
+            for activation in activations_sorted_by_max_value:
+                activationRecord = ActivationRecord(
+                    tokens=activation.tokens,
+                    activations=activation.values,
+                )
+                activationRecords.append(activationRecord)
+            explainer = MaxActivationExplainer(
+                model_name=model_name,
+                prompt_format=PromptFormat.HARMONY_V4,
+                max_concurrent=1,
+                base_api_url=base_api_url,
+                override_api_key=override_api_key,
+            )
+            try:
+                explanations = await asyncio.wait_for(
+                    explainer.generate_explanations(
+                        all_activation_records=activationRecords,
+                        max_tokens=200,
+                        max_activation=calculate_max_activation(activationRecords),
+                        num_samples=1,
+                    ),
+                    timeout=20,
+                )
+            except Exception as e:
+                print(
+                    f"=== Error in MaxActivationExplainer.generate_explanations for feature index {feature_index} ==="
+                )
+                print(f"Exception type: {type(e).__name__}")
+                print(f"Exception message: {str(e)}")
+                import traceback
+
+                print(f"Traceback: {traceback.format_exc()}")
+                raise  # Re-raise to be caught by the outer try-except block
 
     except Exception as e:
         if isinstance(e, asyncio.TimeoutError):
             # print("Timeout occurred, skipping index " + str(feature_index))
             pass
         else:
-            print("Explain Error, skipping index " + str(feature_index))
+            print(f"=== Explain Error, skipping index {feature_index} ===")
             print(e)
 
         # print this at the end

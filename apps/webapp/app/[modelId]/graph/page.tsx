@@ -3,10 +3,12 @@ import { GraphProvider } from '@/components/provider/graph-provider';
 import { GraphStateProvider } from '@/components/provider/graph-state-provider';
 import { prisma } from '@/lib/db';
 import { getModelById } from '@/lib/db/model';
+import { ASSET_BASE_URL } from '@/lib/env';
 import { Metadata } from 'next';
 import { getServerSession, Session } from 'next-auth';
 import { notFound } from 'next/navigation';
 import {
+  ADDITIONAL_MODELS_TO_LOAD,
   ANT_BUCKET_URL,
   ANT_MODELS_TO_LOAD,
   getGraphMetadatasFromBucket,
@@ -30,8 +32,8 @@ export async function generateMetadata({
   // use modelIdToModelDisplayName to get the model name if it's there. othewise use it directly
   const modelName = modelIdToModelDisplayName.get(modelId) || modelId;
 
-  const title = `${slug ? `${slug} - ` : ''}${modelName} Attribution Graph`;
-  const description = ``;
+  const title = `${slug ? `${slug} - ` : ''}${modelName} Graph | Neuronpedia`;
+  const description = `Attribution Graph for ${modelName}`;
   let url = `/${modelId}/graph`;
 
   if (slug) {
@@ -44,6 +46,7 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
+      images: [`${ASSET_BASE_URL}/graph-preview.jpg`],
       url,
     },
   };
@@ -239,7 +242,7 @@ export default async function Page({
         console.error('Error parsing params clerps:', error);
       }
     }
-  } else if (ANT_MODELS_TO_LOAD.has(modelId)) {
+  } else if (ANT_MODELS_TO_LOAD.has(modelId) || ADDITIONAL_MODELS_TO_LOAD.has(modelId)) {
     // no default slug and it's a haiku model, just pick the first one
     // pick the first graph in the map
     [metadataGraph] = modelIdToGraphMetadatasMap[modelId];

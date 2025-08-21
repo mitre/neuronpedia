@@ -68,6 +68,7 @@ export default function GraphFeatureDetail() {
     });
 
     const unregisterClicked = registerClickedCallback(() => {
+      setIsEditingLabel(false);
       updateDisplayedNode();
     });
 

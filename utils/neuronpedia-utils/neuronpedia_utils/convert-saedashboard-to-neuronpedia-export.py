@@ -60,7 +60,7 @@ def make_option(*option_names: str, help_text: str, **kwargs) -> Any:
 
 
 # TODO: Use tokenizer to get BOS tokens
-BOS_TOKENS = ["<bos>"]
+BOS_TOKENS = ["<bos>", "<|endoftext|>"]
 
 
 @app.command()
@@ -247,47 +247,54 @@ def main(
 
             # make the release jsonl
             release_file_path = os.path.join(final_output_dir, "release.jsonl")
-            with open(release_file_path, "w") as f:
-                release = SourceRelease(
-                    name=release_id,
-                    description=release_title,
-                    descriptionShort=release_title,
-                    urls=[url] if url else [],
-                    creatorNameShort=creator_name,
-                    creatorName=creator_name,
-                    creatorId=DEFAULT_CREATOR_ID,
-                    createdAt=created_at,
-                )
-                f.write(json.dumps(release.__dict__, default=datetime_handler) + "\n")
+            if not os.path.exists(release_file_path):
+                with open(release_file_path, "w") as f:
+                    release = SourceRelease(
+                        name=release_id,
+                        description=release_title,
+                        descriptionShort=release_title,
+                        urls=[url] if url else [],
+                        creatorNameShort=creator_name,
+                        creatorName=creator_name,
+                        creatorId=DEFAULT_CREATOR_ID,
+                        createdAt=created_at,
+                    )
+                    f.write(
+                        json.dumps(release.__dict__, default=datetime_handler) + "\n"
+                    )
 
             # make the model jsonl
             model_file_path = os.path.join(final_output_dir, "model.jsonl")
-            with open(model_file_path, "w") as f:
-                model = Model(
-                    id=model_name,
-                    instruct=model_name.endswith("-it"),
-                    displayNameShort=model_name,
-                    displayName=model_name,
-                    creatorId=DEFAULT_CREATOR_ID,
-                    createdAt=created_at,
-                    updatedAt=created_at,
-                )
-                f.write(json.dumps(model.__dict__, default=datetime_handler) + "\n")
+            if not os.path.exists(model_file_path):
+                with open(model_file_path, "w") as f:
+                    model = Model(
+                        id=model_name,
+                        instruct=model_name.endswith("-it"),
+                        displayNameShort=model_name,
+                        displayName=model_name,
+                        creatorId=DEFAULT_CREATOR_ID,
+                        createdAt=created_at,
+                        updatedAt=created_at,
+                    )
+                    f.write(json.dumps(model.__dict__, default=datetime_handler) + "\n")
 
             # make the sourceset jsonl
             sourceset_file_path = os.path.join(final_output_dir, "sourceset.jsonl")
-            with open(sourceset_file_path, "w") as f:
-                sourceset = SourceSet(
-                    modelId=model_name,
-                    name=neuronpedia_source_set_id,
-                    creatorId=DEFAULT_CREATOR_ID,
-                    createdAt=created_at,
-                    creatorName=creator_name,
-                    releaseName=release_id,
-                    description=neuronpedia_source_set_description,
-                    visibility="PUBLIC",
-                )
-                f.write(json.dumps(sourceset.__dict__, default=datetime_handler) + "\n")
+            if not os.path.exists(sourceset_file_path):
+                with open(sourceset_file_path, "w") as f:
+                    sourceset = SourceSet(
+                        modelId=model_name,
+                        name=neuronpedia_source_set_id,
+                        creatorId=DEFAULT_CREATOR_ID,
+                        createdAt=created_at,
+                        creatorName=creator_name,
+                        releaseName=release_id,
+                        description=neuronpedia_source_set_description,
+                        visibility="PUBLIC",
+                    )
+                    f.write(
+                        json.dumps(sourceset.__dict__, default=datetime_handler) + "\n"
+                    )
 
             # make the source jsonl
             source_file_path = os.path.join(final_output_dir, "source.jsonl")
@@ -305,6 +312,7 @@ def main(
                     creatorId=DEFAULT_CREATOR_ID,
                 )
                 f.write(json.dumps(source.__dict__, default=datetime_handler) + "\n")
+
             process_data(
                 batch_data,
                 neuronpedia_source_set_id,

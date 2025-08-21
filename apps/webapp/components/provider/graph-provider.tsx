@@ -9,12 +9,15 @@ import {
   FilterGraphType,
   MODEL_DIGITS_IN_FEATURE_ID,
   MODEL_HAS_S3_DASHBOARDS,
+  MODEL_TO_SOURCESET_ID,
   MODEL_WITH_NP_DASHBOARDS_NOT_YET_CANTOR,
   ModelToGraphMetadatasMap,
   cltModelToNumLayers,
-  convertAnthropicFeatureIdToNeuronpediaSourceSet,
+  convertAnthropicFeatureToNeuronpediaSourceSet,
   formatCLTGraphData,
-  getIndexFromAnthropicFeatureId,
+  getIndexFromCantorValue,
+  getIndexFromFeatureAndGraph,
+  getLayerFromCantorValue,
   isHideLayer,
   modelIdToModelDisplayName,
   nodeTypeHasFeatureDetail,
@@ -50,7 +53,7 @@ const ANTHROPIC_FEATURE_DETAIL_DOWNLOAD_BATCH_SIZE = 32;
 const NEURONPEDIA_FEATURE_DETAIL_DOWNLOAD_BATCH_SIZE = 2048;
 export const GRAPH_PREFETCH_ACTIVATIONS_COUNT = 3;
 const DEFAULT_DENSITY_THRESHOLD = 0.99;
-export const PREFERRED_EXPLANATION_TYPE_NAME = 'np_max-act-logits';
+export const PREFERRED_EXPLANATION_TYPES_NAMES = ['np_max-act-logits', 'np_max-act'];
 
 // Define the main graph context type (without modal state)
 type GraphContextType = {
@@ -72,6 +75,7 @@ type GraphContextType = {
   visState: CltVisState;
   setVisState: (newState: Partial<CltVisState>) => void;
   updateVisStateField: <K extends keyof CltVisState>(key: K, value: CltVisState[K]) => void;
+  togglePin: (nodeId: string) => string[];
 
   // logitDiff
   logitDiff: string | null;
@@ -138,13 +142,6 @@ async function fetchInBatches<T>(
     results.push(...batchResults);
   }
   return results;
-}
-
-function getIndexFromCantorValue(feature: number): number {
-  const w = Math.floor((Math.sqrt(8 * feature + 1) - 1) / 2);
-  const t = (w * w + w) / 2;
-  const y = feature - t;
-  return y;
 }
 
 // Provider component
@@ -231,8 +228,8 @@ export function GraphProvider({
   const getOriginalClerpForNode = (node: CLTGraphNode) => {
     if (node.featureDetailNP) {
       // if any of the explanations.typeName === PREFERRED_EXPLANATION_TYPE_NAME, then use that one
-      const explanation = node.featureDetailNP.explanations?.find(
-        (e) => e.typeName === PREFERRED_EXPLANATION_TYPE_NAME,
+      const explanation = node.featureDetailNP.explanations?.find((e) =>
+        PREFERRED_EXPLANATION_TYPES_NAMES.includes(e.typeName || ''),
       );
       if (explanation) {
         return explanation.description;
@@ -471,6 +468,47 @@ export function GraphProvider({
     setVisStateInternal((prevState) => ({ ...prevState, ...newState }));
   };
 
+  // Pin/Unpin the nodeId and return the new PinnedIds array
+  // If it's in a supernode, we need to remove it from the supernode
+  const togglePin = (nodeId: string): string[] => {
+    const currentPinnedIds = visState.pinnedIds || [];
+    const newPinnedIds = currentPinnedIds.includes(nodeId)
+      ? currentPinnedIds.filter((id) => id !== nodeId)
+      : [...currentPinnedIds, nodeId];
+
+    setVisStateInternal((prevState) => ({
+      ...prevState,
+      pinnedIds: newPinnedIds,
+    }));
+
+    // if we are REMOVING the pin, and the nodeId is in a supernode, we need to remove it from the supernode
+    if (!newPinnedIds.includes(nodeId) && visState.subgraph?.supernodes.some((sn) => sn.includes(nodeId))) {
+      setVisStateInternal((prevState) => ({
+        ...prevState,
+        ...(prevState.subgraph && {
+          subgraph: {
+            ...prevState.subgraph,
+            supernodes: prevState.subgraph.supernodes
+              .map((sn) => {
+                // If this supernode contains the nodeId, remove it
+                if (sn.includes(nodeId)) {
+                  return sn.filter((id) => id !== nodeId);
+                }
+                return sn;
+              })
+              .filter((sn) => sn.length > 2), // Remove supernodes with 2 or fewer items (first is label, second is a node. if there's only 2, then it's a single node)
+            activeGrouping: {
+              isActive: false,
+              selectedNodeIds: new Set(),
+            },
+          },
+        }),
+      }));
+    }
+
+    return newPinnedIds;
+  };
+
   // Function to update a single field of visState
   const updateVisStateField = useCallback(<K extends keyof CltVisState>(key: K, value: CltVisState[K]) => {
     setVisStateInternal((prevState) => ({ ...prevState, [key]: value }));
@@ -605,80 +643,105 @@ export function GraphProvider({
       displayName,
       layers: numLayers,
     };
+
+    const isCantor = data.metadata.schema_version === 1 || data.metadata.feature_details?.neuronpedia_source_set;
     // if it specifies source_set, then it's cantor
-    if (data.metadata.feature_details?.neuronpedia_source_set) {
-      let model = '';
+    if (isCantor) {
+      const model = data.metadata.scan;
 
-      model = data.metadata.scan;
+      if (data.metadata.feature_details?.neuronpedia_source_set || model in MODEL_TO_SOURCESET_ID) {
+        const sourceSet =
+          data.metadata.feature_details?.neuronpedia_source_set ||
+          MODEL_TO_SOURCESET_ID[model as keyof typeof MODEL_TO_SOURCESET_ID];
 
-      let sourceSet = '';
-      if (data.metadata.feature_details?.neuronpedia_source_set) {
-        sourceSet = data.metadata.feature_details?.neuronpedia_source_set;
-      } else {
-        throw new Error('Invalid source state: neither neuronpedia nor fellows');
-      }
+        // make an array of features to call /api/features
+        // for neuronpedia fetches we only get the first 10 and then load more on demand
+        const features = formattedData.nodes
+          .filter((d) => nodeTypeHasFeatureDetail(d))
+          .map((d) => {
+            let layerNum = -1;
+            let index = -1;
 
-      // make an array of features to call /api/features
-      // for neuronpedia fetches we only get the first 10 and then load more on demand
-      const features = formattedData.nodes
-        .filter((d) => nodeTypeHasFeatureDetail(d))
-        .map((d) => {
-          let layerNum = -1;
-          let index = -1;
+            // convert from feature id to layer and index using cantor pairing
+            layerNum = parseInt(d.layer, 10);
+            index = getIndexFromCantorValue(d.feature);
+            return {
+              modelId: model,
+              layer: `${layerNum}-${sourceSet}`,
+              index,
+              maxActsToReturn: GRAPH_PREFETCH_ACTIVATIONS_COUNT,
+            };
+          });
 
-          // convert from feature id to layer and index using cantor pairing
-          layerNum = parseInt(d.layer, 10);
-          index = getIndexFromCantorValue(d.feature);
-          return {
-            modelId: model,
-            layer: `${layerNum}-${sourceSet}`,
-            index,
-            maxActsToReturn: GRAPH_PREFETCH_ACTIVATIONS_COUNT,
-          };
-        });
-
-      // split the features into batches of NEURONPEDIA_FEATURE_DETAIL_DOWNLOAD_BATCH_SIZE
-      const batches = [];
-      for (let i = 0; i < features.length; i += NEURONPEDIA_FEATURE_DETAIL_DOWNLOAD_BATCH_SIZE) {
-        batches.push(features.slice(i, i + NEURONPEDIA_FEATURE_DETAIL_DOWNLOAD_BATCH_SIZE));
-      }
-
-      // call /api/features in batches, sequentially
-      const batchesOfDetails = [];
-      setLoadingGraphLabel(`Loading ${features.length} Nodes... `);
-      for (const batch of batches) {
-        const resp = await fetch('/api/features', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(batch),
-          signal: abortSignal,
-        });
-        if (abortSignal?.aborted) {
-          throw new Error('Request cancelled after /api/features batch fetch');
+        // split the features into batches of NEURONPEDIA_FEATURE_DETAIL_DOWNLOAD_BATCH_SIZE
+        const batches = [];
+        for (let i = 0; i < features.length; i += NEURONPEDIA_FEATURE_DETAIL_DOWNLOAD_BATCH_SIZE) {
+          batches.push(features.slice(i, i + NEURONPEDIA_FEATURE_DETAIL_DOWNLOAD_BATCH_SIZE));
         }
-        const da = (await resp.json()) as NeuronWithPartialRelations[];
-        batchesOfDetails.push(da);
-      }
 
-      // put the details in the nodes
-      const featureDetails = batchesOfDetails.flat(1);
-      formattedData.nodes.forEach((d) => {
-        // eslint-disable-next-line no-param-reassign
-        const feature = featureDetails.find(
-          (f) =>
-            f &&
-            'index' in f &&
-            f.index === getIndexFromCantorValue(d.feature).toString() &&
-            'layer' in f &&
-            f.layer === `${d.layer}-${sourceSet}`,
-        );
-        if (feature) {
+        // call /api/features in batches, sequentially
+        const batchesOfDetails = [];
+        setLoadingGraphLabel(`Loading ${features.length} Nodes... `);
+        for (const batch of batches) {
+          const resp = await fetch('/api/features', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(batch),
+            signal: abortSignal,
+          });
+          if (abortSignal?.aborted) {
+            throw new Error('Request cancelled after /api/features batch fetch');
+          }
+          const da = (await resp.json()) as NeuronWithPartialRelations[];
+          batchesOfDetails.push(da);
+        }
+
+        // put the details in the nodes
+        const featureDetails = batchesOfDetails.flat(1);
+        formattedData.nodes.forEach((d) => {
           // eslint-disable-next-line no-param-reassign
-          d.featureDetailNP = feature as NeuronWithPartialRelations;
-        }
-      });
+          const feature = featureDetails.find(
+            (f) =>
+              f &&
+              'index' in f &&
+              f.index === getIndexFromCantorValue(d.feature).toString() &&
+              'layer' in f &&
+              f.layer === `${d.layer}-${sourceSet}`,
+          );
+          if (feature) {
+            // eslint-disable-next-line no-param-reassign
+            d.featureDetailNP = feature as NeuronWithPartialRelations;
+          }
+        });
+        // dont have sourceSet/NP yet, but is cantor
+      } else {
+        // currently only qwen3-4b mwhanna noskip transcoder is at this condition because it's:
+        // 1) schema version 1
+        // 2) is NOT in MODEL_TO_SOURCESET_ID (doesn't yet have neuronpedia dashboards)
+        const mwhannaQwenNoSkipTranscoderFeaturePrefix = 'Qwen3-4b-relu-noskip-';
+        const featureDetails = await fetchInBatches(
+          formattedData.nodes,
+          (d: CLTGraphNode, signal?: AbortSignal) => {
+            if (nodeTypeHasFeatureDetail(d)) {
+              return fetchFeatureDetailFromBaseURL(
+                `https://d1fk9w8oratjix.cloudfront.net/features/Qwen3-4B/${mwhannaQwenNoSkipTranscoderFeaturePrefix}${getLayerFromCantorValue(d.feature)}`,
+                getIndexFromCantorValue(d.feature).toString(),
+                signal,
+              );
+            }
+            return Promise.resolve(null);
+          },
+          ANTHROPIC_FEATURE_DETAIL_DOWNLOAD_BATCH_SIZE,
+          abortSignal,
+        );
+
+        formattedData.nodes.forEach((d, i) => {
+          // eslint-disable-next-line no-param-reassign
+          d.featureDetail = featureDetails[i] as AnthropicFeatureDetail;
+        });
+      }
     }
     // TODO: remove this exception once fellows graph gets on cantor
     else if (MODEL_WITH_NP_DASHBOARDS_NOT_YET_CANTOR.has(selectedModelId)) {
@@ -691,11 +754,11 @@ export function GraphProvider({
         .filter((d) => nodeTypeHasFeatureDetail(d))
         .map((d) => ({
           modelId: model,
-          layer: convertAnthropicFeatureIdToNeuronpediaSourceSet(
+          layer: convertAnthropicFeatureToNeuronpediaSourceSet(
             selectedModelId as keyof typeof MODEL_DIGITS_IN_FEATURE_ID,
-            d.feature,
+            d,
           ),
-          index: getIndexFromAnthropicFeatureId(selectedModelId as keyof typeof MODEL_DIGITS_IN_FEATURE_ID, d.feature),
+          index: getIndexFromFeatureAndGraph(selectedModelId, d, formattedData),
           maxActsToReturn: GRAPH_PREFETCH_ACTIVATIONS_COUNT,
         }));
 
@@ -737,16 +800,12 @@ export function GraphProvider({
             (f) =>
               f &&
               'index' in f &&
-              f.index ===
-                getIndexFromAnthropicFeatureId(
-                  selectedModelId as keyof typeof MODEL_DIGITS_IN_FEATURE_ID,
-                  d.feature,
-                ).toString() &&
+              f.index === getIndexFromFeatureAndGraph(selectedModelId, d, formattedData).toString() &&
               'layer' in f &&
               f.layer ===
-                convertAnthropicFeatureIdToNeuronpediaSourceSet(
+                convertAnthropicFeatureToNeuronpediaSourceSet(
                   selectedModelId as keyof typeof MODEL_DIGITS_IN_FEATURE_ID,
-                  d.feature,
+                  d,
                 ),
           );
           if (feature) {
@@ -765,6 +824,28 @@ export function GraphProvider({
               'llama-3-131k-relu',
               d.feature,
               'https://d1fk9w8oratjix.cloudfront.net',
+              signal,
+            );
+          }
+          return Promise.resolve(null);
+        },
+        ANTHROPIC_FEATURE_DETAIL_DOWNLOAD_BATCH_SIZE,
+        abortSignal,
+      );
+
+      formattedData.nodes.forEach((d, i) => {
+        // eslint-disable-next-line no-param-reassign
+        d.featureDetail = featureDetails[i] as AnthropicFeatureDetail;
+      });
+    } else if (selectedModelId === 'qwen3-4b') {
+      // these are the mntss skip transcoders
+      const featureDetails = await fetchInBatches(
+        formattedData.nodes,
+        (d: CLTGraphNode, signal?: AbortSignal) => {
+          if (nodeTypeHasFeatureDetail(d)) {
+            return fetchFeatureDetailFromBaseURL(
+              `https://d1fk9w8oratjix.cloudfront.net/features/Qwen3-4B/qwen3-4b-${d.layer}`,
+              d.feature.toString(),
               signal,
             );
           }
@@ -988,6 +1069,7 @@ export function GraphProvider({
       visState,
       setVisState,
       updateVisStateField,
+      togglePin,
       logitDiff,
       setLogitDiff,
       isLoadingGraphData,
@@ -1017,6 +1099,7 @@ export function GraphProvider({
       visState,
       logitDiff,
       updateVisStateField,
+      togglePin,
       isLoadingGraphData,
       setIsLoadingGraphData,
       resetSelectedGraphToDefaultVisState,

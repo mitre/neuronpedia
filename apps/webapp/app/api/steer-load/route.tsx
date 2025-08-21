@@ -51,6 +51,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
       chatTemplate: savedSteerSteeredOutput.outputTextChatTemplate
         ? JSON.parse(savedSteerSteeredOutput.outputTextChatTemplate)
         : null,
+      logprobs: savedSteerSteeredOutput.logprobs ? JSON.parse(savedSteerSteeredOutput.logprobs) : null,
     };
     toReturnResult.features = savedSteerSteeredOutput.toNeurons;
 
@@ -83,6 +84,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
       chatTemplate: savedSteerDefaultOutput.outputTextChatTemplate
         ? JSON.parse(savedSteerDefaultOutput.outputTextChatTemplate)
         : null,
+      logprobs: savedSteerDefaultOutput.logprobs ? JSON.parse(savedSteerDefaultOutput.logprobs) : null,
     };
 
     toReturnResult.inputText = savedSteerSteeredOutput.inputText;

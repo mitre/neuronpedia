@@ -9,7 +9,7 @@ export default function Tooltip({ alwaysOpen, children }: { alwaysOpen: boolean;
   const [open, setOpen] = useState(false);
 
   return (
-    <OldTooltip.Root open={alwaysOpen || open} delayDuration={0} onOpenChange={setOpen}>
+    <OldTooltip.Root open={alwaysOpen || open} delayDuration={250} onOpenChange={setOpen}>
       {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
       <span onClick={() => setOpen(true)} className="inline-block">
         {children}

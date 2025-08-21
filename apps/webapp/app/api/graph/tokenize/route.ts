@@ -46,6 +46,7 @@ export async function POST(request: Request) {
       validatedData.prompt,
       validatedData.maxNLogits,
       validatedData.desiredLogitProb,
+      validatedData.modelId,
     );
 
     // console.log('tokenizedResponse', tokenizedResponse);

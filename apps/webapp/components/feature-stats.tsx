@@ -14,6 +14,8 @@ import createPlotlyComponent from 'react-plotly.js/factory';
 // // https://github.com/plotly/react-plotly.js/issues/273
 import dynamic from 'next/dynamic';
 
+const MISSING_LOGIT_VALUE = -10000;
+
 const Plot = dynamic(
   () => Promise.resolve(import('plotly.js-dist-min').then((Plotly) => createPlotlyComponent(Plotly))),
   {
@@ -91,7 +93,7 @@ export default function FeatureStats({
             <div className="flex w-full flex-col">
               <div className="mb-1 flex flex-row items-center gap-x-1 font-mono text-[11px] font-bold uppercase text-slate-500">
                 <div>Neuron Alignment</div>
-                <Tooltip.Provider delayDuration={0} skipDelayDuration={0}>
+                <Tooltip.Provider delayDuration={300} skipDelayDuration={0}>
                   <Tooltip.Root>
                     <Tooltip.Trigger asChild>
                       <button type="button">
@@ -143,7 +145,7 @@ export default function FeatureStats({
             <div className="flex w-full flex-col">
               <div className="mb-1 flex flex-row items-center gap-x-1 font-mono text-[11px] font-bold uppercase text-slate-500">
                 <div>Correlated Neurons</div>
-                <Tooltip.Provider delayDuration={0} skipDelayDuration={0}>
+                <Tooltip.Provider delayDuration={300} skipDelayDuration={0}>
                   <Tooltip.Root>
                     <Tooltip.Trigger asChild>
                       <button type="button">
@@ -203,7 +205,7 @@ export default function FeatureStats({
                     <div className="mb-0 flex flex-row items-center justify-center gap-x-1 font-sans text-[10px] font-normal uppercase text-slate-400">
                       Head Attr Weights
                     </div>
-                    <Tooltip.Provider delayDuration={0} skipDelayDuration={0}>
+                    <Tooltip.Provider delayDuration={300} skipDelayDuration={0}>
                       <Tooltip.Root>
                         <Tooltip.Trigger asChild>
                           <button type="button">
@@ -240,7 +242,7 @@ export default function FeatureStats({
                     <div className="mb-0.5 flex flex-row items-center justify-center gap-x-1 font-sans text-[10px] font-normal uppercase text-slate-400 sm:mb-0">
                       Negative Logits
                     </div>
-                    <Tooltip.Provider delayDuration={0} skipDelayDuration={0}>
+                    <Tooltip.Provider delayDuration={300} skipDelayDuration={0}>
                       <Tooltip.Root>
                         <Tooltip.Trigger asChild>
                           <button type="button">
@@ -248,7 +250,10 @@ export default function FeatureStats({
                           </button>
                         </Tooltip.Trigger>
                         <Tooltip.Portal>
-                          <Tooltip.Content className="rounded bg-slate-500 px-3 py-2 text-xs text-white" sideOffset={5}>
+                          <Tooltip.Content
+                            className="z-20 rounded bg-slate-500 px-3 py-2 text-xs text-white"
+                            sideOffset={5}
+                          >
                             Top negative logits of the feature.
                             <Tooltip.Arrow className="fill-slate-500" />
                           </Tooltip.Content>
@@ -283,7 +288,11 @@ export default function FeatureStats({
                       >
                         {replaceHtmlAnomalies(s)}
                       </pre>
-                      <div>{currentNeuron?.neg_values[i].toFixed(2)}</div>
+                      <div>
+                        {currentNeuron?.neg_values[i] === MISSING_LOGIT_VALUE
+                          ? 'N/A'
+                          : currentNeuron?.neg_values[i].toFixed(2)}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -296,7 +305,7 @@ export default function FeatureStats({
                     <div className="mb-0.5 flex flex-row items-center justify-center gap-x-1 font-sans text-[10px] font-normal uppercase text-slate-400 sm:mb-0">
                       POSITIVE LOGITS
                     </div>
-                    <Tooltip.Provider delayDuration={0} skipDelayDuration={0}>
+                    <Tooltip.Provider delayDuration={300} skipDelayDuration={0}>
                       <Tooltip.Root>
                         <Tooltip.Trigger asChild>
                           <button type="button">
@@ -304,7 +313,10 @@ export default function FeatureStats({
                           </button>
                         </Tooltip.Trigger>
                         <Tooltip.Portal>
-                          <Tooltip.Content className="rounded bg-slate-500 px-3 py-2 text-xs text-white" sideOffset={5}>
+                          <Tooltip.Content
+                            className="z-20 rounded bg-slate-500 px-3 py-2 text-xs text-white"
+                            sideOffset={5}
+                          >
                             Top positive logits of the feature.
                             <Tooltip.Arrow className="fill-slate-500" />
                           </Tooltip.Content>
@@ -339,7 +351,11 @@ export default function FeatureStats({
                       >
                         {replaceHtmlAnomalies(s)}
                       </pre>
-                      <div>{currentNeuron?.pos_values[i].toFixed(2)}</div>
+                      <div>
+                        {currentNeuron?.pos_values[i] === MISSING_LOGIT_VALUE
+                          ? 'N/A'
+                          : currentNeuron?.pos_values[i].toFixed(2)}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -358,7 +374,7 @@ export default function FeatureStats({
               Act<span className="hidden sm:inline-block">ivations</span> Density{' '}
               {((currentNeuron?.frac_nonzero || 0) * 100).toFixed(3)}%
             </div>
-            <Tooltip.Provider delayDuration={0} skipDelayDuration={0}>
+            <Tooltip.Provider delayDuration={300} skipDelayDuration={0}>
               <Tooltip.Root>
                 <Tooltip.Trigger asChild>
                   <button type="button">
@@ -367,7 +383,7 @@ export default function FeatureStats({
                 </Tooltip.Trigger>
                 <Tooltip.Portal>
                   <Tooltip.Content
-                    className="rounded bg-slate-500 px-3 py-2 text-center text-xs text-white"
+                    className="z-20 rounded bg-slate-500 px-3 py-2 text-center text-xs text-white"
                     sideOffset={5}
                   >
                     (First) Histogram of randomly sampled non-zero activations.

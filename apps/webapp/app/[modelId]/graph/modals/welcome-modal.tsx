@@ -67,9 +67,9 @@ export default function WelcomeModal({ hasSlug }: { hasSlug: boolean }) {
       bgColor: 'bg-indigo-100',
       textColor: 'text-indigo-600',
       content: (
-        <div className="flex flex-col gap-y-3 text-left text-sm">
-          This is the guide for using and interpreting each panel of Circuit Tracer. If you want to read the guide
-          later, you can generate a graph with a custom prompt now.
+        <div className="flex flex-col gap-y-3 text-left text-[13px] leading-normal">
+          How does a language model decide how to respond? Interactively trace its internal reasoning steps and generate
+          your own graphs with custom prompts. To read the guide later, click below.
           <Button
             onClick={() => {
               setIsWelcomeModalOpen(false);
@@ -81,14 +81,13 @@ export default function WelcomeModal({ hasSlug }: { hasSlug: boolean }) {
             Generate New Graph
           </Button>
           <p className="mt-2">
-            Want to see some examples first? Here are graphs that we&apos;ve &quot;solved&quot;, meaning we&apos;ve
-            identified an annotated subgraph that explains key internal reasoning steps. Share if you&apos;ve got an
-            answer for the unsolved graphs!
+            After generating a graph, your objective is to create a <b>subgraph solution</b>. To do this, you pin and
+            group nodes to create a subgraph that explains key internal reasoning steps. Examples:
           </p>
-          <div className="pt-2 text-center text-[11px] font-medium uppercase leading-none text-slate-400">
+          <div className="pt-2 text-left text-[11px] font-medium uppercase leading-none text-slate-400">
             Solved Graphs
           </div>
-          <ul className="-mt-2 ml-5 list-disc text-[13px]">
+          <ul className="-mt-2 ml-4 list-disc text-[12px]">
             <li className="">
               <div
                 className="cursor-pointer text-sky-600 hover:underline"
@@ -98,7 +97,7 @@ export default function WelcomeModal({ hasSlug }: { hasSlug: boolean }) {
                   setIsWelcomeModalOpen(false);
                 }}
               >
-                capital of the state containing Dallas is → Austin{' '}
+                capital of state containing Dallas → Austin{' '}
               </div>
             </li>
             <li>
@@ -111,7 +110,7 @@ export default function WelcomeModal({ hasSlug }: { hasSlug: boolean }) {
                     '/gemma-2-2b/graph?slug=gemma-small-big-en&clerps=[]&pruningThreshold=0.65&pinnedIds=27_13210_8,E_10498_5,23_8683_8,21_10062_8,17_12530_5,18_9402_8,6_4362_5,15_5617_5,15_5756_5,19_5058_8,14_11360_5,E_13388_2,15_7209_2,4_95_2,3_6576_2,27_7773_8,7_10545_5&supernodes=[["Output+\"big\"+or+\"large\"","27_7773_8","27_13210_8"],["say+big+/+huge+/+large","21_10062_8","23_8683_8"],["opposite","4_95_2","15_7209_2","3_6576_2"],["small","14_11360_5","17_12530_5","15_5617_5"],["large+/+size","6_4362_5","7_10545_5","15_5756_5"]]&clickedId=6_4362_5';
                 }}
               >
-                English
+                Eng
               </span>
               ,{' '}
               <span
@@ -121,7 +120,7 @@ export default function WelcomeModal({ hasSlug }: { hasSlug: boolean }) {
                     '/gemma-2-2b/graph?slug=gemma-small-big-fr&pruningThreshold=0.65&pinnedIds=27_21996_8,E_64986_5,24_16045_8,19_5058_8,21_10062_8,23_2592_8,20_1454_8,E_63265_2,23_8683_8,23_8488_8,20_11434_8,19_5802_8,E_1455_7,15_5617_5,18_9402_8,6_4362_5,14_11360_5,3_2908_5,2_5452_5,3_6627_5,6_16184_2,4_95_2,22_10566_8,21_1144_8,E_2025_1,E_581_3&supernodes=[["opposite","6_16184_2","4_95_2"],["say+big+/+large","23_8683_8","23_8488_8","21_10062_8"],["comparatives","19_5058_8","24_16045_8","20_11434_8"],["small","15_5617_5","14_11360_5","3_6627_5","3_2908_5","2_5452_5"],["size","18_9402_8","6_4362_5"],["French","21_1144_8","22_10566_8","20_1454_8","23_2592_8","19_5802_8"]]&clickedId=22_10566_8&densityThreshold=0.99';
                 }}
               >
-                French
+                Fra
               </span>
               ,{' '}
               <span
@@ -131,7 +130,7 @@ export default function WelcomeModal({ hasSlug }: { hasSlug: boolean }) {
                     '/gemma-2-2b/graph?slug=gemma-small-big-zh&pruningThreshold=0.65&pinnedIds=27_235469_8,E_235585_2,23_8488_8,23_8683_8,21_10062_8,19_5058_8,22_11933_8,21_9377_8,18_9402_8,15_5617_2,14_11360_2,14_13476_2,2_2169_2,1_10169_2,8_1988_6,4_15846_6,4_7409_6,E_208659_4,E_237379_6,E_236711_5,24_2394_8,23_13630_8,21_13505_8,20_12983_8&supernodes=[["reverse","4_7409_6","8_1988_6","4_15846_6"],["small","15_5617_2","14_11360_2"],["say+big+/+large","23_8683_8","21_10062_8","23_8488_8"],["Chinese","24_2394_8","22_11933_8","20_12983_8","21_13505_8","23_13630_8"],["Chinese-related+English+text","1_10169_2","14_13476_2"],["size","18_9402_8","2_2169_2"],["comparatives","21_9377_8","19_5058_8"]]&clickedId=27_235469_8&densityThreshold=0.99';
                 }}
               >
-                Chinese
+                Chn
               </span>
             </li>
             <li>
@@ -146,10 +145,10 @@ export default function WelcomeModal({ hasSlug }: { hasSlug: boolean }) {
               </div>
             </li>
           </ul>
-          <div className="pt-2 text-center text-[11px] font-medium uppercase leading-none text-slate-400">
+          <div className="pt-2 text-left text-[11px] font-medium uppercase leading-none text-slate-400">
             Unsolved Graphs
           </div>
-          <ul className="-mt-2 ml-5 list-disc text-[13px]">
+          <ul className="-mt-2 ml-4 list-disc text-[12px]">
             <li>
               <div
                 className="cursor-pointer text-sky-600 hover:underline"
@@ -158,7 +157,7 @@ export default function WelcomeModal({ hasSlug }: { hasSlug: boolean }) {
                     '/gemma-2-2b/graph?slug=gemma-Mexico-Spanish&clickedId=undefined&pruningThreshold=0.7&densityThreshold=0.99';
                 }}
               >
-                spoken in the country south of the US is → Spanish
+                spoken in country south of the US → Spanish
               </div>
             </li>
             <li>
@@ -191,7 +190,7 @@ export default function WelcomeModal({ hasSlug }: { hasSlug: boolean }) {
     {
       number: 1,
       title: 'Top Toolbar',
-      subtitle: 'Choose/Generate a Graph',
+      subtitle: 'Generate Graph',
       bgColor: 'bg-blue-100',
       textColor: 'text-blue-600',
       content: (
@@ -216,11 +215,11 @@ export default function WelcomeModal({ hasSlug }: { hasSlug: boolean }) {
     {
       number: 2,
       title: 'Top Left',
-      subtitle: 'Link/Attribution Graph',
+      subtitle: 'Attribution Graph',
       bgColor: 'bg-green-100',
       textColor: 'text-green-600',
       content: (
-        <div className="flex flex-col gap-y-3 text-left text-sm">
+        <div className="flex flex-col gap-y-3 text-left text-[13px]">
           <p className="">
             The link (or attribution) graph at the top left displays the model&apos;s reasoning process as a graph.
             Intermediate steps are represented as nodes, with edges indicating the effect of one node on another.
@@ -276,7 +275,7 @@ export default function WelcomeModal({ hasSlug }: { hasSlug: boolean }) {
       bgColor: 'bg-yellow-100',
       textColor: 'text-yellow-600',
       content: (
-        <div className="flex flex-col gap-y-3 text-left text-sm">
+        <div className="flex flex-col gap-y-3 text-left text-[13px]">
           <p className="">
             The subgraph is a scratchpad for pinning and grouping nodes to make sense of the link graph. It&apos;s where
             you create a &quot;solution&quot; to what the model is thinking to arrive at its output token.
@@ -301,13 +300,14 @@ export default function WelcomeModal({ hasSlug }: { hasSlug: boolean }) {
               <strong>Pin Node to Subgraph</strong>
               <div className="ml-0 text-xs">
                 Click a <Circle className="mb-1 mr-0.5 inline h-3 w-3" />
-                node in the link graph, then click <strong>Pin Node</strong>.
+                node in the link graph, then click <strong>Pin Node</strong>. Alternatively, Cmd+Click a node to pin it.
               </div>
             </div>
             <div className="items-left flex w-full flex-col gap-y-0.5">
               <strong>Grouping</strong>
               <div className="ml-0 text-left text-xs">
                 Click <strong>Grouping Mode</strong>, select subgraph nodes, and click <strong>Save Group</strong>.
+                Alternatively, hold &apos;g&apos;, click multiple nodes, and release to group them.
               </div>
             </div>
             <div className="items-left flex w-full flex-col gap-y-0.5">
@@ -411,35 +411,138 @@ export default function WelcomeModal({ hasSlug }: { hasSlug: boolean }) {
 
   return (
     <Dialog open={isWelcomeModalOpen} onOpenChange={handleWelcomeClose}>
-      <DialogContent className="w-screen-xl max-w-screen-2xl bg-white text-slate-700">
-        <DialogHeader>
-          <DialogTitle className="flex w-full flex-row items-center justify-center gap-x-2 pb-0 text-2xl font-bold leading-none">
-            <span className="inline-block select-none whitespace-nowrap bg-gradient-to-r from-emerald-700 to-sky-600 bg-clip-text text-transparent">
-              Circuit Tracer - User Guide
-            </span>
-          </DialogTitle>
-          <DialogDescription className="text-center">
-            <div className="mb-1.5 mt-0 text-center text-[13px] font-medium text-slate-500">
-              How does a language model decide how to respond? Interactively trace its internal reasoning steps and
-              generate your own graphs with custom prompts. (
+      <DialogContent className="w-screen-xl max-w-screen-xl overflow-hidden border-0 bg-white px-0 pb-0 pt-0 text-slate-700">
+        <DialogHeader className="space-y-0">
+          <DialogTitle className="flex w-full flex-row items-center justify-between gap-x-5 bg-white px-8 pb-4 pt-6 text-2xl font-bold leading-none tracking-normal">
+            <div className="select-none whitespace-nowrap text-center leading-tight tracking-tight text-slate-700">
+              Circuit Tracer
+              <br />
+              Guide
+            </div>
+
+            <div className="flex flex-1 flex-row gap-x-2.5 px-2 text-sm">
+              <a
+                href="https://youtu.be/ruLcDtr_cGo"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-1 cursor-pointer flex-row items-center justify-center gap-x-2 whitespace-nowrap rounded-lg border border-red-600 bg-red-50 px-4 py-2.5 text-center text-[13px] font-medium text-red-600 hover:bg-red-200"
+              >
+                <svg className="h-7 w-7" viewBox="0 0 32 32" fill="currentColor">
+                  <path d="M12.932 20.459v-8.917l7.839 4.459zM30.368 8.735c-0.354-1.301-1.354-2.307-2.625-2.663l-0.027-0.006c-3.193-0.406-6.886-0.638-10.634-0.638-0.381 0-0.761 0.002-1.14 0.007l0.058-0.001c-0.322-0.004-0.701-0.007-1.082-0.007-3.748 0-7.443 0.232-11.070 0.681l0.434-0.044c-1.297 0.363-2.297 1.368-2.644 2.643l-0.006 0.026c-0.4 2.109-0.628 4.536-0.628 7.016 0 0.088 0 0.176 0.001 0.263l-0-0.014c-0 0.074-0.001 0.162-0.001 0.25 0 2.48 0.229 4.906 0.666 7.259l-0.038-0.244c0.354 1.301 1.354 2.307 2.625 2.663l0.027 0.006c3.193 0.406 6.886 0.638 10.634 0.638 0.38 0 0.76-0.002 1.14-0.007l-0.058 0.001c0.322 0.004 0.702 0.007 1.082 0.007 3.749 0 7.443-0.232 11.070-0.681l-0.434 0.044c1.298-0.362 2.298-1.368 2.646-2.643l0.006-0.026c0.399-2.109 0.627-4.536 0.627-7.015 0-0.088-0-0.176-0.001-0.263l0 0.013c0-0.074 0.001-0.162 0.001-0.25 0-2.48-0.229-4.906-0.666-7.259l0.038 0.244z" />
+                </svg>
+                <div>YouTube Tutorial</div>
+              </a>
+              <a
+                href="/graph/info"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-1 cursor-pointer flex-row items-center justify-center gap-x-2 whitespace-nowrap rounded-lg border border-sky-600 bg-sky-50 px-4 py-2.5 text-center text-[13px] font-medium text-sky-700 hover:bg-sky-200"
+              >
+                <NewspaperIcon className="h-6 w-6" />
+                <div>Aug 2025 Update</div>
+              </a>
               <a
                 href="https://github.com/safety-research/circuit-tracer"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sky-700 hover:text-sky-800 hover:underline"
+                className="flex flex-1 cursor-pointer flex-row items-center justify-center gap-x-2 whitespace-nowrap rounded-lg border border-slate-600 bg-slate-50 px-4 py-2.5 text-center text-[12px] font-medium text-slate-700 hover:bg-slate-200"
               >
-                GitHub
+                <GithubIcon className="h-6 w-6" />
+                <div className="leading-snug">
+                  circuit-tracer
+                  <br />
+                  GitHub
+                </div>
               </a>
-              )
+              <div className="grid grid-cols-2 gap-2 gap-y-1">
+                <Button
+                  onClick={() => {
+                    window.open('https://www.anthropic.com/research/open-source-circuit-tracing', '_blank');
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="flex h-7 flex-1 flex-row items-center justify-center gap-x-2 text-slate-500"
+                >
+                  <NewspaperIcon className="h-3.5 w-3.5" />
+                  <div className="text-[11px]">Anthropic Blog</div>
+                </Button>
+                <Button
+                  onClick={() => {
+                    window.open(
+                      'https://github.com/safety-research/circuit-tracer/blob/main/demos/circuit_tracing_tutorial.ipynb',
+                      '_blank',
+                    );
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="flex h-7 flex-1 flex-row items-center justify-center gap-x-2 text-slate-500"
+                >
+                  <NotebookIcon className="h-3.5 w-3.5" />
+                  <div className="text-[11px]">Gemma 2 Notebook</div>
+                </Button>
+
+                <Button
+                  onClick={() => {
+                    window.open('https://transformer-circuits.pub/2025/attribution-graphs/methods.html', '_blank');
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="flex h-7 flex-1 flex-row items-center justify-center gap-x-2 text-slate-500"
+                >
+                  <BookOpen className="h-3.5 w-3.5" />
+                  <div className="text-[11px]">Attrib Graphs Paper</div>
+                </Button>
+
+                <Button
+                  onClick={() => {
+                    window.open('https://transformer-circuits.pub/2025/attribution-graphs/biology.html', '_blank');
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="flex h-7 flex-1 flex-row items-center justify-center gap-x-2 text-slate-500"
+                >
+                  <BookOpen className="h-3.5 w-3.5" />
+                  <div className="text-[11px]">Claude Haiku Study</div>
+                </Button>
+              </div>
             </div>
-            <div className="flex flex-row gap-x-3">
-              <div className="mt-0 flex w-1/4 flex-col">
-                <div className="flex-1 rounded-lg bg-white p-4 px-0 pb-2 pt-2.5">
-                  <div className="mb-0 text-base font-bold text-slate-600">{steps[currentStep].subtitle}</div>
+          </DialogTitle>
+          <div className="flex w-full flex-1 flex-row justify-center">
+            {steps.map((step, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => goToStep(index)}
+                aria-label={`Go to step ${index + 1}: ${step.title}`}
+                className={`flex flex-1 flex-col items-center justify-center gap-y-1 px-3 py-3 text-xs font-medium transition-all duration-200 focus:outline-none focus:ring-0 ${
+                  index === currentStep
+                    ? 'bg-slate-300 text-slate-600'
+                    : 'bg-slate-200 text-slate-600 hover:bg-slate-300/80'
+                } `}
+              >
+                <div
+                  className={`whitespace-pre text-[12px] leading-none ${index === currentStep ? 'font-semibold' : ''}`}
+                >
+                  {step.subtitle}
+                </div>
+
+                <div
+                  className={`${index === currentStep ? 'text-slate-500' : 'text-slate-400'} text-[8px] font-medium uppercase leading-none`}
+                >
+                  {step.title}
+                </div>
+              </button>
+            ))}
+          </div>
+          <DialogDescription className="pb-4 pt-0 text-center">
+            <div className="flex flex-row gap-x-0 px-8">
+              <div className="mt-0 flex w-1/4 flex-col border-slate-100 pb-4 pr-0">
+                <div className="flex-1 rounded-lg bg-white p-4 px-0 pb-2 pt-5">
+                  {/* <div className="mb-0 text-base font-bold text-slate-600">{steps[currentStep].subtitle}</div>
                   <div className="mb-3.5 mt-1 flex items-center justify-center gap-2 text-center text-[11px] font-medium uppercase leading-none text-slate-400">
                     {steps[currentStep].title}
-                  </div>
-                  <div className="text-xs text-slate-600">{steps[currentStep].content}</div>
+                  </div> */}
+                  <div className="text-xs text-slate-700">{steps[currentStep].content}</div>
                 </div>
                 <div className="flex justify-between gap-x-2.5">
                   {currentStep === steps.length - 1 ? (
@@ -464,38 +567,12 @@ export default function WelcomeModal({ hasSlug }: { hasSlug: boolean }) {
                   )}
                 </div>
               </div>
-              <div className="mt-4 flex w-3/4 flex-col items-center justify-start">
-                {/* Step indicators */}
-                <div className="mb-3 flex w-full flex-1 flex-row justify-center px-3">
-                  {steps.map((step, index) => (
-                    <button
-                      key={index}
-                      type="button"
-                      onClick={() => goToStep(index)}
-                      aria-label={`Go to step ${index + 1}: ${step.title}`}
-                      className={`flex flex-1 flex-col items-center justify-center gap-y-1 px-3 py-2 text-xs font-medium transition-all duration-200 focus:outline-none focus:ring-0 ${
-                        index === 0 ? 'rounded-l-md' : index === steps.length - 1 ? 'rounded-r-md' : ''
-                      } ${
-                        index === currentStep
-                          ? 'bg-slate-300 text-slate-600'
-                          : 'bg-slate-200 text-slate-600 hover:bg-slate-300/80'
-                      } `}
-                    >
-                      <div
-                        className={`whitespace-pre text-[11px] leading-none ${index === currentStep ? 'font-semibold' : ''}`}
-                      >
-                        {step.subtitle}
-                      </div>
-
-                      <div className="text-[8px] font-medium uppercase leading-none text-slate-500">{step.title}</div>
-                    </button>
-                  ))}
-                </div>
+              <div className="mt-4 flex w-3/4 flex-col items-center justify-start pb-4 pl-7">
                 {stepImages[currentStep].endsWith('.jpg') ? (
                   <img
                     src={stepImages[currentStep]}
                     alt={stepImageAlts[currentStep]}
-                    className="max-h-[540px] min-h-[540px] max-w-full rounded-lg border-slate-200 object-contain"
+                    className="max-h-[540px] min-h-[540px] max-w-full rounded-xl border-slate-200 object-contain"
                   />
                 ) : (
                   <video
@@ -504,88 +581,12 @@ export default function WelcomeModal({ hasSlug }: { hasSlug: boolean }) {
                     loop
                     controls
                     muted
-                    className="max-h-[540px] min-h-[540px] max-w-full rounded-lg border border-slate-200 object-contain"
+                    className="max-h-[540px] min-h-[540px] max-w-full border-slate-200 object-contain"
                   />
                 )}
               </div>
             </div>
           </DialogDescription>
-          <DialogFooter>
-            <div className="mt-3 flex w-full flex-1 flex-col items-center border-t pt-4 text-left">
-              <div className="flex flex-row gap-x-2.5 text-sm">
-                <Button
-                  onClick={() => {
-                    window.open('https://www.anthropic.com/research/open-source-circuit-tracing', '_blank');
-                  }}
-                  variant="outline"
-                  size="sm"
-                  className="flex h-8 flex-1 flex-row items-center justify-center gap-x-2"
-                >
-                  <NewspaperIcon className="h-4 w-4" />
-                  <div className="flex flex-col">
-                    <div className="text-xs">Post by Anthropic</div>
-                  </div>
-                </Button>
-                <Button
-                  onClick={() => {
-                    window.open(
-                      'https://github.com/safety-research/circuit-tracer/blob/main/demos/circuit_tracing_tutorial.ipynb',
-                      '_blank',
-                    );
-                  }}
-                  variant="outline"
-                  size="sm"
-                  className="flex h-8 flex-1 flex-row items-center justify-center gap-x-2"
-                >
-                  <NotebookIcon className="h-4 w-4" />
-                  <div className="flex flex-row">
-                    <div className="text-xs">Jupyter Notebook - Gemma 2 2B Examples</div>
-                  </div>
-                </Button>
-                <Button
-                  onClick={() => {
-                    window.open('https://github.com/safety-research/circuit-tracer', '_blank');
-                  }}
-                  variant="outline"
-                  size="sm"
-                  className="flex h-8 flex-1 flex-row items-center justify-center gap-x-2"
-                >
-                  <GithubIcon className="h-4 w-4" />
-                  <div className="flex flex-col">
-                    <div className="text-xs">circuit-tracer - Generate Graphs & Interventions</div>
-                  </div>
-                </Button>
-
-                <Button
-                  onClick={() => {
-                    window.open('https://transformer-circuits.pub/2025/attribution-graphs/methods.html', '_blank');
-                  }}
-                  variant="outline"
-                  size="sm"
-                  className="flex h-8 flex-1 flex-row items-center justify-center gap-x-2"
-                >
-                  <BookOpen className="h-4 w-4" />
-                  <div className="flex flex-col">
-                    <div className="text-xs">Attribution Graphs Paper</div>
-                  </div>
-                </Button>
-
-                <Button
-                  onClick={() => {
-                    window.open('https://transformer-circuits.pub/2025/attribution-graphs/biology.html', '_blank');
-                  }}
-                  variant="outline"
-                  size="sm"
-                  className="flex h-8 flex-1 flex-row items-center justify-center gap-x-2"
-                >
-                  <BookOpen className="h-4 w-4" />
-                  <div className="flex flex-col">
-                    <div className="text-xs">Claude 3.5 Haiku Study</div>
-                  </div>
-                </Button>
-              </div>
-            </div>
-          </DialogFooter>
         </DialogHeader>
       </DialogContent>
     </Dialog>

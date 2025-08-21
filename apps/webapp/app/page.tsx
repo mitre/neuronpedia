@@ -13,6 +13,7 @@ import {
   Computer,
   Github,
   Microscope,
+  Newspaper,
   PictureInPicture,
   RocketIcon,
   School,
@@ -20,6 +21,7 @@ import {
   Slack,
   Speech,
   Wand,
+  Youtube,
 } from 'lucide-react';
 import { Metadata } from 'next';
 import Image from 'next/image';
@@ -79,114 +81,114 @@ export default function Page() {
         </div>
       )}
 
-      <div className="relative my-3 mb-0 flex max-w-screen-sm flex-1 flex-col items-center justify-center gap-x-8 gap-y-1 overflow-hidden rounded-lg border bg-white px-2 py-10 shadow-sm sm:mb-8 sm:mt-4 sm:gap-y-0 sm:px-16 sm:py-7">
-        <div className="mb-2 mt-0 flex flex-col items-center justify-center text-center text-sm sm:text-base">
-          <div className="px-20 py-1 text-xs font-bold text-sky-600 sm:absolute sm:-left-20 sm:top-4 sm:rotate-[-36deg] sm:bg-yellow-400 sm:text-[9px] sm:text-slate-700">
-            New: May 2025
-          </div>
-          <div className="mt-1 text-base font-bold text-slate-800 sm:text-base">
-            Neuronpedia × Anthropic: Circuit Tracer
-          </div>
-          <div className="mt-1 text-sm font-normal text-slate-700 sm:text-[13px]">
-            Generate and share attribution graphs, based on Anthropic&apos;s{' '}
-            <a
-              href="https://transformer-circuits.pub/2025/attribution-graphs/methods.html"
-              className="font-medium text-[#cc785c] hover:underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Circuit Tracing paper
-            </a>
-            .
-          </div>
-        </div>
-        <div className="my-1.5 mb-1">
-          <Link
-            href="/gemma-2-2b/graph"
-            className="flex w-[165px] max-w-[165px] flex-row items-center justify-center gap-x-2 rounded-md bg-emerald-600 px-0 py-2.5 text-sm font-medium text-white shadow transition-all hover:scale-105 hover:bg-emerald-700"
-          >
-            <RocketIcon className="h-5 w-5" />
-            <span>Launch</span>
-          </Link>
-        </div>
-        <div className="mb-2 mt-2 flex flex-col items-center justify-center gap-x-2.5 gap-y-2 sm:flex-row">
-          <CustomTooltip
-            trigger={
-              <Button
-                variant="default"
-                size="lg"
-                className="flex w-[165px] max-w-[165px] flex-row gap-x-2 bg-slate-800 text-white transition-all hover:bg-slate-200 hover:text-slate-800"
-              >
-                <Github className="h-5 w-5" />
-                <div className="flex flex-col gap-y-0.5">
-                  <span className="text-sm leading-none">GitHub</span>
-                </div>
-              </Button>
-            }
-          >
-            <div className="flex w-full flex-col gap-y-2 sm:flex-row sm:gap-x-2">
-              <Link href="https://github.com/safety-research/circuit-tracer" target="_blank" rel="noreferrer">
-                <Button
-                  variant="default"
-                  size="lg"
-                  className="flex w-[130px] max-w-[130px] flex-row gap-x-2 bg-slate-800 px-0 text-white transition-all hover:scale-105 hover:bg-slate-900"
-                >
-                  <div className="flex flex-col gap-y-0.5">
-                    <div className="font-mono text-[10px] font-bold leading-none">CIRCUIT-TRACER</div>
-                  </div>
-                </Button>
-              </Link>
-              <Link href="https://github.com/hijohnnylin/neuronpedia" target="_blank" rel="noreferrer">
-                <Button
-                  variant="default"
-                  size="lg"
-                  className="flex w-[130px] max-w-[130px] flex-row gap-x-2 bg-slate-800 px-0 text-white transition-all hover:scale-105 hover:bg-slate-900"
-                >
-                  <div className="flex flex-col gap-y-0.5">
-                    <div className="font-mono text-[10px] font-bold leading-none">NEURONPEDIA</div>
-                  </div>
-                </Button>
-              </Link>
-            </div>
-          </CustomTooltip>
+      <svg style={{ display: 'none' }}>
+        <filter id="glass-distortion">
+          <feTurbulence type="turbulence" baseFrequency="0.008" numOctaves="2" result="noise" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="77" />
+        </filter>
+      </svg>
 
-          <Link href="/blog/circuit-tracer" target="_blank" rel="noreferrer">
-            <Button
-              variant="default"
-              size="lg"
-              className="w-[165px] max-w-[165px] gap-x-2 bg-sky-200 text-sky-700 transition-all hover:scale-105 hover:bg-sky-100"
+      <div className="relative z-0 mb-3 mt-3 flex min-h-[350px] w-full flex-col items-center justify-center rounded-lg px-3 sm:mx-0 sm:mb-8 sm:min-h-[280px] sm:w-[680px] sm:min-w-[680px] sm:px-0">
+        <div
+          style={{ backgroundImage: `url('/usedby/landscapebg.jpg')` }}
+          className="bg-size-[100%] absolute inset-[1px] -z-10 mx-3 rounded-[20px] bg-cover bg-top opacity-100 brightness-75 -hue-rotate-[5deg] saturate-[2.0] sm:mx-0 sm:px-0"
+        />
+        {/* <div className="absolute inset-[0px] -z-10 mx-3 rounded-[22px] bg-black opacity-[0.13] mix-blend-darken sm:mx-0 sm:px-0" /> */}
+
+        <div className="glass-card relative z-0 mb-0 flex h-full w-full min-w-full max-w-screen-sm flex-1 flex-col items-center justify-center gap-x-8 gap-y-1 rounded-lg px-2 py-16 shadow-sm sm:gap-y-0 sm:px-5 sm:py-7">
+          <div className="glass-filter" />
+          <div className="glass-overlay" />
+          <div className="glass-specular" />
+          <div className="glass-content">
+            {/* <svg style={{ display: 'none' }}>
+              <filter id="glass-distortion">
+                <feTurbulence type="turbulence" baseFrequency="0.008" numOctaves="2" result="noise" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="77" />
+              </filter>
+            </svg> */}
+
+            <div className="text-xs font-medium" style={{ textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)' }}>
+              August 2025
+            </div>
+            <div
+              className="mt-1.5 text-base font-bold sm:text-[22px]"
+              style={{ textShadow: '0 2px 3px rgba(0, 0, 0, 0.3)' }}
             >
-              <Image
-                src="/logo.png"
-                alt="Neuronpedia logo - a computer chip with a rounded viewfinder border around it"
-                width="20"
-                height="20"
-                className=""
-              />{' '}
-              <span>Blog Post</span>
-            </Button>
-          </Link>
-          <Link href="https://www.anthropic.com/research/open-source-circuit-tracing" target="_blank" rel="noreferrer">
-            <Button
-              variant="default"
-              size="lg"
-              className="w-[165px] max-w-[165px] gap-x-2 bg-[#cc785c] text-[#191919] transition-all hover:scale-105 hover:bg-[#d4a27f]"
+              The Circuit Analysis Research Landscape
+            </div>
+            <div
+              className="mt-1.5 text-sm font-medium sm:text-[13px]"
+              style={{ textShadow: '0 2px 3px rgba(0, 0, 0, 0.25)' }}
             >
-              <svg
-                fill="#000000"
-                fill-rule="evenodd"
-                height="1.2em"
-                style={{ flex: 'none', lineHeight: '1' }}
-                viewBox="0 0 24 24"
-                width="1.2em"
-                xmlns="http://www.w3.org/2000/svg"
+              A collaboration by Anthropic, EleutherAI, Goodfire AI, Google DeepMind, and Decode.
+            </div>
+
+            <div className="mt-7 flex flex-col gap-y-2 sm:flex-row sm:gap-x-4">
+              <Link href="/graph/info" className="text-white">
+                <button type="button" className="glass-button h-12 min-h-12">
+                  <div className="glass-filter" />
+                  <div className="glass-overlay" />
+                  <div className="glass-specular" />
+                  <div className="glass-content flex flex-row items-center justify-center py-0 font-bold leading-none">
+                    <div className="flex flex-row items-center justify-center px-1">
+                      <Newspaper className="mr-2 h-5 w-5" />
+                      <div
+                        className="text-[14px] font-bold text-white"
+                        style={{ textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)' }}
+                      >
+                        Read the Post
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              </Link>
+              <a href="/gemma-2-2b/graph" className="text-white">
+                <button type="button" className="glass-button h-12 min-h-12">
+                  <div className="glass-filter" />
+                  <div className="glass-overlay" />
+                  <div className="glass-specular" />
+                  <div className="glass-content flex flex-row items-center justify-center px-0 py-0 font-bold leading-none">
+                    <div className="flex flex-row items-center justify-center">
+                      <RocketIcon className="mr-2 h-5 w-5" />
+                      <div
+                        className="text-[11px] font-bold leading-tight text-white"
+                        style={{ textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)' }}
+                      >
+                        Circuit
+                        <br />
+                        Tracer
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              </a>
+              <a
+                href="https://www.youtube.com/playlist?list=PL05yUGfKO5wP6S5_12z7LG30LZigRYx1e"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white"
               >
-                <title>Anthropic</title>
-                <path d="M13.827 3.52h3.603L24 20h-3.603l-6.57-16.48zm-7.258 0h3.767L16.906 20h-3.674l-1.343-3.461H5.017l-1.344 3.46H0L6.57 3.522zm4.132 9.959L8.453 7.687 6.205 13.48H10.7z" />
-              </svg>{' '}
-              <span>Press Release</span>
-            </Button>
-          </Link>
+                <button type="button" className="glass-button h-12 min-h-12">
+                  <div className="glass-filter" />
+                  <div className="glass-overlay" />
+                  <div className="glass-specular" />
+                  <div className="glass-content flex flex-row items-center justify-center px-0 py-0 font-bold leading-none">
+                    <div className="flex flex-row items-center justify-center">
+                      <Youtube className="mr-2 h-5 w-5" />
+                      <div
+                        className="text-[11px] font-bold leading-tight text-white"
+                        style={{ textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)' }}
+                      >
+                        Watch
+                        <br />
+                        Demo
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -286,6 +288,30 @@ export default function Page() {
           />
         </a>
         <a
+          href="https://www.anthropic.com/research/open-source-circuit-tracing"
+          target="_blank"
+          className="flex flex-row items-center justify-center"
+          rel="noreferrer"
+        >
+          <img
+            src="/usedby/anthropic.png"
+            className="h-[17px] opacity-55 grayscale hover:opacity-100 hover:grayscale-0"
+            alt="Anthropic"
+          />
+        </a>
+        <a
+          href="https://www.anthropic.com/research/open-source-circuit-tracing"
+          target="_blank"
+          className="flex flex-row items-center justify-center"
+          rel="noreferrer"
+        >
+          <img
+            src="/usedby/anthropic.png"
+            className="h-[17px] opacity-55 grayscale hover:opacity-100 hover:grayscale-0"
+            alt="Anthropic"
+          />
+        </a>
+        <a
           href={`${env.NEXT_PUBLIC_URL}/gemma-scope`}
           target="_blank"
           className="flex flex-row items-center justify-center"
@@ -321,13 +347,13 @@ export default function Page() {
             alt="Apollo Research"
           />
         </a>
-        <a href="#mats" className="flex flex-row items-center justify-center" rel="noreferrer" aria-label="MATS">
+        {/* <a href="#mats" className="flex flex-row items-center justify-center" rel="noreferrer" aria-label="MATS">
           <img
             src="/usedby/mats.png"
             className="h-[35px] opacity-60 grayscale hover:opacity-100 hover:grayscale-0"
             alt="MATS"
           />
-        </a>
+        </a> */}
         <a
           href={`${env.NEXT_PUBLIC_URL}/llama3.1-8b-eleuther_gp`}
           target="_blank"

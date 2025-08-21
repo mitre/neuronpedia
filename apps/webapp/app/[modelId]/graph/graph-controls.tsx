@@ -8,10 +8,15 @@ import { debounce } from 'lodash';
 import { useCallback, useEffect, useState } from 'react';
 import { clientCheckIsEmbed, CLTGraphExtended, CltVisState, graphModelHasNpDashboards } from './utils';
 
+export const MIN_TOKENS_TO_ALLOW_HORIZONTAL_SCROLL = 16;
+
 export default function GraphControls({
   selectedGraph,
   visState,
   updateVisStateField,
+  allowScroll,
+  setAllowScroll,
+  shouldDoHorizontalScroll,
 }: {
   selectedGraph: CLTGraphExtended | null;
   visState: {
@@ -19,6 +24,9 @@ export default function GraphControls({
     densityThreshold?: number;
   };
   updateVisStateField: <K extends keyof CltVisState>(key: K, value: CltVisState[K]) => void;
+  allowScroll: boolean;
+  setAllowScroll: (allowScroll: boolean) => void;
+  shouldDoHorizontalScroll: boolean;
 }) {
   // Check if we're in embed mode
   const isEmbed = clientCheckIsEmbed();
@@ -60,7 +68,9 @@ export default function GraphControls({
   }, [selectedGraph?.metadata.node_threshold, visState.pruningThreshold]);
 
   return (
-    <div className="absolute -top-2 left-5 z-10 flex items-center space-x-2.5 sm:left-1">
+    <div
+      className={`z-10 flex items-center space-x-2.5 ${shouldDoHorizontalScroll ? 'sticky left-0 top-0' : 'absolute left-0'}`}
+    >
       {!isEmbed && (
         <button
           type="button"
@@ -70,6 +80,20 @@ export default function GraphControls({
         >
           ?
         </button>
+      )}
+
+      {selectedGraph && selectedGraph.metadata.prompt_tokens.length > MIN_TOKENS_TO_ALLOW_HORIZONTAL_SCROLL && (
+        <div className="flex h-[24px] flex-row items-center justify-start gap-x-1.5 rounded bg-slate-200 px-1 py-0.5 sm:px-2">
+          <input
+            onChange={(e) => {
+              setAllowScroll(e.target.checked);
+            }}
+            type="checkbox"
+            checked={allowScroll}
+            className="h-3.5 w-3.5 cursor-pointer rounded border-slate-300 bg-white py-1 text-center text-xs text-slate-700 checked:border-sky-600 checked:bg-sky-600"
+          />
+          <div className="text-[9px] font-medium leading-[10px] text-slate-600">Expand ↔</div>
+        </div>
       )}
 
       {selectedGraph?.metadata.node_threshold !== undefined && selectedGraph?.metadata.node_threshold && (

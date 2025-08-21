@@ -14,6 +14,7 @@ import {
   GRAPH_ANONYMOUS_USER_ID,
   GRAPH_MAX_TOKENS,
   GRAPH_S3_USER_GRAPHS_DIR,
+  GRAPH_SLUG_MIN,
   graphGenerateSchemaClient,
   MAX_RUNPOD_JOBS_IN_QUEUE,
   RUNPOD_BUSY_ERROR,
@@ -177,6 +178,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
         validatedData.prompt,
         validatedData.maxNLogits,
         validatedData.desiredLogitProb,
+        validatedData.modelId,
       );
       if (tokenized.input_tokens.length > GRAPH_MAX_TOKENS) {
         return NextResponse.json(
@@ -193,6 +195,24 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
       console.error('Error tokenizing text, continuing:', error);
     }
 
+    if (
+      !validatedData.slug ||
+      validatedData.slug.trim().length === 0 ||
+      validatedData.slug.trim().length < GRAPH_SLUG_MIN
+    ) {
+      // if slug doesn't exist, generate one based on the prompt
+      // first remove all <> and \n (estimated to be special tokens)
+      const promptReplaced = validatedData.prompt.replace(/<[^>]*>|\n/g, '');
+      // remove "user" and "assistant", and "system"
+      const promptReplaced2 = promptReplaced.replace(/user|assistant|system/g, '');
+      // keeping only alphanumeric characters, and keeping only the first 16 characters
+      const slug = promptReplaced2.replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 16);
+      // append the current epoch time
+      const timestamp = Date.now();
+      validatedData.slug = `${slug}-${timestamp}`.toLowerCase();
+      console.log('generated slug', validatedData.slug);
+    }
+
     // if scan or slug has weird characters, return error
     if (/[^a-zA-Z0-9_-]/.test(validatedData.slug)) {
       return NextResponse.json(
@@ -201,7 +221,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
       );
     }
 
-    // check if the modelId/slug exist in the database already
+    // check if the modelId + slug exists in the database already
     const existingGraphMetadata = await prisma.graphMetadata.findUnique({
       where: { modelId_slug: { modelId: validatedData.modelId, slug: validatedData.slug } },
     });

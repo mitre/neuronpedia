@@ -1,4 +1,8 @@
-import { ANT_MODEL_ID_TO_NEURONPEDIA_MODEL_ID } from '@/app/[modelId]/graph/utils';
+import {
+  ANT_MODEL_ID_TO_NEURONPEDIA_MODEL_ID,
+  getGraphRunpodServerUrlForModel,
+  getGraphServerUrlForModel,
+} from '@/app/[modelId]/graph/utils';
 import { env } from '@/lib/env';
 import * as yup from 'yup';
 import {
@@ -23,8 +27,8 @@ export const GRAPH_BATCH_SIZE = 48;
 // this time estimate comes from testing different prompt lengths with batch size 48, and is only valid for gemma-2-2b, for a40
 export const getEstimatedTimeFromNumTokens = (numTokens: number) => 11.2 * Math.log2(Math.max(numTokens, 4)) - 7; // add a few seconds buffer
 export const GRAPH_MAX_TOKENS = 64;
-export const GRAPH_GENERATION_ENABLED_MODELS = ['gemma-2-2b'];
-export const GRAPH_MODEL_MAP = { 'gemma-2-2b': 'google/gemma-2-2b' };
+export const GRAPH_GENERATION_ENABLED_MODELS = ['gemma-2-2b', 'qwen3-4b'];
+export const GRAPH_MODEL_MAP = { 'gemma-2-2b': 'google/gemma-2-2b', 'qwen3-4b': 'Qwen/Qwen3-4B' };
 
 export const GRAPH_S3_USER_GRAPHS_DIR = 'user-graphs';
 
@@ -90,11 +94,7 @@ export const graphGenerateSchemaClient = yup.object({
     .max(GRAPH_MAXFEATURENODES_MAX, `Must be at most ${GRAPH_MAXFEATURENODES_MAX}.`)
     .default(GRAPH_MAXFEATURENODES_DEFAULT)
     .required('This field is required.'),
-  slug: yup
-    .string()
-    .min(GRAPH_SLUG_MIN, `Must be at least ${GRAPH_SLUG_MIN} characters.`)
-    .matches(/^[a-z0-9_-]+$/, 'Can only contain lowercase alphanumeric characters, underscores, and hyphens.')
-    .required('Slug is required.'),
+  slug: yup.string(),
 });
 
 export const checkRunpodQueueJobs = async () => {
@@ -135,6 +135,7 @@ export const getGraphTokenize = async (
   prompt: string,
   maxNLogits: number,
   desiredLogitProb: number,
+  modelId: string,
 ): Promise<GraphTokenizeResponse> => {
   let response;
   const body = {
@@ -144,7 +145,7 @@ export const getGraphTokenize = async (
     request_type: 'forward_pass',
   };
   if (env.USE_RUNPOD_GRAPH) {
-    response = await fetch(`${env.GRAPH_RUNPOD_SERVER}/runsync`, {
+    response = await fetch(`${getGraphRunpodServerUrlForModel(modelId)}/runsync`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -155,14 +156,17 @@ export const getGraphTokenize = async (
       }),
     });
   } else {
-    response = await fetch(`${env.USE_LOCALHOST_GRAPH ? 'http://127.0.0.1:5004' : env.GRAPH_SERVER}/forward-pass`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-secret-key': env.GRAPH_SERVER_SECRET,
+    response = await fetch(
+      `${env.USE_LOCALHOST_GRAPH ? 'http://127.0.0.1:5004' : getGraphServerUrlForModel(modelId)}/forward-pass`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-secret-key': env.GRAPH_SERVER_SECRET,
+        },
+        body: JSON.stringify(body),
       },
-      body: JSON.stringify(body),
-    });
+    );
   }
 
   let json = await response.json();
@@ -221,7 +225,7 @@ export const generateGraphAndUploadToS3 = async (
     user_id: userId,
   };
   if (env.USE_RUNPOD_GRAPH) {
-    response = await fetch(`${env.GRAPH_RUNPOD_SERVER}/runsync`, {
+    response = await fetch(`${getGraphRunpodServerUrlForModel(modelId)}/runsync`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -232,14 +236,18 @@ export const generateGraphAndUploadToS3 = async (
       }),
     });
   } else {
-    response = await fetch(`${env.USE_LOCALHOST_GRAPH ? 'http://127.0.0.1:5004' : env.GRAPH_SERVER}/generate-graph`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-secret-key': env.GRAPH_SERVER_SECRET,
+    console.log('body', body);
+    response = await fetch(
+      `${env.USE_LOCALHOST_GRAPH ? 'http://127.0.0.1:5004' : getGraphServerUrlForModel(modelId)}/generate-graph`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-secret-key': env.GRAPH_SERVER_SECRET,
+        },
+        body: JSON.stringify(body),
       },
-      body: JSON.stringify(body),
-    });
+    );
   }
   const json = await response.json();
   console.log('server json response', json);
@@ -353,7 +361,7 @@ export const steerLogits = async (
     steered_output_only: steeredOutputOnly,
   };
   if (env.USE_RUNPOD_GRAPH) {
-    response = await fetch(`${env.GRAPH_RUNPOD_SERVER}/runsync`, {
+    response = await fetch(`${getGraphRunpodServerUrlForModel(modelId)}/runsync`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -364,14 +372,17 @@ export const steerLogits = async (
       }),
     });
   } else {
-    response = await fetch(`${env.USE_LOCALHOST_GRAPH ? 'http://127.0.0.1:5004' : env.GRAPH_SERVER}/steer`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-secret-key': env.GRAPH_SERVER_SECRET,
+    response = await fetch(
+      `${env.USE_LOCALHOST_GRAPH ? 'http://127.0.0.1:5004' : getGraphServerUrlForModel(modelId)}/steer`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-secret-key': env.GRAPH_SERVER_SECRET,
+        },
+        body: JSON.stringify(body),
       },
-      body: JSON.stringify(body),
-    });
+    );
   }
 
   let json = await response.json();

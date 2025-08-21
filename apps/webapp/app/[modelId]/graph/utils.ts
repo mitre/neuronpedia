@@ -5,6 +5,26 @@ import cuid from 'cuid';
 import { z } from 'zod';
 import d3 from './d3-jetpack';
 
+export function getGraphServerUrlForModel(modelId: string) {
+  if (modelId === 'qwen3-4b') {
+    return GRAPH_SERVER_QWEN3_4B;
+  }
+  if (modelId === 'gemma-2-2b') {
+    return GRAPH_SERVER;
+  }
+  throw new Error(`No graph server url found for model ${modelId}`);
+}
+
+export function getGraphRunpodServerUrlForModel(modelId: string) {
+  if (modelId === 'qwen3-4b') {
+    return GRAPH_RUNPOD_SERVER_QWEN3_4B;
+  }
+  if (modelId === 'gemma-2-2b') {
+    return GRAPH_RUNPOD_SERVER;
+  }
+  throw new Error(`No graph runpod server url found for model ${modelId}`);
+}
+
 // TODO: make this an env variable
 export const NP_GRAPH_BUCKET = 'neuronpedia-attrib';
 
@@ -33,6 +53,7 @@ export const MODEL_HAS_S3_DASHBOARDS = new Set([
 ]);
 
 export const ANT_MODELS_TO_LOAD = new Set(['jackl-circuits-runs-1-4-sofa-v3_0']);
+export const ADDITIONAL_MODELS_TO_LOAD = new Set(['qwen3-4b']);
 
 // if neither, then no dashboards yet for them
 
@@ -43,11 +64,13 @@ export const MODEL_DO_NOT_FILTER_NODES = new Set(['gelu-4l-x128k64-v0']);
 export const MODEL_DIGITS_IN_FEATURE_ID = {
   'gemma-2-2b': Number(16384).toString().length,
   'llama-3-131k-relu': Number(131072).toString().length,
+  //  'qwen3-4b': Number(131072).toString().length,
 };
 
 export const MODEL_TO_SOURCESET_ID = {
   'gemma-2-2b': 'gemmascope-transcoder-16k',
   'llama-3-131k-relu': 'skip-transcoder-mntss',
+  // 'qwen3-4b': 'TODO_SOURCESET_ID',
 };
 
 export const ANT_MODEL_ID_TO_NEURONPEDIA_MODEL_ID = {
@@ -55,13 +78,18 @@ export const ANT_MODEL_ID_TO_NEURONPEDIA_MODEL_ID = {
   'llama-3-131k-relu': 'llama-3.2-1b',
 };
 
+export const MODEL_FEATURE_ID_IS_ONLY_INDEX = new Set(['qwen3-4b']);
+
 export const ERROR_MODEL_DOES_NOT_EXIST = 'ERR_MODEL_DOES_NOT_EXIST';
 
 // ============ End of Neuronpedia Specific =============
 
-export function getLayerFromAnthropicFeatureId(modelId: keyof typeof MODEL_DIGITS_IN_FEATURE_ID, featureId: number) {
+function getLayerFromAnthropicFeature(modelId: keyof typeof MODEL_DIGITS_IN_FEATURE_ID, featureNode: CLTGraphNode) {
+  if (MODEL_FEATURE_ID_IS_ONLY_INDEX.has(modelId)) {
+    return parseInt(featureNode.layer, 10);
+  }
   // remove dash and everything after it
-  const layer = featureId.toString().replace(/-.*$/, '');
+  const layer = featureNode.feature.toString().replace(/-.*$/, '');
   // the layer is the number before the last digitsInNumFeatures digits
   const layerStr = layer.slice(0, -MODEL_DIGITS_IN_FEATURE_ID[modelId]);
   if (layerStr.length === 0) {
@@ -70,15 +98,60 @@ export function getLayerFromAnthropicFeatureId(modelId: keyof typeof MODEL_DIGIT
   return parseInt(layerStr, 10);
 }
 
-export function getIndexFromAnthropicFeatureId(modelId: keyof typeof MODEL_DIGITS_IN_FEATURE_ID, featureId: number) {
+function getIndexFromAnthropicFeature(modelId: keyof typeof MODEL_DIGITS_IN_FEATURE_ID, featureNode: CLTGraphNode) {
+  if (MODEL_FEATURE_ID_IS_ONLY_INDEX.has(modelId)) {
+    return featureNode.feature;
+  }
   // remove dash and everything before it
-  const index = featureId.toString().replace(/-.*$/, '');
+  const index = featureNode.feature.toString().replace(/-.*$/, '');
   // the index is the last digitsInNumFeatures digits
   const indexStr = index.slice(-MODEL_DIGITS_IN_FEATURE_ID[modelId]);
   if (indexStr.length === 0) {
     return 0;
   }
   return parseInt(indexStr, 10);
+}
+
+export function getIndexFromCantorValue(feature: number): number {
+  const w = Math.floor((Math.sqrt(8 * feature + 1) - 1) / 2);
+  const t = (w * w + w) / 2;
+  const y = feature - t;
+  return y;
+}
+
+export function getLayerFromCantorValue(feature: number): number {
+  const w = Math.floor((Math.sqrt(8 * feature + 1) - 1) / 2);
+  const t = (w * w + w) / 2;
+  const x = w - (feature - t);
+  return x;
+}
+
+export function getLayerFromFeatureAndGraph(modelId: string, node: CLTGraphNode, selectedGraph: CLTGraph | null) {
+  if (selectedGraph?.metadata.schema_version === 1) {
+    return getLayerFromCantorValue(node.feature);
+  }
+  // if we have MODEL_DIGITS_IN_FEATURE_ID, then we can use the modelId to get the layer, else error
+  if (MODEL_DIGITS_IN_FEATURE_ID[modelId as keyof typeof MODEL_DIGITS_IN_FEATURE_ID]) {
+    return getLayerFromAnthropicFeature(modelId as keyof typeof MODEL_DIGITS_IN_FEATURE_ID, node);
+  }
+  console.error(
+    `LayerFromFeature: ${modelId} does not have MODEL_DIGITS_IN_FEATURE_ID. Returning 0. Graph: ${selectedGraph?.metadata.scan}`,
+  );
+  return 0;
+}
+
+export function getIndexFromFeatureAndGraph(modelId: string, node: CLTGraphNode, selectedGraph: CLTGraph | null) {
+  if (selectedGraph?.metadata.schema_version === 1) {
+    return getIndexFromCantorValue(node.feature);
+  }
+  // if we have MODEL_DIGITS_IN_FEATURE_ID, then we can use the modelId to get the index, else error
+  if (MODEL_DIGITS_IN_FEATURE_ID[modelId as keyof typeof MODEL_DIGITS_IN_FEATURE_ID]) {
+    return getIndexFromAnthropicFeature(modelId as keyof typeof MODEL_DIGITS_IN_FEATURE_ID, node);
+  }
+  console.error(
+    `IndexFromFeature: ${modelId} does not have MODEL_DIGITS_IN_FEATURE_ID. Returning 0. Graph: ${selectedGraph?.metadata.scan}`,
+  );
+  return 0;
 }
 
 export function getAnthropicFeatureIdFromLayerAndIndex(
@@ -93,11 +166,35 @@ export function getAnthropicFeatureIdFromLayerAndIndex(
   return parseInt(`${layer}${paddedIndex}`, 10);
 }
 
-export function convertAnthropicFeatureIdToNeuronpediaSourceSet(
-  modelId: keyof typeof MODEL_DIGITS_IN_FEATURE_ID,
-  featureId: number,
+function getCantorValueFromLayerAndIndex(layer: number, index: number) {
+  // return the cantor value using the cantor pairing function
+  const cantorValue = ((layer + index) * (layer + index + 1)) / 2 + index;
+  return cantorValue;
+}
+
+export function getFeatureIdFromLayerAndIndex(
+  modelId: string,
+  layer: number,
+  index: number,
+  selectedGraph: CLTGraph | null,
 ) {
-  return `${getLayerFromAnthropicFeatureId(modelId, featureId)}-${MODEL_TO_SOURCESET_ID[modelId]}`;
+  if (selectedGraph?.metadata.schema_version === 1) {
+    return getCantorValueFromLayerAndIndex(layer, index);
+  }
+  if (MODEL_DIGITS_IN_FEATURE_ID[modelId as keyof typeof MODEL_DIGITS_IN_FEATURE_ID]) {
+    return getAnthropicFeatureIdFromLayerAndIndex(modelId as keyof typeof MODEL_DIGITS_IN_FEATURE_ID, layer, index);
+  }
+  console.error(
+    `FeatureIdFromLayerAndIndex: ${modelId} does not have MODEL_DIGITS_IN_FEATURE_ID. Returning 0. Graph: ${selectedGraph?.metadata.scan}`,
+  );
+  return 0;
+}
+
+export function convertAnthropicFeatureToNeuronpediaSourceSet(
+  modelId: keyof typeof MODEL_DIGITS_IN_FEATURE_ID,
+  featureNode: CLTGraphNode,
+) {
+  return `${getLayerFromAnthropicFeature(modelId, featureNode)}-${MODEL_TO_SOURCESET_ID[modelId]}`;
 }
 
 export const GRAPH_BASE_URL_TO_NAME = {
@@ -220,6 +317,39 @@ export const modelIdToModelDisplayName = new Map<string, string>([
   ['llama-3-131k-relu', 'Llama 3.2 1B - Relu'],
 ]);
 
+export const modelIdAndSchemaToTranscoders = new Map<string, { name: string; hfUrl: string; npUrl: string | null }[]>([
+  [
+    'gemma-2-2b',
+    [
+      {
+        name: 'Gemmascope PLT',
+        hfUrl: 'https://huggingface.co/google/gemma-scope-2b-pt-transcoders',
+        npUrl: 'https://neuronpedia.org/gemma-2-2b/gemmascope-transcoder-16k',
+      },
+    ],
+  ],
+  // [
+  //   'qwen3-4b-skip',
+  //   [
+  //     {
+  //       name: 'Hanna/Piotrowski Skip Transcoders',
+  //       hfUrl: 'https://huggingface.co/mntss/skip-transcoders-qwen-3-4b',
+  //       npUrl: null,
+  //     },
+  //   ],
+  // ],
+  [
+    'qwen3-4b',
+    [
+      {
+        name: 'Hanna/Piotrowski PLT',
+        hfUrl: 'https://huggingface.co/mwhanna/qwen3-4b-transcoders',
+        npUrl: null,
+      },
+    ],
+  ],
+]);
+
 export const anthropicModels = [
   'jackl-circuits-runs-1-4-sofa-v3_0',
   'jackl-circuits-runs-1-1-druid-cp_0',
@@ -274,6 +404,9 @@ export type CLTGraphInnerMetadata = {
     node_threshold?: number;
     edge_threshold?: number;
   };
+
+  // determines cantor or not for feature ID
+  schema_version?: number;
 
   // we add these ourselves
   // subset of our DB Model

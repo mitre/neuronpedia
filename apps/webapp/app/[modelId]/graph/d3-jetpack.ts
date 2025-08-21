@@ -7,26 +7,31 @@
 //
 // Forked from https://github.com/gka/d3-jetpack — BSD-3
 
-import * as d3 from 'd3';
+import * as d3Base from 'd3';
 
-// Extend d3 types
+type D3Jetpack = typeof d3Base & {
+  clamp: (min: number, d: number, max: number) => number;
+  conventions: (c?: any) => any;
+  nestBy: <T>(array: T[], key: (d: T) => string) => Array<T[] & { key: string }>;
+  attachTooltip: (sel: any, tooltipSel?: any, fieldFns?: any) => void;
+};
+
+// Create a mutable, well-typed clone so we don't mutate the ESM namespace object
+const d3 = { ...(d3Base as any) } as D3Jetpack;
+
+// Extend d3 types only for Selection methods we add
 declare module 'd3' {
-  export interface Selection<GElement extends d3.BaseType, Datum, PElement extends d3.BaseType, PDatum> {
-    selectAppend: (name: string) => Selection<d3.BaseType, Datum, PElement, PDatum>;
-    appendMany: <NewDatum>(name: string, data: NewDatum[]) => Selection<d3.BaseType, NewDatum, PElement, PDatum>;
-    at: (name: string | object, value?: any) => Selection<GElement, Datum, PElement, PDatum>;
-    st: (name: string | object, value?: any) => Selection<GElement, Datum, PElement, PDatum>;
-    translate: (
+  interface Selection<GElement extends d3Base.BaseType, Datum, PElement extends d3Base.BaseType, PDatum> {
+    selectAppend(name: string): d3Base.Selection<d3Base.BaseType, Datum, PElement, PDatum>;
+    appendMany<NewDatum>(name: string, data: NewDatum[]): d3Base.Selection<d3Base.BaseType, NewDatum, PElement, PDatum>;
+    at(name: string | Record<string, any>, value?: any): d3Base.Selection<GElement, Datum, PElement, PDatum>;
+    st(name: string | Record<string, any>, value?: any): d3Base.Selection<GElement, Datum, PElement, PDatum>;
+    translate(
       xy: [number, number] | ((d: any, i: number) => [number, number]),
       dim?: number,
-    ) => Selection<GElement, Datum, PElement, PDatum>;
-    parent: () => Selection<d3.BaseType, Datum, null, undefined>;
+    ): d3Base.Selection<GElement, Datum, PElement, PDatum>;
+    parent(): d3Base.Selection<d3Base.BaseType, Datum, null, undefined>;
   }
-
-  export function nestBy<T>(array: T[], key: (d: T) => string): Array<T[] & { key: string }>;
-  export function clamp(min: number, d: number, max: number): number;
-  export function conventions(c?: any): any;
-  export function attachTooltip(sel: any, tooltipSel?: any, fieldFns?: any): void;
 }
 
 // Helper function to parse attributes from tag names like "div.class#id"

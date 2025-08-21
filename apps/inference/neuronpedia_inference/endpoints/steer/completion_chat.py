@@ -4,6 +4,7 @@ from typing import Any
 import torch
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse, StreamingResponse
+from neuronpedia_inference_client.models.np_logprob import NPLogprob
 from neuronpedia_inference_client.models.np_steer_chat_message import NPSteerChatMessage
 from neuronpedia_inference_client.models.np_steer_chat_result import NPSteerChatResult
 from neuronpedia_inference_client.models.np_steer_feature import NPSteerFeature
@@ -21,6 +22,7 @@ from transformer_lens import HookedTransformer
 from neuronpedia_inference.config import Config
 from neuronpedia_inference.inference_utils.steering import (
     OrthogonalProjector,
+    apply_generic_chat_template,
     convert_to_chat_array,
     format_sse_message,
     process_features_vectorized,
@@ -29,6 +31,7 @@ from neuronpedia_inference.inference_utils.steering import (
 )
 from neuronpedia_inference.sae_manager import SAEManager
 from neuronpedia_inference.shared import Model, with_request_lock
+from neuronpedia_inference.utils import make_logprob_from_logits
 
 logger = logging.getLogger(__name__)
 
@@ -80,12 +83,26 @@ async def completion_chat(request: SteerCompletionChatPostRequest):
     for message in promptChat:
         promptChatFormatted.append({"role": message.role, "content": message.content})
 
-    # tokenize = True adds a BOS
     if model.tokenizer is None:
         raise ValueError("Tokenizer is not initialized")
-    promptTokenized = model.tokenizer.apply_chat_template(
-        promptChatFormatted, tokenize=True, add_generation_prompt=True
-    )
+
+    # If the tokenizer does not support chat templates, we need to apply a generic chat template
+    if (
+        not hasattr(model.tokenizer, "chat_template")
+        or model.tokenizer.chat_template is None
+    ):
+        logger.warning(
+            "Model's tokenizer does not support chat templates. Using generic chat template."
+        )
+        template_applied_prompt = apply_generic_chat_template(
+            promptChatFormatted, add_generation_prompt=True
+        )
+        promptTokenized = model.to_tokens(template_applied_prompt, prepend_bos=True)[0]
+    else:
+        # tokenize = True adds a BOS
+        promptTokenized = model.tokenizer.apply_chat_template(
+            promptChatFormatted, tokenize=True, add_generation_prompt=True
+        )
     promptTokenized = torch.tensor(promptTokenized)
 
     # logger.info("promptTokenized: %s", promptTokenized)
@@ -127,17 +144,23 @@ async def completion_chat(request: SteerCompletionChatPostRequest):
         normalize_steering=normalize_steering,
         use_stream_lock=request.stream if request.stream is not None else False,
         custom_hf_model_id=custom_hf_model_id,
+        n_logprobs=(request.n_logprobs or 0),
     )
 
     if request.stream:
         return StreamingResponse(generator, media_type="text/event-stream")
+    # for non-streaming request, get last item from generator
     last_item = None
     async for item in generator:
         last_item = item
     if last_item is None:
         raise ValueError("No response generated")
     results = remove_sse_formatting(last_item)
-    return SteerCompletionChatPost200Response.from_json(results)
+    response = SteerCompletionChatPost200Response.from_json(results)
+    if response is None:
+        raise ValueError("Failed to parse response")
+    # set exclude_none to True to omit the logprobs field when n_logprobs isn't set in the request, for backwards compatibility
+    return JSONResponse(content=response.model_dump(exclude_none=True))
 
 
 async def run_batched_generate(
@@ -152,6 +175,7 @@ async def run_batched_generate(
     steer_special_tokens: bool = False,
     use_stream_lock: bool = False,
     custom_hf_model_id: str | None = None,
+    n_logprobs: int = 0,
     **kwargs: Any,
 ):
     async with await stream_lock(use_stream_lock):
@@ -230,6 +254,14 @@ async def run_batched_generate(
                                 raise ValueError("Zero norm steering vector")
                             steering_vector = steering_vector / norm
 
+                        # If it's attention hook, reshape it to (n_heads, head_dim)
+                        if isinstance(
+                            feature, NPSteerFeature
+                        ) and "attn.hook_z" in sae_manager.get_sae_hook(feature.source):
+                            n_heads = model.cfg.n_heads
+                            d_head = model.cfg.d_head
+                            steering_vector = steering_vector.view(n_heads, d_head)
+
                         coeff = strength_multiplier * feature.strength
 
                         if steer_method == NPSteerMethod.SIMPLE_ADDITIVE:
@@ -254,6 +286,9 @@ async def run_batched_generate(
         if generate_both:
             steered_partial_result = ""
             default_partial_result = ""
+            steered_logprobs = None
+            default_logprobs = None
+
             # Generate STEERED and DEFAULT separately
             for flag in [NPSteerType.STEERED, NPSteerType.DEFAULT]:
                 if seed is not None:
@@ -277,18 +312,41 @@ async def run_batched_generate(
                     logger.info("Running Default")
                     editing_hooks = []
 
-                with model.hooks(fwd_hooks=editing_hooks):
-                    for result in model.generate_stream(
-                        max_tokens_per_yield=TOKENS_PER_YIELD,
-                        stop_at_eos=(model.cfg.device != "mps"),
-                        input=promptTokenized.unsqueeze(0),
-                        do_sample=True,
-                        **kwargs,
+                logprobs = []
+
+                with model.hooks(fwd_hooks=editing_hooks):  # type: ignore
+                    for i, (result, logits) in enumerate(
+                        model.generate_stream(
+                            max_tokens_per_yield=TOKENS_PER_YIELD,
+                            stop_at_eos=(model.cfg.device != "mps"),
+                            input=promptTokenized.unsqueeze(0),
+                            do_sample=True,
+                            return_logits=True,
+                            **kwargs,
+                        )
                     ):
-                        if flag == NPSteerType.STEERED:
-                            steered_partial_result += model.to_string(result[0])  # type: ignore
+                        to_append = ""
+                        if i == 0:
+                            to_append = model.to_string(result[0][1:])  # type: ignore
                         else:
-                            default_partial_result += model.to_string(result[0])  # type: ignore
+                            to_append = model.to_string(result[0])  # type: ignore
+
+                        if n_logprobs > 0:
+                            current_logprobs = make_logprob_from_logits(
+                                result,  # type: ignore
+                                logits,  # type: ignore
+                                model,
+                                n_logprobs,
+                            )
+                            logprobs.append(current_logprobs)
+
+                        if flag == NPSteerType.STEERED:
+                            steered_partial_result += to_append  # type: ignore
+                            steered_logprobs = logprobs.copy() or None
+                        else:
+                            default_partial_result += to_append  # type: ignore
+                            default_logprobs = logprobs.copy() or None
+
                         to_return = make_steer_completion_chat_response(
                             steer_types,
                             steered_partial_result,
@@ -297,6 +355,8 @@ async def run_batched_generate(
                             promptTokenized,
                             inputPrompt,
                             custom_hf_model_id,
+                            steered_logprobs,
+                            default_logprobs,
                         )  # type: ignore
                         yield format_sse_message(to_return.to_json())
         else:
@@ -320,24 +380,43 @@ async def run_batched_generate(
 
             with model.hooks(fwd_hooks=editing_hooks):  # type: ignore
                 partial_result = ""
-                for result in model.generate_stream(
-                    max_tokens_per_yield=TOKENS_PER_YIELD,
-                    stop_at_eos=(model.cfg.device != "mps"),
-                    input=promptTokenized.unsqueeze(0),
-                    do_sample=True,
-                    **kwargs,
+                logprobs = []
+
+                for i, (result, logits) in enumerate(
+                    model.generate_stream(
+                        max_tokens_per_yield=TOKENS_PER_YIELD,
+                        stop_at_eos=(model.cfg.device != "mps"),
+                        input=promptTokenized.unsqueeze(0),
+                        do_sample=True,
+                        return_logits=True,
+                        **kwargs,
+                    )
                 ):
-                    partial_result += model.to_string(result[0])  # type: ignore
+                    if i == 0:
+                        partial_result = model.to_string(result[0][1:])  # type: ignore
+                    else:
+                        partial_result += model.to_string(result[0])  # type: ignore
+
+                    if n_logprobs > 0:
+                        current_logprobs = make_logprob_from_logits(
+                            result,  # type: ignore
+                            logits,  # type: ignore
+                            model,
+                            n_logprobs,
+                        )
+                        logprobs.append(current_logprobs)
+
                     to_return = make_steer_completion_chat_response(
                         [steer_type],
-                        partial_result,
-                        partial_result,
+                        partial_result,  # type: ignore
+                        partial_result,  # type: ignore
                         model,
                         promptTokenized,
                         inputPrompt,
                         custom_hf_model_id,
-                    )  # type: ignore
-                    logger.info("to_return: %s", to_return)
+                        logprobs or None,
+                        logprobs or None,
+                    )
                     yield format_sse_message(to_return.to_json())
 
 
@@ -349,8 +428,9 @@ def make_steer_completion_chat_response(
     promptTokenized: torch.Tensor,
     promptChat: list[NPSteerChatMessage],
     custom_hf_model_id: str | None = None,
+    steered_logprobs: list[NPLogprob] | None = None,
+    default_logprobs: list[NPLogprob] | None = None,
 ) -> SteerCompletionChatPost200Response:
-    # Add tensor device logging
     steerChatResults = []
     for steer_type in steer_types:
         if steer_type == NPSteerType.STEERED:
@@ -363,6 +443,7 @@ def make_steer_completion_chat_response(
                         custom_hf_model_id,  # type: ignore
                     ),
                     type=steer_type,
+                    logprobs=steered_logprobs,
                 )
             )
         else:
@@ -375,6 +456,7 @@ def make_steer_completion_chat_response(
                         custom_hf_model_id,  # type: ignore
                     ),
                     type=steer_type,
+                    logprobs=default_logprobs,
                 )
             )
 
