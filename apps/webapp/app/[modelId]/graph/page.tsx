@@ -1,9 +1,9 @@
 import { authOptions } from '@/app/api/auth/[...nextauth]/authOptions';
 import { GraphProvider } from '@/components/provider/graph-provider';
 import { GraphStateProvider } from '@/components/provider/graph-state-provider';
+import { ASSET_BASE_URL } from '@/lib/constants';
 import { prisma } from '@/lib/db';
 import { getModelById } from '@/lib/db/model';
-import { ASSET_BASE_URL } from '@/lib/env';
 import { Metadata } from 'next';
 import { getServerSession, Session } from 'next-auth';
 import { notFound } from 'next/navigation';

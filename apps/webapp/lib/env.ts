@@ -66,10 +66,12 @@ export const env = createEnv({
     // Support Servers - Graph
     USE_LOCALHOST_GRAPH: onlyBool.default('false'),
     GRAPH_SERVER: z.string().default(''),
+    GRAPH_SERVER_QWEN3_4B: z.string().default(''),
     GRAPH_SERVER_SECRET: z.string().default(''),
     USE_RUNPOD_GRAPH: onlyBool.default('false'),
     GRAPH_RUNPOD_SECRET: z.string().default(''),
     GRAPH_RUNPOD_SERVER: z.string().default(''),
+    GRAPH_RUNPOD_SERVER_QWEN3_4B: z.string().default(''),
 
     // Authentication - Apple
     APPLE_CLIENT_ID: z.string().default(''),
