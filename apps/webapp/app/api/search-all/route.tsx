@@ -140,8 +140,11 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
   if (densityThreshold !== DEFAULT_DENSITY_THRESHOLD && (densityThreshold <= 0 || densityThreshold >= 1)) {
     throw new Error('densityThreshold must be between 0 and 1.');
   }
-
-  await assertUserCanAccessModelAndSourceSet(modelId, sourceSetName, request.user);
+  try {
+    await assertUserCanAccessModelAndSourceSet(modelId, sourceSetName, request.user);
+  } catch (error) {
+    return NextResponse.json({ message: error instanceof Error ? error.message : 'Unknown Error' }, { status: 500 });
+  }
 
   console.log('starting');
   // see if we found this before

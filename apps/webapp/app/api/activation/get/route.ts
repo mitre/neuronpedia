@@ -33,7 +33,7 @@ const prisma = new PrismaClient();
                 },
                 "index": {
                   "type": "string",
-                  "description": "Index of the neuron"
+                  "description": "Index of the feature/latent"
                 }
               },
               "required": ["modelId", "source", "index"]
@@ -75,7 +75,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
     });
 
     if (!activations || activations.length === 0) {
-      return NextResponse.json({ error: 'Activations not found' }, { status: 404 });
+      return NextResponse.json({ error: ERROR_NOT_FOUND_MESSAGE }, { status: 404 });
     }
 
     return NextResponse.json(activations);

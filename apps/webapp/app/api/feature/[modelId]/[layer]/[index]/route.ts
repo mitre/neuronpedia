@@ -69,7 +69,7 @@ export const GET = withOptionalUser(
   ) => {
     const neuron = await getNeuronOptimized(params.modelId, params.layer, params.index, request.user);
     if (!neuron) {
-      NextResponse.json({ error: 'Feature Not Found' });
+      return NextResponse.json({ error: ERROR_NOT_FOUND_MESSAGE }, { status: 404 });
     }
 
     return NextResponse.json(neuron);

@@ -3,7 +3,9 @@ import { createSwaggerSpec } from 'next-swagger-doc';
 const description = `
 This is Neuronpedia's API. You can test calls right in the browser.
 
-Get your API key by logging in at [neuronpedia.org](https://www.neuronpedia.org) then going to [/account](https://neuronpedia.org/account).
+IMPORTANT: Check the [available resources](https://neuronpedia.org/available-resources) page to see which models and sources are available in the API.
+
+API KEY: Get your API key by logging in at [neuronpedia.org](https://www.neuronpedia.org) then going to [/account](https://neuronpedia.org/account).
 
 Requests for new APIs, questions, or feedback? [Contact us](https://neuronpedia.org/contact).
 `;

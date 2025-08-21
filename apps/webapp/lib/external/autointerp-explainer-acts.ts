@@ -264,6 +264,9 @@ Explanation of neuron 5 behavior: `;
         temperature: 1.0,
         top_p: 1.0,
       });
+      // console.log(
+      //   `Tokens used - prompt: ${chatCompletion.usage?.prompt_tokens}, completion: ${chatCompletion.usage?.completion_tokens}, total: ${chatCompletion.usage?.total_tokens}`,
+      // );
       const explanationString = chatCompletion.choices[0].message.content;
       console.log(explanationString);
       const cleanedExplanation = postProcessExplanation(explanationString);

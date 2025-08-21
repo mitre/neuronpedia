@@ -1,8 +1,24 @@
+import { NEXT_PUBLIC_URL } from '@/lib/env';
+
 export default function NotFound() {
   return (
     <div className="text-center">
       <h2 className="mb-4 mt-20 flex max-w-screen-xl flex-col items-center justify-center px-5 text-lg font-light sm:text-lg">
-        <div>Couldn&lsquo;t find that page.</div>
+        <div>
+          Couldn&lsquo;t find that page.
+          <div className="mb-2 mt-2 text-sm font-medium text-slate-600">
+            If you are trying to access a specific model, source/SAE, or feature, check available public models/sources
+            (including which ones have inference enabled) at{' '}
+            <a
+              href={`https://${NEXT_PUBLIC_URL}/available-resources`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sky-700 hover:underline"
+            >
+              {NEXT_PUBLIC_URL}/available-resources
+            </a>
+          </div>
+        </div>
         <div className="flex flex-row gap-x-1">
           Please{' '}
           <a

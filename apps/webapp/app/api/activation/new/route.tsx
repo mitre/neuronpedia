@@ -9,10 +9,10 @@ import { NextResponse } from 'next/server';
  * @swagger
  * /api/activation/new:
  *   post:
- *     summary: Activation Values for Text
+ *     summary: Feature Activation for Text
  *     description: Gets activation values for a given feature when processing custom input text. Equivalent to going to a feature page and entering custom text. The example shows this feature https://neuronpedia.org/gpt2-small/9-res-jb/200
  *     tags:
- *       - Features
+ *       - Activations
  *     requestBody:
  *       required: true
  *       content:
@@ -20,7 +20,7 @@ import { NextResponse } from 'next/server';
  *           schema:
  *             type: object
  *             required:
- *               - neuron
+ *               - feature
  *               - customText
  *             properties:
  *               feature:
@@ -129,7 +129,11 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
   }
 
   const sourceSetName = getSourceSetNameFromSource(neuron.layer);
-  await assertUserCanAccessModelAndSourceSet(neuron.modelId, sourceSetName, request.user);
+  try {
+    await assertUserCanAccessModelAndSourceSet(neuron.modelId, sourceSetName, request.user);
+  } catch (error) {
+    return NextResponse.json({ message: error instanceof Error ? error.message : 'Unknown Error' }, { status: 500 });
+  }
   const activation = await getActivationForFeature(neuron, body.customText, request.user);
 
   return NextResponse.json(activation);

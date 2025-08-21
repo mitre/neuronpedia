@@ -3,6 +3,7 @@ import datetime
 import glob
 import gzip
 import json
+import logging
 import os
 import shutil
 import time
@@ -17,6 +18,10 @@ from neuronpedia_utils.db_models.activation import Activation
 from neuronpedia_utils.db_models.explanation import Explanation
 from neuronpedia_utils.db_models.feature import Feature
 from tqdm import tqdm
+
+# silence errors from neuron_explainer
+logging.getLogger("neuron_explainer").setLevel(logging.CRITICAL)
+
 
 # openai requires us to set the openai api key before the neuron_explainer imports
 dotenv.load_dotenv()
@@ -78,6 +83,7 @@ GEMINI_LOCATION = os.getenv("GEMINI_LOCATION")
 GEMINI_BASE_API_URL = f"https://{GEMINI_LOCATION}-aiplatform.googleapis.com/v1beta1/projects/{GEMINI_PROJECT_ID}/locations/{GEMINI_LOCATION}/endpoints/openapi"
 GEMINI_VERTEX = True
 
+# the following two are overwritten by the command line arguments
 # the number of parallel autointerps to do
 # this is two bottlenecks:
 # 1. the rate limit of the explainer model API you're calling (tokens per minute, requests per minute, etc)
@@ -85,12 +91,13 @@ GEMINI_VERTEX = True
 #  - for a normal macbook pro, 50-100 is a ok number
 #  - for a machine with a beefier network card/memory, can go up to 300
 #  - you may need to experiment to find the max number for your machine (you'll see timeout errors)
-AUTOINTERP_BATCH_SIZE = 150
+AUTOINTERP_BATCH_SIZE = 128
 
+# overridden by command line arguments
 # the number of top activations to feed the explainer per feature
 #  - 10 to 25 is what we usually use
 #  - more activations = more $ spent
-MAX_TOP_ACTIVATIONS_TO_SHOW_EXPLAINER_PER_FEATURE = 20
+MAX_TOP_ACTIVATIONS_TO_SHOW_EXPLAINER_PER_FEATURE = 10
 
 # we replace these characters during autointerp so that the explainer isn't confused/distracted by them
 # HTML anomalies are weird tokenizer bugs
@@ -276,13 +283,12 @@ async def call_autointerp_openai_for_activations(
                 print(f"Exception message: {str(e)}")
                 import traceback
 
-                print(f"Traceback: {traceback.format_exc()}")
+                # print(f"Traceback: {traceback.format_exc()}")
                 raise  # Re-raise to be caught by the outer try-except block
 
     except Exception as e:
         if isinstance(e, asyncio.TimeoutError):
-            # print("Timeout occurred, skipping index " + str(feature_index))
-            pass
+            print("Timeout occurred, skipping index " + str(feature_index))
         else:
             print(f"=== Explain Error, skipping index {feature_index} ===")
             print(e)
@@ -297,21 +303,39 @@ async def call_autointerp_openai_for_activations(
         explanation = explanation[:-1]
     explanation = explanation.replace("\n", "").replace("\r", "")
 
-    print(f"Explanation: {explanation}  {feature.layer} {feature.index}")
+    # print(f"Explanation: {explanation}  {feature.layer} {feature.index}")
 
-    # Skip explanations that are just "unclear"
+    global queuedToSave
+    # if the explanation is just "first token", use the top activation token
     if (
         "unclear" in explanation.strip().lower()
         or "unsure" in explanation.strip().lower()
         or "first token" in explanation.strip().lower()
+        or len(explanation.strip()) == 0
     ):
-        print(
-            f"Skipping 'unclear'/'unsure' explanation for feature index {feature_index}"
+        # use the top activation token
+        explanation = top_activation.tokens[
+            top_activation.values.index(max(top_activation.values))
+        ].strip()
+        if len(explanation.strip()) == 0:
+            # top activating token is empty, skip this feature
+            pass
+        queuedToSave.append(
+            Explanation(
+                id=CUID_GENERATOR.generate(),
+                modelId=top_activation.modelId,
+                layer=top_activation.layer,
+                index=str(feature_index),
+                description=explanation,
+                typeName=EXPLAINER_TYPE_NAME,
+                explanationModelName=EXPLAINER_MODEL_NAME,
+                authorId=UPLOAD_EXPLANATION_AUTHORID or "",
+            )
         )
-    elif len(explanation.strip()) == 0:
-        print(f"Skipping empty explanation for feature index {feature_index}")
+        # print(
+        #     f"Using top activation token {explanation} for feature index {feature_index}\n"
+        # )
     else:
-        global queuedToSave
         queuedToSave.append(
             Explanation(
                 id=CUID_GENERATOR.generate(),
@@ -372,6 +396,7 @@ async def start(activations_dir: str):
 
                 # read activations jsonl file line by line
                 activations: List[Activation] = []
+                read_activation_texts: List[str] = []
                 for line in f:
                     activation_json = json.loads(line)
                     activation = Activation.from_dict(activation_json)
@@ -386,6 +411,11 @@ async def start(activations_dir: str):
                         and int(activation.index) not in FAILED_FEATURE_INDEXES_QUEUED
                     ):
                         continue
+                    # turn activation into a string and check if it's duplicate
+                    activation_text = "".join(activation.tokens)
+                    if activation_text in read_activation_texts:
+                        continue
+                    read_activation_texts.append(activation_text)
                     activations.append(activation)
                 activations_by_index: Dict[str, List[Activation]] = {}
                 for activation in activations:
@@ -611,6 +641,8 @@ def get_next_batch_number() -> int:
 
 def generate_embeddings_and_flush_explanations_to_file(explanations: List[Explanation]):
     explanations.sort(key=lambda x: x.index)
+    # remove all explanations with empty descriptions
+    explanations = [exp for exp in explanations if exp.description.strip() != ""]
 
     descriptions = [exp.description for exp in explanations]
     try:

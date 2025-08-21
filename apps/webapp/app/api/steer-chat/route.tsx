@@ -599,7 +599,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
     // model access
     const modelAccess = await getModelById(modelId, request.user);
     if (!modelAccess) {
-      return NextResponse.json({ message: 'Model Not Found' }, { status: 404 });
+      return NextResponse.json({ message: ERROR_NOT_FOUND_MESSAGE }, { status: 404 });
     }
     // max completion tokens based on thinking or not
     if (modelAccess.thinking) {
@@ -627,7 +627,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
         request.user,
       );
       if (!accessResult) {
-        return NextResponse.json({ message: 'Not Found' }, { status: 404 });
+        return NextResponse.json({ message: ERROR_NOT_FOUND_MESSAGE }, { status: 404 });
       }
       featuresWithVectors.push({ ...feature, neuron: accessResult });
     }

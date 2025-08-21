@@ -137,6 +137,6 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
     if (error instanceof ValidationError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
-    return NextResponse.json({ message: 'Unknown Error' }, { status: 500 });
+    return NextResponse.json({ message: error instanceof Error ? error.message : 'Unknown Error' }, { status: 500 });
   }
 });
