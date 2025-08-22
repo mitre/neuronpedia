@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
-from typing import List, Optional
 from datetime import datetime
+from typing import List, Optional
 
 
 @dataclass
@@ -10,7 +10,7 @@ class Source:
     setName: str
     creatorId: str
     hasDashboards: bool = True
-    inferenceEnabled: bool = True
+    inferenceEnabled: bool = False
     inferenceHosts: List[str] = field(default_factory=list)
     saelensConfig: Optional[str] = None
     saelensRelease: Optional[str] = None

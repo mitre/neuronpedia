@@ -130,9 +130,9 @@ model User {
 }
 
 model GraphMetadataSubgraph {
-  id              String        @id @default(cuid())
-  displayName     String?
-  
+  id          String  @id @default(cuid())
+  displayName String?
+
   graphMetadataId String
   graphMetadata   GraphMetadata @relation(fields: [graphMetadataId], references: [id], onDelete: Cascade)
 
@@ -142,8 +142,8 @@ model GraphMetadataSubgraph {
   pruningThreshold Float?
   densityThreshold Float?
 
-  userId     String
-  user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   isFeaturedSolution Boolean @default(false)
 
@@ -298,12 +298,43 @@ model Model {
   steerOutputs         SteerOutput[]
   evals                Eval[]
   sourceInferenceHosts InferenceHostSource[]
+  graphHostSources     GraphHostSource[]
   graphMetadata        GraphMetadata[]
 
   @@unique([defaultSourceSetName, id])
   @@unique([defaultSourceId, id])
   @@index(visibility)
   @@index(creatorId)
+}
+
+model GraphHostSource {
+  id                  String  @id @default(cuid())
+  name                String
+  hostUrl             String?
+  runpodServerlessUrl String?
+
+  modelId String
+  model   Model  @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  sourceSets GraphHostSourceOnSourceSet[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([modelId])
+}
+
+model GraphHostSourceOnSourceSet {
+  sourceSetName    String
+  sourceSetModelId String
+  sourceSet        SourceSet @relation(fields: [sourceSetName, sourceSetModelId], references: [name, modelId], onDelete: Cascade)
+
+  graphHostSourceId String
+  graphHostSource   GraphHostSource @relation(fields: [graphHostSourceId], references: [id], onDelete: Cascade)
+
+  @@id([sourceSetName, sourceSetModelId, graphHostSourceId])
+  @@index([sourceSetModelId])
+  @@index([sourceSetModelId, sourceSetName])
 }
 
 model InferenceHostSource {
@@ -407,6 +438,9 @@ model SourceSet {
   neurons      Neuron[]
   releaseName  String?
   releases     SourceRelease? @relation(fields: [releaseName], references: [name], onDelete: Cascade)
+
+  graphEnabled     Boolean                      @default(false)
+  graphHostSources GraphHostSourceOnSourceSet[]
 
   defaultOfModelId String?
   defaultOfModel   Model?  @relation(name: "defaultSourceSet")

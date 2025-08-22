@@ -1,10 +1,7 @@
-import {
-  ANT_MODEL_ID_TO_NEURONPEDIA_MODEL_ID,
-  getGraphRunpodServerUrlForModel,
-  getGraphServerUrlForModel,
-} from '@/app/[modelId]/graph/utils';
+import { ANT_MODEL_ID_TO_NEURONPEDIA_MODEL_ID } from '@/app/[modelId]/graph/utils';
 import { env } from '@/lib/env';
 import * as yup from 'yup';
+import { getGraphRunpodServerUrlForModel, getGraphServerUrlForModel } from '../db/graph-host-source';
 import {
   STEER_FREEZE_ATTENTION,
   STEER_FREQUENCY_PENALTY,

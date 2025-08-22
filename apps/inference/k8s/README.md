@@ -115,7 +115,8 @@ kubectl apply -k k8s/overlays/gpu/deepseek-r1-llama-8b-a && \
 kubectl apply -k k8s/overlays/gpu/deepseek-r1-llama-8b-b && \
 kubectl apply -k k8s/overlays/gpu/deepseek-r1-llama-8b-public-a && \
 kubectl apply -k k8s/overlays/gpu/deepseek-r1-llama-8b-public-b && \
-kubectl apply -k k8s/overlays/gpu/llama-31-8b
+kubectl apply -k k8s/overlays/gpu/llama-31-8b && \
+kubectl apply -k k8s/overlays/gpu/qwen3-4b
 ```
 
 ## restart instances to pick up new docker image
@@ -138,7 +139,8 @@ kubectl rollout restart deployment deepseek-r1-llama-8b-a-gpu-lite-neuronpedia-i
 kubectl rollout restart deployment deepseek-r1-llama-8b-b-gpu-lite-neuronpedia-inference && \
 kubectl rollout restart deployment deepseek-r1-llama-8b-public-a-gpu-lite-neuronpedia-inference && \
 kubectl rollout restart deployment deepseek-r1-llama-8b-public-b-gpu-lite-neuronpedia-inference && \
-kubectl rollout restart deployment llama-31-8b-gpu-neuronpedia-inference
+kubectl rollout restart deployment llama-31-8b-gpu-neuronpedia-inference && \
+kubectl rollout restart deployment qwen3-4b-gpu-neuronpedia-inference
 ```
 
 ## misc k8s commands

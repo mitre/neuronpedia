@@ -116,14 +116,15 @@ class SAEManager:
         self.sae_data[sae_id] = {
             "sae": loaded_sae,
             "hook": hook_name,
-            "neuronpedia_id": loaded_sae.cfg.neuronpedia_id,
+            "neuronpedia_id": loaded_sae.cfg.metadata.neuronpedia_id,
             "type": SAE_TYPE.SAELENS,
             # TODO: this should be in SAELens
             "dfa_enabled": (
-                loaded_sae.cfg.neuronpedia_id is not None
+                loaded_sae.cfg.metadata.neuronpedia_id is not None
                 and (
-                    DFA_ENABLED_NP_ID_SEGMENT in loaded_sae.cfg.neuronpedia_id
-                    or DFA_ENABLED_NP_ID_SEGMENT_ALT in loaded_sae.cfg.neuronpedia_id
+                    DFA_ENABLED_NP_ID_SEGMENT in loaded_sae.cfg.metadata.neuronpedia_id
+                    or DFA_ENABLED_NP_ID_SEGMENT_ALT
+                    in loaded_sae.cfg.metadata.neuronpedia_id
                 )
             ),
             "transcoder": False,  # You might want to set this based on some condition

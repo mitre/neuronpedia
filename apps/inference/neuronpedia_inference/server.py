@@ -15,6 +15,7 @@ from fastapi import APIRouter, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from transformer_lens import HookedTransformer
+from transformer_lens.hook_points import HookPoint
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from neuronpedia_inference.args import list_available_options, parse_env_and_args
@@ -183,6 +184,17 @@ async def initialize(
             tokenizer=hf_tokenizer,
             **config.model_kwargs,
         )
+
+        # add hook_in to mlp for transcoders
+        def add_hook_in_to_mlp(mlp):  # type: ignore
+            mlp.hook_in = HookPoint()
+            original_forward = mlp.forward
+            mlp.forward = lambda x: original_forward(mlp.hook_in(x))
+
+        for block in model.blocks:
+            add_hook_in_to_mlp(block.mlp)
+        model.setup()
+
         Model._instance = model
         config.set_num_layers(model.cfg.n_layers)
 

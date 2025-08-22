@@ -404,7 +404,7 @@ export default function GenerateGraphModal() {
                 />
 
                 <Form className="flex w-full flex-col gap-x-3">
-                  <div className="flex w-full flex-row gap-x-5 pb-3">
+                  <div className="flex w-full flex-col gap-x-5 pb-3 sm:flex-row">
                     <div className="flex-1">
                       <div className="mb-3 flex flex-row items-end justify-between gap-x-3">
                         <div className="flex-1">
@@ -1045,20 +1045,20 @@ export default function GenerateGraphModal() {
 
                   {error && <p className="mt-4 rounded-md bg-red-100 p-3 text-sm text-red-600">{error}</p>}
 
-                  <div className="mt-2 flex items-center justify-between border-t pt-4 text-xs">
+                  <div className="mt-2 flex flex-col items-center justify-between gap-y-3 border-t pt-4 text-xs sm:flex-row">
                     {isGenerating ? (
                       countdownTime !== null ? (
-                        <div className="flex flex-row items-center justify-start gap-x-2 whitespace-pre text-sm leading-none text-slate-500">
-                          <LoadingSquare className="" size={32} />
+                        <div className="flex flex-row items-center justify-start gap-x-2 whitespace-pre text-xs leading-none text-slate-500 sm:text-sm">
+                          <LoadingSquare className="h-6 w-6 sm:h-8 sm:w-8" size={32} />
                           Remaining time: {formatCountdown(countdownTime)}
                         </div>
                       ) : countdownTime === 0 ? (
-                        <div className="text-sm text-slate-600">Remaining time: {formatCountdown(0)}</div>
+                        <div className="text-xs text-slate-600 sm:text-sm">Remaining time: {formatCountdown(0)}</div>
                       ) : (
-                        <div className="text-sm text-slate-600">Estimating time...</div>
+                        <div className="text-xs text-slate-600 sm:text-sm">Estimating time...</div>
                       )
                     ) : estimatedTime !== null && !generationResult ? (
-                      <div className="flex flex-row items-center justify-start gap-x-1.5 whitespace-pre text-sm leading-none text-slate-500">
+                      <div className="flex flex-row items-center justify-start gap-x-1.5 whitespace-pre text-xs leading-none text-slate-500 sm:text-sm">
                         Estimated generation time:{' '}
                         {estimatedTime < 60
                           ? `~${Math.round(estimatedTime)} sec`

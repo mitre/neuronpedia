@@ -1,5 +1,7 @@
+from typing import Any
+
 import torch
-from sae_lens.sae import SAE
+from sae_lens.saes.sae import SAE
 
 from neuronpedia_inference.saes.base import BaseSAE
 
@@ -12,8 +14,8 @@ DTYPE_MAP = {
 
 class SaeLensSAE(BaseSAE):
     @staticmethod
-    def load(release: str, sae_id: str, device: str, dtype: str) -> tuple["SAE", str]:
-        loaded_sae, _, _ = SAE.from_pretrained(
+    def load(release: str, sae_id: str, device: str, dtype: str) -> tuple[Any, str]:
+        loaded_sae = SAE.from_pretrained(
             release=release,
             sae_id=sae_id,
             device=device,
@@ -21,4 +23,5 @@ class SaeLensSAE(BaseSAE):
         loaded_sae.to(device, dtype=DTYPE_MAP[dtype])
         loaded_sae.fold_W_dec_norm()
         loaded_sae.eval()
-        return loaded_sae, loaded_sae.cfg.hook_name
+
+        return loaded_sae, loaded_sae.cfg.metadata.hook_name

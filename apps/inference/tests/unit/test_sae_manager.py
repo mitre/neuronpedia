@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from sae_lens.sae import SAE
+from sae_lens.saes.sae import SAE
 
 from neuronpedia_inference.config import Config
 from neuronpedia_inference.sae_manager import SAEManager
@@ -24,7 +24,7 @@ class MockSAE:
 
 
 def mock_from_pretrained(*args, **kwargs):  # type: ignore # noqa: ARG001
-    return MockSAE(), {}, {}
+    return MockSAE()
 
 
 @pytest.fixture

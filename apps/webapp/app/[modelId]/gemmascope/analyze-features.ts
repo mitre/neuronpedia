@@ -625,6 +625,7 @@ export const typoNeuron = {
     showCorrelated: false,
     showHeadAttribution: false,
     showUmap: false,
+    graphEnabled: false,
   },
   activations: [
     {
@@ -1188,6 +1189,7 @@ export const liesNeuron = {
     showCorrelated: false,
     showHeadAttribution: false,
     showUmap: false,
+    graphEnabled: false,
   },
   activations: [
     {
@@ -1766,6 +1768,7 @@ export const badStoryNeuron = {
     showCorrelated: false,
     showHeadAttribution: false,
     showUmap: false,
+    graphEnabled: false,
   },
   activations: [
     {

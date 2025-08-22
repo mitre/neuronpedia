@@ -66,7 +66,7 @@ async def activation_single(
 
         # TODO: we assume that if either SAE or model prepends bos, then we should prepend bos
         # this is not exactly correct, but sometimes the SAE doesn't have the prepend_bos flag set
-        prepend_bos = sae.cfg.prepend_bos or model.cfg.tokenizer_prepends_bos
+        prepend_bos = sae.cfg.metadata.prepend_bos or model.cfg.tokenizer_prepends_bos
 
         tokens = model.to_tokens(
             prompt,

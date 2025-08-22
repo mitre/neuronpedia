@@ -19,10 +19,7 @@ from transformer_lens import ActivationCache
 
 from neuronpedia_inference.config import Config
 from neuronpedia_inference.sae_manager import SAEManager
-from neuronpedia_inference.shared import (
-    Model,
-    with_request_lock,
-)
+from neuronpedia_inference.shared import Model, with_request_lock
 
 logger = logging.getLogger(__name__)
 
@@ -126,7 +123,7 @@ class ActivationProcessor:
 
         # Get the first sae and check if prepend bos is true, then pass to token getter
         first_layer = request.selected_sources[0]
-        prepend_bos = sae_manager.get_sae(first_layer).cfg.prepend_bos
+        prepend_bos = sae_manager.get_sae(first_layer).cfg.metadata.prepend_bos
 
         _, str_tokens, cache = self._tokenize_and_get_cache(
             request.prompt, prepend_bos, max_layer

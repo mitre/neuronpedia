@@ -45,9 +45,7 @@ from neuron_explainer.explanations.prompt_builder import PromptFormat
 
 UPLOAD_EXPLANATION_AUTHORID = os.getenv("DEFAULT_CREATOR_ID")
 if UPLOAD_EXPLANATION_AUTHORID is None:
-    raise ValueError(
-        "UPLOAD_EXPLANATION_AUTHORID is not set. Please set it in the .env file or export it as an environment variable."
-    )
+    UPLOAD_EXPLANATION_AUTHORID = "clkht01d40000jv08hvalcvly"
 
 DEFAULT_EMBEDDING_MODEL = "text-embedding-3-large"
 DEFAULT_EMBEDDING_DIMENSIONS = 256
@@ -76,7 +74,6 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # we should use this one (ai studio, simpler) but we're super rate limited
 # GEMINI_BASE_API_URL = "https://generativelanguage.googleapis.com/v1beta/openai"
-GEMINI_VERTEX = True
 # so we use vertex instead. when we are not rate limited on AI studio, remove the following 4 properties
 GEMINI_PROJECT_ID = os.getenv("GEMINI_PROJECT_ID")
 GEMINI_LOCATION = os.getenv("GEMINI_LOCATION")
