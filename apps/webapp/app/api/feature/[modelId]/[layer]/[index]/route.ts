@@ -1,4 +1,5 @@
 import { getNeuronOptimized } from '@/lib/db/neuron';
+import { ERROR_NOT_FOUND_MESSAGE } from '@/lib/db/userCanAccess';
 import { RequestOptionalUser } from '@/lib/types/auth';
 import { withOptionalUser } from '@/lib/with-user';
 import { NextResponse } from 'next/server';

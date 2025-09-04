@@ -6,6 +6,7 @@
 import { prisma } from '@/lib/db';
 import { getModelById } from '@/lib/db/model';
 import { neuronExistsAndUserHasAccess } from '@/lib/db/neuron';
+import { ERROR_NOT_FOUND_MESSAGE } from '@/lib/db/userCanAccess';
 import { env } from '@/lib/env';
 import { AuthenticatedUser, RequestOptionalUser } from '@/lib/types/auth';
 import { steerCompletionChat } from '@/lib/utils/inference';

@@ -337,7 +337,7 @@ export default function Page() {
           />
         </a>
         <a
-          href={`${NEXT_PUBLIC_URL}/llama-scope`}
+          href={`${env.NEXT_PUBLIC_URL}/llama-scope`}
           target="_blank"
           className="flex flex-row items-center justify-center"
           rel="noreferrer"
@@ -349,7 +349,7 @@ export default function Page() {
           />
         </a>
         <a
-          href={`${NEXT_PUBLIC_URL}/llama3.1-8b-eleuther_gp`}
+          href={`${env.NEXT_PUBLIC_URL}/llama3.1-8b-eleuther_gp`}
           target="_blank"
           className="flex flex-row items-center justify-center"
           rel="noreferrer"
@@ -361,14 +361,14 @@ export default function Page() {
           />
         </a>
         <a
-          href={`${NEXT_PUBLIC_URL}/gpt2sm-apollojt`}
+          href={`${env.NEXT_PUBLIC_URL}/gpt2sm-apollojt`}
           target="_blank"
           className="flex flex-row items-center justify-center"
           rel="noreferrer"
         >
           <img
             src="/usedby/apolloresearch.png"
-            className="h-[35px] opacity-70 grayscale hover:opacity-100 hover:grayscale-0 hidden sm:block"
+            className="hidden h-[35px] opacity-70 grayscale hover:opacity-100 hover:grayscale-0 sm:block"
             alt="Apollo Research"
           />
         </a>
@@ -379,9 +379,6 @@ export default function Page() {
             alt="MATS"
           />
         </a> */}
-       
-
-        
       </div>
 
       <div className="flex w-full flex-1 flex-col items-center justify-center bg-sky-100 py-12 sm:py-16 sm:pt-14">
@@ -485,14 +482,19 @@ export default function Page() {
         </div>
       </div>
 
-
       <div className="flex w-full flex-1 flex-col items-center justify-center gap-x-3 gap-y-12 bg-slate-50 px-2 py-12 sm:px-8 sm:py-16">
         <div className="flex max-w-screen-xl flex-1 flex-col items-center justify-center gap-x-8 gap-y-8 rounded-xl px-2 sm:flex-row sm:px-0 sm:pb-0">
           <div className="flex flex-col sm:basis-1/3">
             <div className="text-3xl font-black text-slate-800">Graph</div>
             <div className="mt-3 text-[15px] font-medium text-slate-700">
-              Visualize and trace the internal reasoning steps of a model with custom prompts, pioneered by Anthropic{`'`}s{' '}
-              <a href="https://transformer-circuits.pub/2025/attribution-graphs/methods.html" target="_blank" rel="noreferrer" className="text-sky-600 underline">
+              Visualize and trace the internal reasoning steps of a model with custom prompts, pioneered by Anthropic
+              {`'`}s{' '}
+              <a
+                href="https://transformer-circuits.pub/2025/attribution-graphs/methods.html"
+                target="_blank"
+                rel="noreferrer"
+                className="text-sky-600 underline"
+              >
                 circuit tracing
               </a>{' '}
               papers.
@@ -504,7 +506,11 @@ export default function Page() {
                   <span>Try It: Circuit Tracer</span>
                 </Button>
               </Link>
-              <Link href="https://www.youtube.com/playlist?list=PL05yUGfKO5wP6S5_12z7LG30LZigRYx1e" target="_blank" rel="noreferrer">
+              <Link
+                href="https://www.youtube.com/playlist?list=PL05yUGfKO5wP6S5_12z7LG30LZigRYx1e"
+                target="_blank"
+                rel="noreferrer"
+              >
                 <Button variant="default" size="lg" className="gap-x-2">
                   <Youtube className="h-5 w-5" />
                   <span>YouTube: Guided Demo</span>
@@ -572,7 +578,6 @@ export default function Page() {
           </a>
         </div>
       </div>
-
 
       <div className="flex w-full flex-1 flex-col items-center justify-center gap-x-3 gap-y-12 bg-slate-50 px-2 py-12 sm:px-8 sm:py-16">
         <div className="flex max-w-screen-xl flex-1 flex-col items-center gap-x-8 gap-y-8 rounded-xl px-2 sm:flex-row sm:px-0 sm:pb-0">

@@ -1,5 +1,5 @@
 import ATTRIBUTION_GRAPH_SCHEMA from '@/app/api/graph/graph-schema.json';
-import { DEFAULT_CREATOR_USER_ID, NEXT_PUBLIC_URL } from '@/lib/env';
+import { env } from '@/lib/env';
 import { GraphMetadata } from '@/prisma/generated/zod';
 import cuid from 'cuid';
 import d3 from './d3-jetpack';

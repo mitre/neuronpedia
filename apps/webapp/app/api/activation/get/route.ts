@@ -1,3 +1,4 @@
+import { ERROR_NOT_FOUND_MESSAGE } from '@/lib/db/userCanAccess';
 import { env } from '@/lib/env';
 import { RequestOptionalUser } from '@/lib/types/auth';
 import { withOptionalUser } from '@/lib/with-user';

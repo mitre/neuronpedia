@@ -1,4 +1,5 @@
 import { getModelById } from '@/lib/db/model';
+import { RequestOptionalUser } from '@/lib/types/auth';
 import { SteerLogitsRequestSchema, steerLogits } from '@/lib/utils/graph';
 import { withOptionalUser } from '@/lib/with-user';
 import { NextResponse } from 'next/server';

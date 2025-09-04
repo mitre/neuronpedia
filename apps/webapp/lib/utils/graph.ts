@@ -1,4 +1,4 @@
-import { GRAPH_RUNPOD_SECRET, USE_RUNPOD_GRAPH } from '@/lib/env';
+import { env } from '@/lib/env';
 import * as yup from 'yup';
 import {
   getAuthHeaderForGraphServerRequest,
