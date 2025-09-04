@@ -1,3 +1,4 @@
+import { getModelById } from '@/lib/db/model';
 import {
   getGraphTokenize,
   GRAPH_DESIREDLOGITPROB_DEFAULT,
@@ -16,6 +17,7 @@ const MAX_TOKENIZE_CHARS = 10000;
 const tokenizeRequestSchema = yup.object({
   prompt: yup.string().max(MAX_TOKENIZE_CHARS).min(1).required(),
   modelId: yup.string().min(1).required().oneOf(GRAPH_GENERATION_ENABLED_MODELS),
+  sourceSetName: yup.string().nullable(),
   maxNLogits: yup
     .number()
     .integer('Must be an integer.')
@@ -42,11 +44,26 @@ export async function POST(request: Request) {
 
     const validatedData = await tokenizeRequestSchema.validate(body);
 
+    if (!validatedData.sourceSetName) {
+      const model = await getModelById(validatedData.modelId);
+      validatedData.sourceSetName = model?.defaultGraphSourceSetName;
+      if (!validatedData.sourceSetName) {
+        return NextResponse.json(
+          {
+            error: 'Source Set Missing',
+            message: `The model ${validatedData.modelId} has no default graph source set, so you must provide one in the sourceSetName parameter.`,
+          },
+          { status: 400 },
+        );
+      }
+    }
+
     const tokenizedResponse = await getGraphTokenize(
       validatedData.prompt,
       validatedData.maxNLogits,
       validatedData.desiredLogitProb,
       validatedData.modelId,
+      validatedData.sourceSetName,
     );
 
     // console.log('tokenizedResponse', tokenizedResponse);

@@ -1,6 +1,6 @@
+import { CLTGraph } from '@/app/[modelId]/graph/graph-types';
 import {
   ATTRIBUTION_GRAPH_SCHEMA,
-  CLTGraph,
   ERROR_MODEL_DOES_NOT_EXIST,
   makeGraphPublicAccessGraphUrl,
 } from '@/app/[modelId]/graph/utils';

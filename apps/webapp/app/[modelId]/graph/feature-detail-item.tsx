@@ -1,6 +1,6 @@
 import ActivationItem, { CENTER_ME_CLASSNAME } from '@/components/activation-item';
 import { useEffect, useRef } from 'react';
-import { AnthropicFeatureExample } from './utils';
+import { AnthropicFeatureExample } from './graph-types';
 
 export default function GraphFeatureDetailItem({
   example,

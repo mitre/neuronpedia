@@ -1,9 +1,7 @@
 import { ASSET_BASE_URL } from '@/lib/constants';
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { modelIdToModelDisplayName } from '../[modelId]/graph/utils';
-
-const DEFAULT_GRAPH_MODEL_ID = 'gemma-2-2b';
+import { ANTHROPIC_MODEL_TO_DISPLAY_NAME, DEFAULT_GRAPH_MODEL_ID } from '../[modelId]/graph/utils';
 
 export async function generateMetadata({
   params,
@@ -16,7 +14,7 @@ export async function generateMetadata({
   const slug = searchParams.slug as string | undefined;
 
   // use modelIdToModelDisplayName to get the model name if it's there. othewise use it directly
-  const modelName = modelIdToModelDisplayName.get(modelId) || modelId;
+  const modelName = ANTHROPIC_MODEL_TO_DISPLAY_NAME.get(modelId) || modelId;
 
   const title = `${slug ? `${slug} - ` : ''}${modelName || 'Attribution'} Graph | Neuronpedia`;
   const description = `Attribution Graph for ${modelName}`;

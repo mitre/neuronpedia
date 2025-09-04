@@ -11,6 +11,7 @@
 - [setup + run - kubernetes](#setup--run---kubernetes)
 - [usage examples](#usage-examples)
   - [get activations for a single feature and prompt](#get-activations-for-a-single-feature-and-prompt)
+  - [get activations from one or more layers/sources/SAEs for a prompt](#get-activations-from-one-or-more-layerssourcessaes-for-a-prompt)
   - [get cosine similarities](#get-cosine-similarities)
   - [steering example gpt2-small res-jb](#steering-example-gpt2-small-res-jb)
 - [Testing, Linting, and Formatting](#testing-linting-and-formatting)
@@ -160,7 +161,7 @@ curl -X POST http://127.0.0.1:5002/v1/activation/single \
  "prompt": "this is about dogs!",
  "model": "gemma-2-2b",
  "source": "20-gemmascope-res-16k",
- "index": 12082
+ "index": "12082"
 }'
 ```
 
@@ -179,6 +180,25 @@ you'll get the following response
   "tokens": ["<bos>", "this", " is", " about", " dogs", "!"]
 }
 ```
+
+### get activations from one or more layers/sources/SAEs for a prompt
+
+This gets top features that were activated for layers 0, 2, 10, and 11 in source `res-jb` in `gpt2-small` for prompt `this is about dogs!`.
+Append `| jq` to the end for formatted output.
+
+```
+curl -X POST http://127.0.0.1:5002/v1/activation/all \
+-H "Content-Type: application/json" \
+-d '{
+ "prompt": "this is about dogs!",
+ "model": "gpt2-small",
+ "selected_sources": ["0-res-jb", "2-res-jb", "10-res-jb", "11-res-jb"],
+ "source_set": "res-jb",
+ "sort_by_token_indexes": [],
+ "ignore_bos": true
+}'
+```
+
 
 ### get cosine similarities
 

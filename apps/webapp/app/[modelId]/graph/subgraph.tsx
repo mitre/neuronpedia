@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
 
+import CustomTooltip from '@/components/custom-tooltip';
 import { useGraphModalContext } from '@/components/provider/graph-modal-provider';
 import { useGraphContext } from '@/components/provider/graph-provider';
 import { useGraphStateContext } from '@/components/provider/graph-state-provider';
@@ -10,14 +11,22 @@ import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
 import { Circle, FolderOpen, Joystick, PinIcon, PinOffIcon, Save, Share2, TrashIcon } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import d3 from './d3-jetpack';
-import { clientCheckIsEmbed, CLTGraphLink, CLTGraphNode, hideTooltip, showTooltip } from './utils';
+import { CLTGraphLink, CLTGraphNode } from './graph-types';
+import { computeGraphScoresInWorker } from './score-worker-client';
+import {
+  clientCheckIsEmbed,
+  hideTooltip,
+  isOldQwenGraph,
+  MODELS_TO_CALCULATE_REPLACEMENT_SCORES,
+  showTooltip,
+} from './utils';
 
 const NODE_WIDTH = 75;
 const NODE_HEIGHT = 25;
 const MINIMUM_SUBGRAPH_LINK_STROKE_WIDTH = 1;
 const MAX_SUBGRAPH_LINK_LUMINANCE = 0.9;
 
-const STEER_MODEL_IDS = ['gemma-2-2b']; // , 'qwen3-4b' need to fix steering for this model
+const STEER_MODEL_IDS = ['gemma-2-2b', 'qwen3-4b'];
 
 // Custom force container function to keep nodes within bounds
 function forceContainer(bbox: [[number, number], [number, number]]) {
@@ -88,6 +97,7 @@ export default function Subgraph() {
     getOverrideClerpForNode,
     makeTooltipText,
     resetSelectedGraphToBlankVisState,
+    selectedModelId,
   } = useGraphContext();
 
   // Use the new graph state context
@@ -123,20 +133,6 @@ export default function Subgraph() {
   const [currentHoveredId, setCurrentHoveredId] = useState<string | null>(null);
   const [currentClickedId, setCurrentClickedId] = useState<string | null>(null);
 
-  // function togglePinNode(nodeId: string) {
-  //   // Toggle pinned state
-  //   const newPinnedIds = [...visState.pinnedIds];
-  //   const pinnedIndex = newPinnedIds.indexOf(nodeId || '');
-
-  //   if (pinnedIndex === -1 && nodeId) {
-  //     newPinnedIds.push(nodeId);
-  //   } else if (pinnedIndex !== -1) {
-  //     newPinnedIds.splice(pinnedIndex, 1);
-  //   }
-
-  //   updateVisStateField('pinnedIds', newPinnedIds);
-  // }
-
   // Register callbacks to be notified when hover/click state changes
   useEffect(() => {
     const unregisterHover = registerHoverCallback((hoveredId) => {
@@ -159,6 +155,59 @@ export default function Subgraph() {
   const isEditingLabelRef = useRef(isEditingLabel);
 
   const screenSize = useScreenSize();
+
+  // Web worker compute via helper
+  // const latestRequestIdRef = useRef(0);
+  // const [subgraphScores, setSubgraphScores] = useState({ replacementScore: 0, completenessScore: 0 });
+
+  // Web worker compute for overall graph scores
+  const [graphScores, setGraphScores] = useState({ replacementScore: 0, completenessScore: 0 });
+
+  useEffect(() => {
+    if (!selectedGraph) {
+      setGraphScores({ replacementScore: 0, completenessScore: 0 });
+      return;
+    }
+
+    // Use existing scores if available
+    if (
+      selectedGraph.metadata.replacement_score !== undefined &&
+      selectedGraph.metadata.completeness_score !== undefined
+    ) {
+      setGraphScores({
+        replacementScore: selectedGraph.metadata.replacement_score,
+        completenessScore: selectedGraph.metadata.completeness_score,
+      });
+      return;
+    }
+
+    // Compute scores in web worker for the full graph (no pinned nodes)
+    computeGraphScoresInWorker(selectedGraph, [])
+      .then(({ replacementScore, completenessScore }) => {
+        setGraphScores({ replacementScore, completenessScore });
+      })
+      .catch(() => {
+        setGraphScores({ replacementScore: 0, completenessScore: 0 });
+      });
+  }, [selectedGraph]);
+
+  // useEffect(() => {
+  //   if (!selectedGraph) {
+  //     setSubgraphScores({ replacementScore: 0, completenessScore: 0 });
+  //     return;
+  //   }
+  //   latestRequestIdRef.current += 1;
+  //   const requestId = latestRequestIdRef.current;
+  //   computeGraphScoresInWorker(selectedGraph, visState.pinnedIds)
+  //     .then(({ replacementScore, completenessScore }) => {
+  //       if (requestId !== latestRequestIdRef.current) return;
+  //       setSubgraphScores({ replacementScore, completenessScore });
+  //     })
+  //     .catch(() => {
+  //       if (requestId !== latestRequestIdRef.current) return;
+  //       setSubgraphScores({ replacementScore: 0, completenessScore: 0 });
+  //     });
+  // }, [selectedGraph, visState.pinnedIds]);
 
   // Helper to create pct input color function
   const pctInputColorFn = useCallback((d: number) => {
@@ -1173,6 +1222,65 @@ export default function Subgraph() {
       }`}
     >
       <CardContent className="relative h-full px-0 py-0">
+        {selectedGraph && MODELS_TO_CALCULATE_REPLACEMENT_SCORES.has(selectedModelId) && (
+          <div className="absolute bottom-1 left-0 hidden w-full flex-row items-center justify-center gap-x-1.5 px-5 text-[9px] text-slate-500 sm:flex">
+            <div className="flex flex-1 flex-row items-center justify-center gap-x-3">
+              <div className="z-10 flex flex-row items-center justify-center gap-x-0.5">
+                <div className="text-center font-bold leading-tight">Replacement Score</div>
+                <CustomTooltip
+                  trigger={
+                    <div className="flex h-3 w-3 cursor-pointer items-center justify-center rounded-full bg-slate-200 font-bold leading-none">
+                      ?
+                    </div>
+                  }
+                  side="right"
+                >
+                  <div className="text-[11px] text-slate-700">
+                    Measures the fraction of end-to-end influence from input tokens to output logits that flows through
+                    feature nodes rather than error nodes. This is a strict metric that rewards complete explanations
+                    where tokens influence logits entirely through features.
+                  </div>
+                </CustomTooltip>
+              </div>
+              <div className="flex flex-row items-center justify-center gap-x-2">
+                <div className="font-medium text-slate-600">
+                  Graph: {graphScores.replacementScore?.toFixed(2) || 'N/A'}
+                </div>
+                {/* <div className="font-medium text-slate-600">
+                  Subgraph*: {visState.pinnedIds.length > 0 ? subgraphScores.replacementScore?.toFixed(2) : 'N/A'}
+                </div> */}
+              </div>
+            </div>
+            <div className="flex flex-1 flex-row items-center justify-center gap-x-3">
+              <div className="z-10 flex flex-row items-center justify-center gap-x-0.5">
+                <div className="text-center font-bold leading-tight">Completeness Score</div>
+                <CustomTooltip
+                  trigger={
+                    <div className="flex h-3 w-3 cursor-pointer items-center justify-center rounded-full bg-slate-200 font-bold leading-none">
+                      ?
+                    </div>
+                  }
+                  side="right"
+                >
+                  <div className="text-[11px] text-slate-700">
+                    Measures the fraction of incoming edges to all nodes (weighted by each node{`'`}s influence on the
+                    output) that originate from feature or token nodes rather than error nodes. This metric gives
+                    partial credit for nodes that are mostly explained by features, even if some error influence
+                    remains.
+                  </div>
+                </CustomTooltip>
+              </div>
+              <div className="flex flex-row items-center justify-center gap-x-2">
+                <div className="font-medium text-slate-500">
+                  Graph: {graphScores.completenessScore?.toFixed(2) || 'N/A'}
+                </div>
+                {/* <div className="font-medium text-slate-500">
+                  Subgraph*: {visState.pinnedIds.length > 0 ? subgraphScores.completenessScore?.toFixed(2) : 'N/A'}
+                </div> */}
+              </div>
+            </div>
+          </div>
+        )}
         {visState.subgraph?.activeGrouping.isActive && (
           <div className="absolute right-0 top-0 z-10 flex w-40 flex-col items-center justify-center gap-y-0 overflow-hidden rounded-bl-lg rounded-tr-lg bg-sky-600 text-[11px] font-bold text-white">
             <div className="pt-2.5 text-center text-[12px]">Grouping Mode</div>
@@ -1234,7 +1342,7 @@ export default function Subgraph() {
           <div className="absolute h-full w-full" ref={divRef} />
 
           {(visState.pinnedIds.length === 0 || showSubgraphHelp) && (
-            <div className="absolute hidden h-full min-h-full w-full flex-col items-start justify-center gap-y-3 rounded-xl bg-white/70 px-5 text-sm text-slate-700 backdrop-blur-sm sm:flex">
+            <div className="absolute hidden h-[calc(100%-20px)] min-h-[calc(100%-20px)] w-full flex-col items-start justify-center gap-y-3 rounded-xl bg-white/70 px-5 text-sm text-slate-700 backdrop-blur-sm sm:flex">
               <div className="flex w-full flex-col items-center justify-center gap-x-1.5 gap-y-0.5 text-center text-base font-medium">
                 Subgraph (Solution){' '}
                 <Button
@@ -1340,23 +1448,27 @@ export default function Subgraph() {
               </div>
               Grouping Mode
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setIsSteerModalOpen(true);
-              }}
-              className={`h-11 w-[86px] flex-col items-center justify-center gap-y-[4px] whitespace-nowrap border border-emerald-600 bg-emerald-100 px-0 text-[9.5px] font-semibold leading-none text-emerald-700 shadow transition-all hover:bg-emerald-200 hover:text-emerald-700 ${
-                visState.subgraph?.activeGrouping.isActive ? 'hidden' : 'hidden sm:flex'
-              }`}
-              disabled={
-                visState.pinnedIds.length === 0 || !STEER_MODEL_IDS.includes(selectedGraph?.metadata.scan || '')
-              }
-              aria-label="Steer"
-            >
-              <Joystick className="h-3.5 w-3.5" />
-              Steer (Beta)
-            </Button>
+            {selectedGraph && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setIsSteerModalOpen(true);
+                }}
+                className={`hidden h-11 w-[86px] flex-col items-center justify-center gap-y-[4px] whitespace-nowrap border border-emerald-600 bg-emerald-100 px-0 text-[9.5px] font-semibold leading-none text-emerald-700 shadow transition-all hover:bg-emerald-200 hover:text-emerald-700 ${
+                  visState.subgraph?.activeGrouping.isActive
+                    ? ''
+                    : !STEER_MODEL_IDS.includes(selectedGraph.metadata.scan) || isOldQwenGraph(selectedGraph)
+                      ? ''
+                      : 'sm:flex'
+                }`}
+                disabled={visState.pinnedIds.length === 0}
+                aria-label="Steer"
+              >
+                <Joystick className="h-3.5 w-3.5" />
+                Steer
+              </Button>
+            )}
           </div>
 
           <div className="absolute left-3 top-3 hidden flex-row items-center justify-center gap-x-1.5 sm:flex">

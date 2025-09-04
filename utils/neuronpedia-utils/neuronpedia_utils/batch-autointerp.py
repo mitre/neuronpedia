@@ -110,7 +110,7 @@ HTML_ANOMALY_AND_SPECIAL_CHARS_REPLACEMENTS = {
     "Ċ": "\n",  # line break
     "<0x0A>": "\n",
     "ĉ": "\t",  # tab
-    "▁": " ",
+    "▁": " ",  # \u2581, gemma 2 uses this as a space
     "<|endoftext|>": " ",
     "<bos>": " ",
     "<|begin_of_text|>": " ",
@@ -124,14 +124,20 @@ queuedToSave: List[Explanation] = []
 FAILED_FEATURE_INDEXES_QUEUED: List[int] | None = None
 FAILED_FEATURE_INDEXES_OUTPUT: List[str] = []
 
+IGNORE_FIRST_N_TOKENS: int = 0
+
+
+def replace_html_anomalies_and_special_chars_single(text: str) -> str:
+    for old_char, new_char in HTML_ANOMALY_AND_SPECIAL_CHARS_REPLACEMENTS.items():
+        text = text.replace(old_char, new_char)
+    return text
+
 
 def replace_html_anomalies_and_special_chars(texts: list[str]) -> list[str]:
-    return [
-        "".join(
-            HTML_ANOMALY_AND_SPECIAL_CHARS_REPLACEMENTS.get(char, char) for char in text
-        )
-        for text in texts
-    ]
+    result = []
+    for text in texts:
+        result.append(replace_html_anomalies_and_special_chars_single(text))
+    return result
 
 
 async def call_autointerp_openai_for_activations(
@@ -171,7 +177,7 @@ async def call_autointerp_openai_for_activations(
         if EXPLAINER_TYPE_NAME == "oai_attention-head":
             for activation in activations_sorted_by_max_value:
                 activationRecord = ActivationRecord(
-                    tokens=activation.tokens,
+                    tokens=replace_html_anomalies_and_special_chars(activation.tokens),
                     activations=activation.values,
                     dfa_values=activation.dfaValues,
                     dfa_target_index=activation.dfaTargetIndex,
@@ -194,7 +200,7 @@ async def call_autointerp_openai_for_activations(
         elif EXPLAINER_TYPE_NAME == "oai_token-act-pair":
             for activation in activations_sorted_by_max_value:
                 activationRecord = ActivationRecord(
-                    tokens=activation.tokens,
+                    tokens=replace_html_anomalies_and_special_chars(activation.tokens),
                     activations=activation.values,
                 )
                 activationRecords.append(activationRecord)
@@ -216,7 +222,7 @@ async def call_autointerp_openai_for_activations(
         elif EXPLAINER_TYPE_NAME == "np_max-act-logits":
             for activation in activations_sorted_by_max_value:
                 activationRecord = ActivationRecord(
-                    tokens=activation.tokens,
+                    tokens=replace_html_anomalies_and_special_chars(activation.tokens),
                     activations=activation.values,
                 )
                 activationRecords.append(activationRecord)
@@ -233,7 +239,9 @@ async def call_autointerp_openai_for_activations(
                         all_activation_records=activationRecords,
                         max_tokens=200,
                         max_activation=calculate_max_activation(activationRecords),
-                        top_positive_logits=feature.pos_str,
+                        top_positive_logits=replace_html_anomalies_and_special_chars(
+                            feature.pos_str
+                        ),
                         num_samples=1,
                     ),
                     timeout=20,
@@ -251,7 +259,7 @@ async def call_autointerp_openai_for_activations(
         elif EXPLAINER_TYPE_NAME == "np_max-act":
             for activation in activations_sorted_by_max_value:
                 activationRecord = ActivationRecord(
-                    tokens=activation.tokens,
+                    tokens=replace_html_anomalies_and_special_chars(activation.tokens),
                     activations=activation.values,
                 )
                 activationRecords.append(activationRecord)
@@ -311,9 +319,11 @@ async def call_autointerp_openai_for_activations(
         or len(explanation.strip()) == 0
     ):
         # use the top activation token
-        explanation = top_activation.tokens[
-            top_activation.values.index(max(top_activation.values))
-        ].strip()
+        explanation = replace_html_anomalies_and_special_chars_single(
+            top_activation.tokens[
+                top_activation.values.index(max(top_activation.values))
+            ].strip()
+        )
         if len(explanation.strip()) == 0:
             # top activating token is empty, skip this feature
             pass
@@ -401,6 +411,13 @@ async def start(activations_dir: str):
                         continue
                     if END_INDEX is not None and int(activation.index) > END_INDEX:
                         continue
+                    if IGNORE_FIRST_N_TOKENS > 0:
+                        activation.tokens = activation.tokens[IGNORE_FIRST_N_TOKENS:]
+                        activation.values = activation.values[IGNORE_FIRST_N_TOKENS:]
+                        if activation.dfaValues is not None:
+                            activation.dfaValues = activation.dfaValues[
+                                IGNORE_FIRST_N_TOKENS:
+                            ]
                     global FAILED_FEATURE_INDEXES_QUEUED
                     if (
                         FAILED_FEATURE_INDEXES_QUEUED is not None
@@ -466,6 +483,7 @@ class AutoInterpConfig:
     max_top_activations_to_show_explainer_per_feature: int
     autointerp_batch_size: int
     gzip_output: bool
+    ignore_first_n_tokens: int
 
 
 def is_gemini_model(model_name: str) -> bool:
@@ -514,6 +532,11 @@ def main(
     only_failed_features: bool = typer.Option(
         False, help="Whether to only auto-interp failed features", prompt=True
     ),
+    ignore_first_n_tokens: int = typer.Option(
+        0,
+        help="Optional number of tokens to ignore from the beginning of the text so that autointerp doesn't see it",
+        prompt=True,
+    ),
 ):
     if explainer_type_name not in VALID_EXPLAINER_TYPE_NAMES:
         raise ValueError(f"Invalid explainer type name: {explainer_type_name}")
@@ -536,7 +559,8 @@ def main(
         MAX_TOP_ACTIVATIONS_TO_SHOW_EXPLAINER_PER_FEATURE, \
         AUTOINTERP_BATCH_SIZE, \
         EXPLANATIONS_OUTPUT_DIR, \
-        GZIP_OUTPUT
+        GZIP_OUTPUT, \
+        IGNORE_FIRST_N_TOKENS
     INPUT_DIR_WITH_SOURCE_EXPORTS = input_dir_with_source_exports
     if not os.path.exists(INPUT_DIR_WITH_SOURCE_EXPORTS):
         raise ValueError(
@@ -561,7 +585,7 @@ def main(
         max_top_activations_to_show_explainer_per_feature
     )
     AUTOINTERP_BATCH_SIZE = autointerp_batch_size
-
+    IGNORE_FIRST_N_TOKENS = ignore_first_n_tokens
     EXPLANATIONS_OUTPUT_DIR = output_dir
     if not EXPLANATIONS_OUTPUT_DIR:
         EXPLANATIONS_OUTPUT_DIR = os.path.join(
@@ -582,6 +606,7 @@ def main(
         max_top_activations_to_show_explainer_per_feature=MAX_TOP_ACTIVATIONS_TO_SHOW_EXPLAINER_PER_FEATURE,
         autointerp_batch_size=AUTOINTERP_BATCH_SIZE,
         gzip_output=gzip_output,
+        ignore_first_n_tokens=IGNORE_FIRST_N_TOKENS,
     )
 
     print("Auto-Interp Config\n", json.dumps(asdict(config), indent=2))
@@ -602,6 +627,9 @@ def main(
             print(
                 f"Number of failed features to auto-interp: {len(FAILED_FEATURE_INDEXES_QUEUED)}"
             )
+            if len(FAILED_FEATURE_INDEXES_QUEUED) == 0:
+                print("No failed features to auto-interp")
+                return
 
     total_start_time = time.time()
 

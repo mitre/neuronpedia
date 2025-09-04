@@ -1,4 +1,4 @@
-import { SaveSubgraphRequestSchema } from '@/app/[modelId]/graph/utils';
+import { SaveSubgraphRequestSchema } from '@/app/[modelId]/graph/graph-types';
 import { prisma } from '@/lib/db';
 import { RequestAuthedUser } from '@/lib/types/auth';
 import { withAuthedUser } from '@/lib/with-user';

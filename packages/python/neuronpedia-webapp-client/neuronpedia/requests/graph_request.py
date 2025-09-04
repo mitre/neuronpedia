@@ -8,7 +8,6 @@ from neuronpedia.np_graph_metadata import NPGraphMetadata
 from neuronpedia.requests.base_request import NPRequest
 from requests import Response
 
-# SUPPORTED_GRAPH_MODELS = ["gemma-2-2b", "llama-3.2-1b"]
 UPLOAD_FILE_SIZE_LIMIT_BYTES = 100 * 1024 * 1024  # 100MB
 
 

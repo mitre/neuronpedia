@@ -21,6 +21,7 @@ export const createInferenceHostSourceOnSource = async (input: InferenceHostSour
   prisma.inferenceHostSourceOnSource.create({
     data: { ...input },
   });
+
 export const getAllServerHostsForSourceSet = async (modelId: string, sourceSetName: string) => {
   const sources = await prisma.source.findMany({
     where: {
@@ -36,6 +37,7 @@ export const getAllServerHostsForSourceSet = async (modelId: string, sourceSetNa
   const allHosts = sources.flatMap((source) => source.inferenceHosts.map((host) => host.inferenceHost.hostUrl));
   return allHosts;
 };
+
 export const getAllServerHostsForModel = async (modelId: string) => {
   const sources = await prisma.source.findMany({
     where: {
@@ -50,6 +52,7 @@ export const getAllServerHostsForModel = async (modelId: string) => {
   const allHosts = sources.flatMap((source) => source.inferenceHosts.map((host) => host.inferenceHost.hostUrl));
   return allHosts;
 };
+
 export const getOneRandomServerHostForSourceSet = async (
   modelId: string,
   sourceSetName: string,
@@ -74,6 +77,7 @@ export const getOneRandomServerHostForSourceSet = async (
   const randomIndex = Math.floor(Math.random() * hosts.length);
   return hosts[randomIndex];
 };
+
 export const getOneRandomServerHostForSource = async (
   modelId: string,
   sourceId: string,
@@ -91,6 +95,7 @@ export const getOneRandomServerHostForSource = async (
   const randomIndex = Math.floor(Math.random() * hosts.length);
   return hosts[randomIndex].inferenceHost.hostUrl;
 };
+
 export const getOneRandomServerHostForModel = async (modelId: string) => {
   if (env.USE_LOCALHOST_INFERENCE) {
     return LOCALHOST_INFERENCE_HOST;
@@ -106,6 +111,7 @@ export const getOneRandomServerHostForModel = async (modelId: string) => {
 
   return hosts[0];
 };
+
 export const getTwoRandomServerHostsForModel = async (modelId: string) => {
   if (env.USE_LOCALHOST_INFERENCE) {
     return [LOCALHOST_INFERENCE_HOST, LOCALHOST_INFERENCE_HOST];
@@ -131,6 +137,7 @@ export const getTwoRandomServerHostsForModel = async (modelId: string) => {
 
   return [hosts[randomIndex], hosts[randomIndex2]];
 };
+
 export const getTwoRandomServerHostsForSourceSet = async (
   modelId: string,
   sourceSetName: string,

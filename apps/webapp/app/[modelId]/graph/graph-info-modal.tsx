@@ -3,8 +3,9 @@
 import { useGraphContext } from '@/components/provider/graph-provider';
 import { Button } from '@/components/shadcn/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/shadcn/dialog';
+import { NEXT_PUBLIC_URL } from '@/lib/env';
 import { DownloadIcon, Info } from 'lucide-react';
-import { CLTGraph } from './utils';
+import { CLTGraph, CLTGraphQParams } from './graph-types';
 
 interface GraphInfoModalProps {
   cltGraph: CLTGraph | null;
@@ -12,7 +13,7 @@ interface GraphInfoModalProps {
 }
 
 export default function GraphInfoModal({ cltGraph, selectedMetadataGraph }: GraphInfoModalProps) {
-  const { getOverrideClerpForNode, selectedGraph } = useGraphContext();
+  const { getOverrideClerpForNode, selectedGraph, visState } = useGraphContext();
 
   const handleDownload = async () => {
     if (selectedMetadataGraph && selectedGraph) {
@@ -30,6 +31,29 @@ export default function GraphInfoModal({ cltGraph, selectedMetadataGraph }: Grap
             node.clerp = getOverrideClerpForNode(originalNode) || '';
           }
         });
+
+        // add subgraph state to it
+        const qParams: CLTGraphQParams = {
+          linkType: 'both',
+          pinnedIds: visState.pinnedIds,
+          clickedId: '',
+          supernodes: visState.supernodes,
+          sg_pos: '',
+        };
+        data.qParams = qParams;
+
+        // add current window url to metadata
+        const location = window.location.href;
+        const sourceSetUrl = `${NEXT_PUBLIC_URL}/${selectedMetadataGraph.modelId}/${selectedMetadataGraph.sourceSetName}`;
+        if (data.metadata.info) {
+          data.metadata.info.neuronpedia_link = location;
+          data.metadata.info.neuronpedia_source_set = sourceSetUrl;
+        } else {
+          data.metadata.info = {
+            neuronpedia_link: location,
+            neuronpedia_source_set: sourceSetUrl,
+          };
+        }
 
         // download it
         const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
@@ -58,7 +82,7 @@ export default function GraphInfoModal({ cltGraph, selectedMetadataGraph }: Grap
         className="flex h-12 items-center justify-center gap-x-2 border-slate-300 text-xs text-slate-300"
       >
         <Info className="h-4 w-4" />
-        <span className="hidden sm:block">Graph Info</span>
+        <span className="hidden sm:block">Info</span>
       </Button>
     );
   }
@@ -76,7 +100,7 @@ export default function GraphInfoModal({ cltGraph, selectedMetadataGraph }: Grap
           className="flex h-12 items-center justify-center gap-x-2 border-slate-300 text-xs text-slate-500 hover:bg-slate-50"
         >
           <Info className="h-4 w-4" />
-          <span className="hidden sm:block">Graph Info</span>
+          <span className="hidden sm:block">Info</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto bg-white text-slate-700">

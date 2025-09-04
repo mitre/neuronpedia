@@ -35,10 +35,13 @@ Create an `.env` file with `SECRET` and `HF_TOKEN` (see `.env.example`)
 # Only run one of the following, depending on which model you want to run.
 
 # Run with Gemma-2-2B model with the Gemmascope transcoders
-poetry run python start.py --model_id google/gemma-2-2b
+poetry run python start.py --model_id google/gemma-2-2b --transcoder_set gemma
 
-# Run with Llama-3.2-1B model with transcoders trained by Anthropic Fellows
-poetry run python start.py --model_id meta-llama/Llama-3.2-1B
+# Run with Qwen3-4B model with transcoders trained by Anthropic Fellows
+poetry run python start.py --model_id Qwen/Qwen3-4B --transcoder_set mwhanna/qwen3-4b-transcoders
+
+# Run with Gemma-2-2B model with CLTs trained by Anthropic Fellows
+poetry run python start.py --model_id google/gemma-2-2b --transcoder_set mntss/clt-gemma-2-2b-2.5M
 ```
 
 ### Example Request - Output Graph JSON Directly

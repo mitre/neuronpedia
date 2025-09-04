@@ -59,6 +59,7 @@ interface FormValues {
   nodeThreshold: number;
   edgeThreshold: number;
   maxFeatureNodes: number;
+  sourceSetName: string;
   slug: string;
 }
 
@@ -74,13 +75,20 @@ interface GenerateGraphResponse {
 const FormikValuesObserver: React.FC<{
   prompt: string;
   modelId: string;
+  sourceSetName: string;
   maxNLogits: number;
   desiredLogitProb: number;
-  debouncedTokenize: (modelId: string, prompt: string, maxNLogits: number, desiredLogitProb: number) => void;
+  debouncedTokenize: (
+    modelId: string,
+    prompt: string,
+    sourceSetName: string,
+    maxNLogits: number,
+    desiredLogitProb: number,
+  ) => void;
   // eslint-disable-next-line
-}> = ({ prompt, modelId, maxNLogits, desiredLogitProb, debouncedTokenize }) => {
+}> = ({ prompt, modelId, sourceSetName, maxNLogits, desiredLogitProb, debouncedTokenize }) => {
   useEffect(() => {
-    debouncedTokenize(modelId, prompt, maxNLogits, desiredLogitProb);
+    debouncedTokenize(modelId, prompt, sourceSetName, maxNLogits, desiredLogitProb);
   }, [prompt, modelId, maxNLogits, desiredLogitProb, debouncedTokenize]);
 
   return null;
@@ -103,9 +111,10 @@ const formatCountdown = (totalSeconds: number): string => {
   return `~${s} sec`;
 };
 
-export default function GenerateGraphModal() {
-  const { isGenerateGraphModalOpen, setIsGenerateGraphModalOpen } = useGraphModalContext();
-  const { selectedModelId } = useGraphContext();
+export default function GenerateGraphModal({ showGenerateModal }: { showGenerateModal: boolean }) {
+  const { isGenerateGraphModalOpen, setIsGenerateGraphModalOpen, generateGraphModalPrompt } = useGraphModalContext();
+  const { selectedModelId, selectedSourceSetName } = useGraphContext();
+  const { globalModels } = useGlobalContext();
   const [generationResult, setGenerationResult] = useState<GenerateGraphResponse | null>(null);
   const [graphTokenizeResponse, setGraphTokenizeResponse] = useState<GraphTokenizeResponse | null>(null);
   const [estimatedTime, setEstimatedTime] = useState<number | null>(null);
@@ -118,12 +127,19 @@ export default function GenerateGraphModal() {
   const [chatPrompts, setChatPrompts] = useState<ChatMessage[]>([]);
 
   const session = useSession();
-  const { setSignInModalOpen, showToast } = useGlobalContext() as any;
+  const { setSignInModalOpen, getHasGraphsSourceSetsForModelId } = useGlobalContext();
   const formikRef = useRef<FormikProps<FormValues>>(null);
 
+  useEffect(() => {
+    if (showGenerateModal) {
+      setIsGenerateGraphModalOpen(true);
+    }
+  }, [showGenerateModal, setIsGenerateGraphModalOpen]);
+
   const initialValues: FormValues = {
-    prompt: '',
+    prompt: generateGraphModalPrompt,
     modelId: selectedModelId || '',
+    sourceSetName: selectedSourceSetName || '',
     maxNLogits: GRAPH_MAXNLOGITS_DEFAULT,
     desiredLogitProb: GRAPH_DESIREDLOGITPROB_DEFAULT,
     nodeThreshold: GRAPH_NODETHRESHOLD_DEFAULT,
@@ -134,6 +150,53 @@ export default function GenerateGraphModal() {
 
   const INSTRUCT_MODELS = ['qwen3-4b'];
 
+  const convertPromptToChatPrompts = (prompt: string): ChatMessage[] => {
+    const prompts: ChatMessage[] = [];
+
+    // Split by the start tokens to find each message
+    const parts = prompt.split(/<\|im_start\|>/);
+
+    for (let i = 1; i < parts.length; i += 1) {
+      // Skip first empty part
+      const part = parts[i];
+
+      // Find the role and content
+      const lines = part.split('\n');
+      if (lines.length < 2) {
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+
+      const role = lines[0].trim();
+      const contentLines = lines.slice(1);
+
+      // Remove <|im_end|> if present at the end
+      let content = contentLines.join('\n');
+      if (content.endsWith('<|im_end|>')) {
+        content = content.slice(0, -10); // Remove '<|im_end|>'
+      }
+
+      if (role === 'system' || role === 'user' || role === 'assistant') {
+        prompts.push({
+          role: role as ChatMessage['role'],
+          content: content.trim(),
+        });
+      }
+    }
+
+    return prompts;
+  };
+
+  useEffect(() => {
+    if (generateGraphModalPrompt && INSTRUCT_MODELS.includes(selectedModelId)) {
+      // convert the prompt into chat prompt
+      const prompts = convertPromptToChatPrompts(generateGraphModalPrompt);
+      setChatPrompts(prompts);
+    } else {
+      setChatPrompts([]);
+    }
+  }, [generateGraphModalPrompt]);
+
   const isInstructAndDoesntStartWithSpecialToken = (modelId: string, prompt: string) => {
     if (!INSTRUCT_MODELS.includes(modelId)) {
       return false;
@@ -143,51 +206,54 @@ export default function GenerateGraphModal() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedTokenize = useCallback(
-    _.debounce(async (modelId: string, prompt: string, maxNLogits: number, desiredLogitProb: number) => {
-      if (!prompt.trim() || !modelId) {
-        setGraphTokenizeResponse(null);
-        setEstimatedTime(null);
-        setIsTokenizing(false);
-        return;
-      }
-      try {
-        setIsTokenizing(true);
-        console.log(`tokenizing: ${prompt}`);
-        console.log(`model: ${modelId}`);
-        const response = await fetch('/api/graph/tokenize', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            modelId,
-            prompt,
-            maxNLogits,
-            desiredLogitProb,
-          }),
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to tokenize prompt');
-        }
-        if (prompt.endsWith(' ')) {
-          setEndsWithSpace(true);
-        } else {
-          setEndsWithSpace(false);
-        }
-        const data = (await response.json()) as GraphTokenizeResponse;
-        setGraphTokenizeResponse(data);
-        if (data.input_tokens) {
-          setEstimatedTime(getEstimatedTimeFromNumTokens(data.input_tokens.length));
-        } else {
+    _.debounce(
+      async (modelId: string, prompt: string, sourceSetName: string, maxNLogits: number, desiredLogitProb: number) => {
+        if (!prompt.trim() || !modelId) {
+          setGraphTokenizeResponse(null);
           setEstimatedTime(null);
+          setIsTokenizing(false);
+          return;
         }
-      } catch (e) {
-        console.error('Tokenization error:', e);
-        setGraphTokenizeResponse(null);
-        setEstimatedTime(null);
-      } finally {
-        setIsTokenizing(false);
-      }
-    }, 1000),
+        try {
+          setIsTokenizing(true);
+          console.log(`tokenizing: ${prompt}`);
+          const response = await fetch('/api/graph/tokenize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              modelId,
+              prompt,
+              sourceSetName,
+              maxNLogits,
+              desiredLogitProb,
+            }),
+          });
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to tokenize prompt');
+          }
+          if (prompt.endsWith(' ')) {
+            setEndsWithSpace(true);
+          } else {
+            setEndsWithSpace(false);
+          }
+          const data = (await response.json()) as GraphTokenizeResponse;
+          setGraphTokenizeResponse(data);
+          if (data.input_tokens) {
+            setEstimatedTime(getEstimatedTimeFromNumTokens(data.input_tokens.length));
+          } else {
+            setEstimatedTime(null);
+          }
+        } catch (e) {
+          console.error('Tokenization error:', e);
+          setGraphTokenizeResponse(null);
+          setEstimatedTime(null);
+        } finally {
+          setIsTokenizing(false);
+        }
+      },
+      1000,
+    ),
     [],
   );
 
@@ -232,6 +298,11 @@ export default function GenerateGraphModal() {
     setError(null);
     setGenerationResult(null);
 
+    // remove generate param from url if it's there
+    const url = new URL(window.location.href);
+    url.searchParams.delete('generate');
+    window.history.replaceState({}, '', url.toString());
+
     try {
       const response = await fetch('/api/graph/generate', {
         method: 'POST',
@@ -254,13 +325,6 @@ export default function GenerateGraphModal() {
       }
 
       setGenerationResult(responseData as GenerateGraphResponse);
-      if (showToast) {
-        showToast({
-          title: 'Success!',
-          description: responseData.message || 'Graph generated successfully.',
-          variant: 'success',
-        });
-      }
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
       if (e instanceof Error && e.message === RUNPOD_BUSY_ERROR) {
@@ -271,7 +335,7 @@ export default function GenerateGraphModal() {
               href="https://github.com/safety-research/circuit-tracer"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sky-600 underline hover:text-sky-800"
+              className="text-sky-700 underline hover:text-sky-800"
             >
               https://github.com/safety-research/circuit-tracer
             </a>{' '}
@@ -281,13 +345,6 @@ export default function GenerateGraphModal() {
       } else {
         setError(errorMessage);
         setIsGenerating(false);
-      }
-      if (showToast) {
-        showToast({
-          title: 'Error Generating Graph',
-          description: errorMessage,
-          variant: 'destructive',
-        });
       }
     } finally {
       setIsGenerating(false);
@@ -353,11 +410,11 @@ export default function GenerateGraphModal() {
 
   return (
     <Dialog open={isGenerateGraphModalOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="z-[10001] cursor-default select-none gap-y-2 bg-white text-slate-700 sm:max-w-screen-lg">
-        <DialogHeader>
-          <DialogTitle>Generate New Graph</DialogTitle>
-          <DialogDescription className="text-xs text-slate-600">
-            Generate a new attribution graph for a custom prompt. Powered by{' '}
+      <DialogContent className="z-[10001] cursor-default gap-y-2 bg-white text-slate-700 sm:max-w-screen-lg">
+        <DialogHeader className="text-center">
+          <DialogTitle className="text-center">Generate New Graph</DialogTitle>
+          <DialogDescription className="text-center text-xs text-slate-600">
+            Generate a new attribution graph for a custom prompt using{' '}
             <a
               href="https://github.com/safety-research/circuit-tracer"
               target="_blank"
@@ -398,6 +455,7 @@ export default function GenerateGraphModal() {
                 <FormikValuesObserver
                   prompt={values.prompt}
                   modelId={values.modelId}
+                  sourceSetName={values.sourceSetName}
                   maxNLogits={values.maxNLogits}
                   desiredLogitProb={values.desiredLogitProb}
                   debouncedTokenize={debouncedTokenize}
@@ -407,49 +465,116 @@ export default function GenerateGraphModal() {
                   <div className="flex w-full flex-col gap-x-5 pb-3 sm:flex-row">
                     <div className="flex-1">
                       <div className="mb-3 flex flex-row items-end justify-between gap-x-3">
-                        <div className="flex-1">
-                          <Label htmlFor="modelId" className="px-0 text-left text-xs">
-                            Model
-                          </Label>
-                          <RadixSelect.Root
-                            value={values.modelId}
-                            onValueChange={(value: string) => setFieldValue('modelId', value)}
-                            disabled={isGenerating}
-                          >
-                            <RadixSelect.Trigger
-                              id="modelId"
-                              className="mt-1 flex w-full items-center justify-between rounded-md border border-slate-300 px-3 py-2 text-xs text-slate-500 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
+                        <div className="flex flex-1 flex-row gap-x-3">
+                          <div className="w-32">
+                            <Label htmlFor="modelId" className="px-0 text-left text-xs">
+                              Model
+                            </Label>
+                            <RadixSelect.Root
+                              value={values.modelId}
+                              onValueChange={(value: string) => {
+                                setFieldValue('modelId', value);
+                                setFieldValue('sourceSetName', getHasGraphsSourceSetsForModelId(value)[0].name);
+                                setGraphTokenizeResponse(null);
+                                setChatPrompts([]);
+                                setFieldValue('prompt', '');
+                              }}
+                              disabled={isGenerating}
                             >
-                              <RadixSelect.Value placeholder="Select a model" />
-                              <RadixSelect.Icon className="text-slate-500">
-                                <ChevronDownIcon className="h-4 w-4" />
-                              </RadixSelect.Icon>
-                            </RadixSelect.Trigger>
-                            <RadixSelect.Portal>
-                              <RadixSelect.Content className="z-[20000] min-w-[8rem] overflow-hidden rounded-md border border-slate-200 bg-white text-slate-900 shadow-md">
-                                <RadixSelect.ScrollUpButton className="flex items-center justify-center py-1">
-                                  <ChevronUpIcon className="h-4 w-4" />
-                                </RadixSelect.ScrollUpButton>
-                                <RadixSelect.Viewport className="p-1">
-                                  {GRAPH_GENERATION_ENABLED_MODELS.map((model) => (
-                                    <RadixSelect.Item
-                                      key={model}
-                                      value={model}
-                                      className="relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-4 pr-2 text-sm text-slate-600 outline-none hover:bg-sky-100 focus:bg-slate-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-                                    >
-                                      <RadixSelect.ItemText>{model}</RadixSelect.ItemText>
-                                    </RadixSelect.Item>
-                                  ))}
-                                </RadixSelect.Viewport>
-                                <RadixSelect.ScrollDownButton className="flex items-center justify-center py-1">
+                              <RadixSelect.Trigger
+                                id="modelId"
+                                className="mt-1 flex w-full items-center justify-between rounded-md border border-slate-300 px-3 py-2 text-xs text-slate-500 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                <RadixSelect.Value placeholder="Select a model" />
+                                <RadixSelect.Icon className="text-slate-500">
                                   <ChevronDownIcon className="h-4 w-4" />
-                                </RadixSelect.ScrollDownButton>
-                              </RadixSelect.Content>
-                            </RadixSelect.Portal>
-                          </RadixSelect.Root>
-                          {errors.modelId && touched.modelId && (
-                            <p className="mt-1 text-xs text-red-500">{errors.modelId}</p>
-                          )}
+                                </RadixSelect.Icon>
+                              </RadixSelect.Trigger>
+                              <RadixSelect.Portal>
+                                <RadixSelect.Content className="z-[20000] min-w-[8rem] overflow-hidden rounded-md border border-slate-200 bg-white text-slate-900 shadow-md">
+                                  <RadixSelect.ScrollUpButton className="flex items-center justify-center py-1">
+                                    <ChevronUpIcon className="h-4 w-4" />
+                                  </RadixSelect.ScrollUpButton>
+                                  <RadixSelect.Viewport className="divide-y divide-slate-200 p-1">
+                                    {GRAPH_GENERATION_ENABLED_MODELS.map((model) => (
+                                      <RadixSelect.Item
+                                        key={model}
+                                        value={model}
+                                        className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-3 py-2 text-xs text-slate-600 outline-none hover:bg-sky-100 focus:bg-slate-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                                      >
+                                        <RadixSelect.ItemText>
+                                          <span className="font-mono font-medium text-sky-700">
+                                            {globalModels[model]?.displayName || model}
+                                          </span>
+                                        </RadixSelect.ItemText>
+                                      </RadixSelect.Item>
+                                    ))}
+                                  </RadixSelect.Viewport>
+                                  <RadixSelect.ScrollDownButton className="flex items-center justify-center py-1">
+                                    <ChevronDownIcon className="h-4 w-4" />
+                                  </RadixSelect.ScrollDownButton>
+                                </RadixSelect.Content>
+                              </RadixSelect.Portal>
+                            </RadixSelect.Root>
+                            {errors.modelId && touched.modelId && (
+                              <p className="mt-1 text-xs text-red-500">{errors.modelId}</p>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <Label htmlFor="sourceSet" className="px-0 text-left text-xs">
+                              Source Set
+                            </Label>
+                            <RadixSelect.Root
+                              value={values.sourceSetName}
+                              onValueChange={(value: string) => {
+                                setFieldValue('sourceSetName', value);
+                              }}
+                              disabled={isGenerating}
+                            >
+                              <RadixSelect.Trigger
+                                id="sourceSetName"
+                                className="mt-1 flex w-full items-center justify-between rounded-md border border-slate-300 px-3 py-2 text-xs text-slate-500 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                <RadixSelect.Value
+                                  placeholder={<span className="text-red-500">Select a source set</span>}
+                                />
+                                <RadixSelect.Icon className="text-slate-500">
+                                  <ChevronDownIcon className="h-4 w-4" />
+                                </RadixSelect.Icon>
+                              </RadixSelect.Trigger>
+                              <RadixSelect.Portal>
+                                <RadixSelect.Content className="z-[20000] min-w-[8rem] overflow-hidden rounded-md border border-slate-200 bg-white text-slate-900 shadow-md">
+                                  <RadixSelect.ScrollUpButton className="flex items-center justify-center py-1">
+                                    <ChevronUpIcon className="h-4 w-4" />
+                                  </RadixSelect.ScrollUpButton>
+                                  <RadixSelect.Viewport className="divide-y divide-slate-200 p-1">
+                                    {getHasGraphsSourceSetsForModelId(values.modelId).map((sourceSet) => (
+                                      <RadixSelect.Item
+                                        key={sourceSet.name}
+                                        value={sourceSet.name}
+                                        className="relative flex w-full cursor-pointer select-none flex-col items-start gap-y-1 rounded-sm px-3 py-2.5 text-xs text-slate-600 outline-none hover:bg-sky-100 focus:bg-slate-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                                      >
+                                        <RadixSelect.ItemText className="w-full text-left font-mono font-medium uppercase text-sky-700">
+                                          <span className="font-mono font-medium text-sky-700">
+                                            {sourceSet.name.toUpperCase()}
+                                          </span>
+                                        </RadixSelect.ItemText>
+                                        <div className="w-full text-[10px] font-normal text-slate-500">
+                                          {sourceSet.description} · {sourceSet.creatorName}
+                                        </div>
+                                      </RadixSelect.Item>
+                                    ))}
+                                  </RadixSelect.Viewport>
+                                  <RadixSelect.ScrollDownButton className="flex items-center justify-center py-1">
+                                    <ChevronDownIcon className="h-4 w-4" />
+                                  </RadixSelect.ScrollDownButton>
+                                </RadixSelect.Content>
+                              </RadixSelect.Portal>
+                            </RadixSelect.Root>
+                            {errors.sourceSetName && touched.sourceSetName && (
+                              <p className="mt-1 text-xs text-red-500">{errors.sourceSetName}</p>
+                            )}
+                          </div>
                         </div>
                         <Button
                           type="button"
@@ -457,10 +582,9 @@ export default function GenerateGraphModal() {
                           size="sm"
                           onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
                           disabled={isGenerating}
-                          className="hidden h-9 px-3 text-[10px] leading-snug text-slate-500 hover:text-slate-700 sm:block"
+                          className="hidden h-9 px-3 text-[11px] leading-snug text-slate-600 hover:text-slate-700 sm:block"
                         >
-                          {showAdvancedSettings ? 'Hide ' : 'Show '}
-                          Advanced Settings
+                          Advanced
                         </Button>
                       </div>
 
@@ -1113,16 +1237,13 @@ export default function GenerateGraphModal() {
             )}
           </Formik>
         ) : (
-          <div className="flex w-full flex-col space-y-1 pb-2">
-            <h3 className="text-lg font-medium text-sky-700">Graph Generated Successfully</h3>
-            <p>
-              <strong>Nodes:</strong> {generationResult.numNodes}
-            </p>
-            <p>
-              <strong>Links:</strong> {generationResult.numLinks}
-            </p>
-            <p className="pb-3 text-sm">
-              <strong>URL:</strong>{' '}
+          <div className="mt-2 flex w-full max-w-xl flex-col space-y-1.5 place-self-center self-center rounded-md bg-slate-50 p-3 pb-2">
+            <h3 className="text-center text-base font-medium text-slate-800">Graph Generated Successfully</h3>
+            <div className="flex w-full flex-row gap-x-2 gap-y-1">
+              <p className="flex-1 text-center text-sm text-slate-700">{generationResult.numNodes} Nodes</p>
+              <p className="flex-1 text-center text-sm text-slate-700">{generationResult.numLinks} Links</p>
+            </div>
+            <p className="pb-3 text-center text-xs">
               <a href={generationResult.url} rel="noopener noreferrer" className="break-all hover:underline">
                 {generationResult.url}
               </a>
@@ -1138,14 +1259,49 @@ export default function GenerateGraphModal() {
                 {generationResult.s3url}
               </a>
             </p> */}
-            <Button
-              onClick={() => {
-                window.location.href = generationResult.url;
-              }}
-              className="mt-2 w-full flex-1 bg-sky-600 hover:bg-sky-700 sm:w-auto"
-            >
-              Open Graph
-            </Button>
+            <div className="mt-2 flex w-full flex-col gap-y-2 sm:flex-row sm:gap-x-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  if (formikRef.current) {
+                    formikRef.current.resetForm({
+                      values: {
+                        ...initialValues,
+                        prompt: '',
+                        slug: '',
+                      },
+                    });
+                    setGraphTokenizeResponse(null);
+                    setEstimatedTime(null);
+                    setError(null);
+                    setChatPrompts([]);
+                  }
+                }}
+                disabled={isGenerating}
+                className="flex items-center justify-center gap-x-1.5 text-xs"
+                title="Reset to defaults"
+              >
+                Reset
+              </Button>
+              <Button
+                onClick={() => {
+                  window.location.href = generationResult.url;
+                }}
+                className="flex-1 bg-sky-600 text-sm hover:bg-sky-700 sm:w-auto"
+              >
+                Open Graph
+              </Button>
+              <Button
+                onClick={() => {
+                  window.open(generationResult.url, '_blank');
+                  setIsGenerateGraphModalOpen(false);
+                }}
+                className="flex-1 bg-sky-600 hover:bg-sky-700 sm:w-auto"
+              >
+                Open Graph (New Tab)
+              </Button>
+            </div>
           </div>
         )}
       </DialogContent>

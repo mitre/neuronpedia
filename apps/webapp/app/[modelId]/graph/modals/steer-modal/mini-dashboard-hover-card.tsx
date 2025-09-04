@@ -1,5 +1,4 @@
 import FeatureDashboard from '@/app/[modelId]/[layer]/[index]/feature-dashboard';
-import { CLTGraphNode } from '@/app/[modelId]/graph/utils';
 import { useGlobalContext } from '@/components/provider/global-provider';
 import { Button } from '@/components/shadcn/button';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/shadcn/hover-card';
@@ -8,6 +7,7 @@ import { SteeredPositionIdentifier } from '@/lib/utils/graph';
 import { NeuronWithPartialRelations } from '@/prisma/generated/zod';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
+import { CLTGraphNode } from '../../graph-types';
 
 export default function MiniDashboardHoverCard({
   sourceId,

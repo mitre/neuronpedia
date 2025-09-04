@@ -1,18 +1,15 @@
 'use client';
 
 import { useGlobalContext } from '@/components/provider/global-provider';
+import { useGraphContext } from '@/components/provider/graph-provider';
 import { Button } from '@/components/shadcn/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/shadcn/dialog';
 import { Progress } from '@/components/shadcn/progress';
 import { AlertCircle, ChartScatter, Loader2, UploadCloud } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
-import {
-  CLTGraph,
-  ERROR_MODEL_DOES_NOT_EXIST,
-  makeGraphPublicAccessGraphUri,
-  MAX_GRAPH_UPLOAD_SIZE_BYTES,
-} from './utils';
+import { CLTGraph } from './graph-types';
+import { ERROR_MODEL_DOES_NOT_EXIST, makeGraphPublicAccessGraphUri, MAX_GRAPH_UPLOAD_SIZE_BYTES } from './utils';
 
 export default function UploadGraphModal() {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,6 +22,7 @@ export default function UploadGraphModal() {
   const [modelNotExistError, setModelNotExistError] = useState<string | null>(null);
   const session = useSession();
   const { setSignInModalOpen } = useGlobalContext();
+  const { selectedMetadataGraph, selectedGraph } = useGraphContext();
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileToUpload = e.target.files?.[0];
@@ -212,9 +210,9 @@ export default function UploadGraphModal() {
         onClick={() => {
           setSignInModalOpen(true);
         }}
+        disabled={selectedMetadataGraph === null || !selectedGraph}
       >
         <UploadCloud className="h-4 w-4" />
-        Upload
       </Button>
     );
   }
@@ -241,8 +239,9 @@ export default function UploadGraphModal() {
           aria-label="Upload Graph"
           size="sm"
           className="hidden h-12 items-center justify-center gap-x-2 whitespace-nowrap border-slate-300 text-xs text-slate-500 hover:bg-slate-50 sm:flex"
+          disabled={selectedMetadataGraph === null || !selectedGraph}
         >
-          <UploadCloud className="h-4 w-4" /> Upload
+          <UploadCloud className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="cursor-default select-none bg-white sm:max-w-md">

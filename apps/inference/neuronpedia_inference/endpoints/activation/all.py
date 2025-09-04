@@ -51,19 +51,20 @@ async def activation_all(
     if len(request.selected_sources) == 0:
         request.selected_sources = sae_manager.sae_set_to_saes[request.source_set]
 
-    # Check if the number of requested layers exceeds the maximum
-    if len(request.selected_sources) > config.max_loaded_saes:
-        logger.error(
-            "Number of requested layers (%s) exceeds the maximum allowed (%s)",
-            len(request.selected_sources),
-            config.max_loaded_saes,
-        )
-        return JSONResponse(
-            content={
-                "error": f"Number of requested SAEs ({len(request.selected_sources)}) exceeds the maximum allowed ({config.max_loaded_saes})"
-            },
-            status_code=400,
-        )
+    # # Removed this check because our SAE manager will just load and unload as needed (though it will be a little slower)
+    # # Check if the number of requested layers exceeds the maximum
+    # if len(request.selected_sources) > config.max_loaded_saes:
+    #     logger.error(
+    #         "Number of requested layers (%s) exceeds the maximum allowed (%s)",
+    #         len(request.selected_sources),
+    #         config.max_loaded_saes,
+    #     )
+    #     return JSONResponse(
+    #         content={
+    #             "error": f"Number of requested SAEs ({len(request.selected_sources)}) exceeds the maximum allowed ({config.max_loaded_saes})"
+    #         },
+    #         status_code=400,
+    #     )
 
     # get feature filter
     feature_filter = request.feature_filter

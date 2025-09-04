@@ -1,5 +1,6 @@
 'use client';
 
+import { useGlobalContext } from '@/components/provider/global-provider';
 import { GraphModalProvider } from '@/components/provider/graph-modal-provider';
 import { useGraphContext } from '@/components/provider/graph-provider';
 import { LoadingSquare } from '@/components/svg/loading-square';
@@ -16,8 +17,10 @@ import WelcomeModal from './modals/welcome-modal';
 import GraphNodeConnections from './node-connections';
 import Subgraph from './subgraph';
 
-export default function GraphWrapper({ hasSlug }: { hasSlug: boolean }) {
-  const { isLoadingGraphData, selectedMetadataGraph, loadingGraphLabel } = useGraphContext();
+export default function GraphWrapper({ hasSlug, showGenerateModal }: { hasSlug: boolean; showGenerateModal: boolean }) {
+  const { isLoadingGraphData, selectedMetadataGraph, loadingGraphLabel, selectedModelId, selectedSourceSetName } =
+    useGraphContext();
+  const { isGraphEnabledForSourceSet } = useGlobalContext();
 
   const searchParams = useSearchParams();
   const isEmbed = searchParams.get('embed') === 'true';
@@ -64,10 +67,10 @@ export default function GraphWrapper({ hasSlug }: { hasSlug: boolean }) {
         </div>
         <LoadSubgraphModal />
         <SaveSubgraphModal />
-        <WelcomeModal hasSlug={hasSlug} />
-        <GenerateGraphModal />
+        <WelcomeModal hasSlug={hasSlug} showGenerateModal={showGenerateModal} />
+        <GenerateGraphModal showGenerateModal={showGenerateModal} />
         <CopyModal />
-        <SteerModal />
+        {isGraphEnabledForSourceSet(selectedModelId, selectedSourceSetName) && <SteerModal />}
       </div>
     </GraphModalProvider>
   );

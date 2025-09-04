@@ -6,7 +6,8 @@ import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
 import * as RadixSlider from '@radix-ui/react-slider';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useState } from 'react';
-import { clientCheckIsEmbed, CLTGraphExtended, CltVisState, graphModelHasNpDashboards } from './utils';
+import { CltVisState } from './graph-types';
+import { clientCheckIsEmbed, CLTGraphExtended, graphModelHasNpDashboards } from './utils';
 
 export const MIN_TOKENS_TO_ALLOW_HORIZONTAL_SCROLL = 16;
 
@@ -84,15 +85,19 @@ export default function GraphControls({
 
       {selectedGraph && selectedGraph.metadata.prompt_tokens.length > MIN_TOKENS_TO_ALLOW_HORIZONTAL_SCROLL && (
         <div className="flex h-[24px] flex-row items-center justify-start gap-x-1.5 rounded bg-slate-200 px-1 py-0.5 sm:px-2">
-          <input
-            onChange={(e) => {
-              setAllowScroll(e.target.checked);
-            }}
-            type="checkbox"
-            checked={allowScroll}
-            className="h-3.5 w-3.5 cursor-pointer rounded border-slate-300 bg-white py-1 text-center text-xs text-slate-700 checked:border-sky-600 checked:bg-sky-600"
-          />
-          <div className="text-[9px] font-medium leading-[10px] text-slate-600">Expand ↔</div>
+          <label htmlFor="allowScroll" className="flex cursor-pointer items-center gap-x-1">
+            <input
+              id="allowScroll"
+              name="allowScroll"
+              onChange={(e) => {
+                setAllowScroll(e.target.checked);
+              }}
+              type="checkbox"
+              checked={allowScroll}
+              className="h-3.5 w-3.5 cursor-pointer rounded border-slate-300 bg-white py-1 text-center text-xs text-slate-700 checked:border-sky-600 checked:bg-sky-600"
+            />
+            <div className="text-[9px] font-medium leading-[10px] text-slate-600">Expand ↔</div>
+          </label>
         </div>
       )}
 
@@ -102,7 +107,9 @@ export default function GraphControls({
             htmlFor="pruningThreshold"
             className="mr-1 hidden text-center text-[9px] font-medium leading-[10px] text-slate-600 sm:block"
           >
-            Show Nodes Accounting for
+            <span className="hidden sm:inline">Show Nodes</span>
+            <br className="hidden sm:inline" />
+            Accounting for
           </Label>
           <Input
             id="pruningThreshold"

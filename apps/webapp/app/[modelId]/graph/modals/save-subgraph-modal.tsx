@@ -12,7 +12,7 @@ import { Field, Form, Formik } from 'formik';
 import { CopyIcon } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import { SaveSubgraphRequest } from '../utils';
+import { SaveSubgraphRequest } from '../graph-types';
 import SubgraphItem from './subgraph-item';
 
 export default function SaveSubgraphModal() {

@@ -1,4 +1,3 @@
-import { CLTGraph, CLTGraphNode } from '@/app/[modelId]/graph/utils';
 import { Button } from '@/components/shadcn/button';
 import { BOS_TOKENS } from '@/lib/utils/activations';
 import { SteerLogitFeature, SteeredPositionIdentifier } from '@/lib/utils/graph';
@@ -12,6 +11,7 @@ import {
 import * as Slider from '@radix-ui/react-slider';
 import { MousePointerClick, Trash2 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+import { CLTGraph, CLTGraphNode } from '../../graph-types';
 import MiniDashboardHoverCard from './mini-dashboard-hover-card';
 
 // Each NodeToSteer is a single feature for a single active "original" token position.
@@ -37,6 +37,7 @@ export default function NodeToSteer({
   setSteeredPositionDeltaSteerGeneratedTokens,
   setAllTokensDelta,
   isSteering,
+  lastChangedTokenPosition,
 }: {
   node: CLTGraphNode;
   sourceId: string;
@@ -63,34 +64,42 @@ export default function NodeToSteer({
   setSteeredPositionDeltaSteerGeneratedTokens: (nodeSteerIdentifier: SteeredPositionIdentifier, delta: number) => void;
   setAllTokensDelta: (nodeSteerIdentifier: SteeredPositionIdentifier, delta: number) => void;
   isSteering: boolean;
+  lastChangedTokenPosition?: number;
 }) {
-  const scrollIntoViewRef = useRef<HTMLDivElement>(null);
+  const scrollIntoViewRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Scroll to the position when the component mounts or when steered features change
   useEffect(() => {
     // for some reason the scroll doesn't set to the correct position if a timeout is not set
     setTimeout(() => {
-      if (scrollIntoViewRef.current && isSteered(nodeSteerIdentifier)) {
-        // Find the immediate parent container (the horizontal scroll container)
-        const parentContainer = scrollIntoViewRef.current.parentElement;
-        if (parentContainer) {
-          const elementRect = scrollIntoViewRef.current.getBoundingClientRect();
-          const parentRect = parentContainer.getBoundingClientRect();
+      if (isSteered(nodeSteerIdentifier)) {
+        // Determine which position to scroll to
+        const targetPosition = typeof lastChangedTokenPosition === 'number' ? lastChangedTokenPosition : node.ctx_idx;
+        const targetRef = scrollIntoViewRefs.current[targetPosition];
 
-          // Calculate the scroll position to center the element in the parent
-          const scrollLeft =
-            parentContainer.scrollLeft +
-            (elementRect.left - parentRect.left) -
-            (parentRect.width - elementRect.width) / 2;
+        if (targetRef) {
+          // Find the immediate parent container (the horizontal scroll container)
+          const parentContainer = targetRef.parentElement;
+          if (parentContainer) {
+            const elementRect = targetRef.getBoundingClientRect();
+            const parentRect = parentContainer.getBoundingClientRect();
 
-          parentContainer.scrollTo({
-            left: scrollLeft,
-            behavior: 'smooth',
-          });
+            // Calculate the scroll position to center the element in the parent
+            const scrollLeft =
+              parentContainer.scrollLeft +
+              elementRect.left -
+              parentRect.left -
+              (parentRect.width - elementRect.width) / 2;
+
+            parentContainer.scrollTo({
+              left: scrollLeft,
+              behavior: 'smooth',
+            });
+          }
         }
       }
     }, 1);
-  }, [isSteered, nodeSteerIdentifier]);
+  }, [isSteered, nodeSteerIdentifier, lastChangedTokenPosition, node.ctx_idx]);
 
   return (
     <div key={node.nodeId} className="relative flex w-full flex-col gap-y-1 rounded-md pl-6 pt-0.5">
@@ -202,7 +211,9 @@ export default function NodeToSteer({
                 {selectedGraph?.metadata.prompt_tokens.map((token, i) => (
                   <div
                     key={`${node.nodeId}-${i}`}
-                    ref={node.ctx_idx === i ? scrollIntoViewRef : undefined}
+                    ref={(el) => {
+                      scrollIntoViewRefs.current[i] = el;
+                    }}
                     className={`mx-1.5 min-w-fit flex-col items-center justify-center gap-y-1 ${
                       BOS_TOKENS.includes(token) ? 'hidden' : 'flex'
                     }`}

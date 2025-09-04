@@ -15,7 +15,8 @@ type GraphModalContextType = {
 
   // Generate graph modal state
   isGenerateGraphModalOpen: boolean;
-  setIsGenerateGraphModalOpen: (isOpen: boolean) => void;
+  setIsGenerateGraphModalOpen: (isOpen: boolean, prompt?: string) => void;
+  generateGraphModalPrompt: string;
 
   // Save subgraph modal state
   isSaveSubgraphModalOpen: boolean;
@@ -42,6 +43,7 @@ export function GraphModalProvider({ children }: { children: ReactNode }) {
   const [isSaveSubgraphModalOpen, setIsSaveSubgraphModalOpenState] = useState<boolean>(false);
   const [isLoadSubgraphModalOpen, setIsLoadSubgraphModalOpenState] = useState<boolean>(false);
   const [isSteerModalOpen, setIsSteerModalOpenState] = useState<boolean>(false);
+  const [generateGraphModalPrompt, setGenerateGraphModalPrompt] = useState<string>('');
 
   // Custom setter for copy modal that closes other modals
   const setIsCopyModalOpen = (isOpen: boolean) => {
@@ -71,7 +73,7 @@ export function GraphModalProvider({ children }: { children: ReactNode }) {
   };
 
   // Custom setter for generate graph modal that closes other modals
-  const setIsGenerateGraphModalOpen = (isOpen: boolean) => {
+  const setIsGenerateGraphModalOpen = (isOpen: boolean, prompt?: string) => {
     setIsGenerateGraphModalOpenState(isOpen);
     if (isOpen) {
       setIsCopyModalOpenState(false);
@@ -80,6 +82,9 @@ export function GraphModalProvider({ children }: { children: ReactNode }) {
       setIsSaveSubgraphModalOpenState(false);
       setIsLoadSubgraphModalOpenState(false);
       setIsSteerModalOpenState(false);
+      setGenerateGraphModalPrompt(prompt || '');
+    } else {
+      setGenerateGraphModalPrompt('');
     }
   };
 
@@ -156,6 +161,7 @@ export function GraphModalProvider({ children }: { children: ReactNode }) {
       setIsLoadSubgraphModalOpen,
       isSteerModalOpen,
       setIsSteerModalOpen,
+      generateGraphModalPrompt,
     }),
     [
       isCopyModalOpen,
@@ -165,6 +171,7 @@ export function GraphModalProvider({ children }: { children: ReactNode }) {
       isSaveSubgraphModalOpen,
       isLoadSubgraphModalOpen,
       isSteerModalOpen,
+      generateGraphModalPrompt,
     ],
   );
 

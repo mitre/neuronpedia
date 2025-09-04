@@ -1,10 +1,10 @@
 import {
+  ANTHROPIC_DUMMY_SOURCESET,
+  ANTHROPIC_MODEL_TO_DISPLAY_NAME,
+  ANTHROPIC_MODELS,
   clientCheckIsEmbed,
-  CLTGraph,
-  FilterGraphType,
   getGraphBaseUrlToName,
-  modelIdAndSchemaToTranscoders,
-  modelIdToModelDisplayName,
+  MODELS_WITH_NP_DASHBOARDS,
 } from '@/app/[modelId]/graph/utils';
 import { useGlobalContext } from '@/components/provider/global-provider';
 import { useGraphModalContext } from '@/components/provider/graph-modal-provider';
@@ -18,6 +18,7 @@ import {
   ChevronUpIcon,
   ExternalLinkIcon,
   Plus,
+  Repeat2,
   Share2,
   Trash,
   UploadCloud,
@@ -27,6 +28,7 @@ import { useRouter } from 'next-nprogress-bar';
 import { useSearchParams } from 'next/navigation';
 import { Fragment, useState } from 'react';
 import GraphInfoModal from './graph-info-modal';
+import { FilterGraphType } from './graph-types';
 import UploadGraphModal from './upload-graph-modal';
 
 export default function GraphToolbar() {
@@ -45,9 +47,10 @@ export default function GraphToolbar() {
     filterGraphsSetting,
     setFilterGraphsSetting,
     shouldShowGraphToCurrentUser,
+    selectedSourceSetName,
   } = useGraphContext();
   const { setIsWelcomeModalOpen, setIsCopyModalOpen, setIsGenerateGraphModalOpen } = useGraphModalContext();
-  const { globalModels } = useGlobalContext();
+  const { globalModels, getSourceSet, getHasGraphsSourceSetsForModelId } = useGlobalContext();
 
   if (isEmbed) {
     return (
@@ -64,7 +67,7 @@ export default function GraphToolbar() {
               className="h-7 gap-x-2 px-2.5 py-0 font-mono text-xs font-medium leading-snug text-sky-700 hover:border-sky-500 hover:bg-sky-100 hover:text-sky-800"
             >
               <span className="rounded-sm bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-600">
-                {modelIdToModelDisplayName.get(selectedModelId) || globalModels[selectedModelId]?.displayName}
+                {ANTHROPIC_MODEL_TO_DISPLAY_NAME.get(selectedModelId) || globalModels[selectedModelId]?.displayName}
               </span>
               <span className="px-1">{selectedMetadataGraph?.slug}</span>
               <ExternalLinkIcon className="h-3.5 w-3.5" />
@@ -94,18 +97,18 @@ export default function GraphToolbar() {
     );
   }
 
-  function makeCreatorNameFromGraph(graph: CLTGraph) {
-    if (graph.metadata.info?.creator_name) {
-      return graph.metadata.info?.creator_name;
-    }
-    if (selectedMetadataGraph?.user?.name) {
-      return selectedMetadataGraph?.user.name;
-    }
-    if (selectedMetadataGraph?.url) {
-      return getGraphBaseUrlToName(selectedMetadataGraph.url);
-    }
-    return 'Anonymous';
-  }
+  // function makeCreatorNameFromGraph(graph: CLTGraph) {
+  //   if (graph.metadata.info?.creator_name) {
+  //     return graph.metadata.info?.creator_name;
+  //   }
+  //   if (selectedMetadataGraph?.user?.name) {
+  //     return selectedMetadataGraph?.user.name;
+  //   }
+  //   if (selectedMetadataGraph?.url) {
+  //     return getGraphBaseUrlToName(selectedMetadataGraph.url);
+  //   }
+  //   return 'Anonymous';
+  // }
 
   return (
     <div className="flex w-full flex-col pt-2.5">
@@ -158,32 +161,30 @@ export default function GraphToolbar() {
                   e.stopPropagation();
                 }
               }}
-              className="inline-flex h-12 w-32 max-w-32 items-center justify-between gap-1 rounded border border-slate-300 bg-white px-4 py-2 pr-2 text-sm leading-none focus:outline-none focus:ring-0 sm:w-40 sm:max-w-40"
+              className="inline-flex h-12 w-32 max-w-32 items-center justify-between rounded border border-slate-300 bg-white px-4 py-2 pr-2 text-sm leading-none focus:outline-none focus:ring-0 sm:w-36 sm:max-w-36"
             >
               <Select.Value>
                 <div className="flex flex-col items-start justify-start gap-y-0.5 text-left">
-                  <div className="text-xs font-medium text-slate-600">
-                    {modelIdToModelDisplayName.get(selectedModelId) ||
+                  <div className="font-mono text-[11px] font-medium leading-relaxed text-sky-700">
+                    {ANTHROPIC_MODEL_TO_DISPLAY_NAME.get(selectedModelId) ||
                       globalModels[selectedModelId]?.displayName ||
                       selectedModelId}
                   </div>
-                  {modelIdAndSchemaToTranscoders.get(selectedModelId)?.map((trans) => (
-                    <div key={trans.name} className="w-full text-[9px] font-normal text-slate-400">
-                      {trans.name}
+                  {globalModels[selectedModelId] && (
+                    <div
+                      key={globalModels[selectedModelId].id}
+                      className="w-full text-[9px] font-normal text-slate-400"
+                    >
+                      {globalModels[selectedModelId].owner}
                     </div>
-                  ))}
-                  {/* {globalModels[selectedModelId]?.owner && (
-                    <div className="w-full text-[9px] font-normal text-slate-400">
-                      {globalModels[selectedModelId]?.owner}
-                    </div>
-                  )} */}
-                  {selectedModelId === 'jackl-circuits-runs-1-4-sofa-v3_0' && (
+                  )}
+                  {ANTHROPIC_MODELS.has(selectedModelId) && (
                     <div className="w-full text-[9px] font-normal text-slate-400">Anthropic</div>
                   )}
                 </div>
               </Select.Value>
               <Select.Icon>
-                <ChevronDownIcon className="w-5 text-slate-500" />
+                <ChevronDownIcon className="w-4 text-slate-500" />
               </Select.Icon>
             </Select.Trigger>
             <Select.Portal>
@@ -191,12 +192,12 @@ export default function GraphToolbar() {
                 position="popper"
                 align="center"
                 sideOffset={3}
-                className="z-[99999] max-h-[400px] min-w-52 overflow-hidden rounded-md border bg-white shadow-lg"
+                className="z-[99999] max-h-[400px] min-w-36 overflow-hidden rounded-md border bg-white shadow-lg"
               >
                 <Select.ScrollUpButton className="flex h-7 cursor-pointer items-center justify-center bg-white text-slate-700 hover:bg-slate-100">
                   <ChevronUpIcon className="w-5 text-slate-500" />
                 </Select.ScrollUpButton>
-                <Select.Viewport className="w-full divide-y divide-slate-100 p-2 text-slate-700">
+                <Select.Viewport className="w-full divide-y divide-slate-100 p-0 text-slate-700">
                   {Object.keys(modelIdToMetadataMap).map((modelId) => (
                     <Select.Item
                       key={modelId}
@@ -206,39 +207,25 @@ export default function GraphToolbar() {
                       <Select.ItemText className="flex w-full flex-1">
                         <div className="flex w-full flex-1 flex-row items-center gap-x-3">
                           <div className="flex w-full flex-1 flex-col items-start justify-start gap-y-0">
-                            <div className="w-full truncate text-left">
-                              {modelIdToModelDisplayName.get(modelId) || globalModels[modelId]?.displayName || modelId}
+                            <div className="w-full truncate text-left font-mono font-medium text-sky-700">
+                              {ANTHROPIC_MODEL_TO_DISPLAY_NAME.get(modelId) ||
+                                globalModels[modelId]?.displayName ||
+                                modelId}
                             </div>
-                            {modelIdAndSchemaToTranscoders.get(modelId)?.map((trans) => (
-                              <div key={trans.name} className="w-full text-[9px] font-normal text-slate-400">
-                                {trans.name}
+                            {globalModels[modelId] && (
+                              <div
+                                key={globalModels[modelId].id}
+                                className="w-full text-[9px] font-normal text-slate-400"
+                              >
+                                {globalModels[modelId].owner}
                               </div>
-                            ))}
-                            {/* {globalModels[modelId]?.owner && (
-                            <div className="w-full text-[9px] font-normal text-slate-400">
-                              {globalModels[modelId]?.owner}
-                            </div>
-                          )} */}
-                            {modelId === 'jackl-circuits-runs-1-4-sofa-v3_0' && (
+                            )}
+                            {ANTHROPIC_MODELS.has(modelId) && (
                               <div className="w-full text-[9px] font-normal text-slate-400">Anthropic</div>
                             )}
                           </div>
                         </div>
                       </Select.ItemText>
-                      {/* {modelIdToTranscoders.get(modelId)?.[0]?.hfUrl && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="z-[99999] h-6 w-6 p-0 text-slate-400 hover:text-slate-700"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            window.open(modelIdToTranscoders.get(modelId)?.[0]?.hfUrl, '_blank');
-                          }}
-                        >
-                          <ExternalLinkIcon className="h-4 w-4" />
-                        </Button>
-                      )} */}
                     </Select.Item>
                   ))}
                 </Select.Viewport>
@@ -249,6 +236,94 @@ export default function GraphToolbar() {
             </Select.Portal>
           </Select.Root>
         </div>
+        {MODELS_WITH_NP_DASHBOARDS.has(selectedModelId) && (
+          <div className="hidden flex-col sm:flex">
+            <div className="w-full pb-0.5 text-center text-[9px] font-medium uppercase text-slate-400">
+              Select Source Set
+            </div>
+            <Select.Root
+              value={selectedSourceSetName === '' ? 'unknown' : selectedSourceSetName}
+              onValueChange={(newVal) => {
+                window.location.href = `/${selectedModelId}/graph?sourceSet=${newVal}`;
+              }}
+            >
+              <Select.Trigger
+                onKeyDown={(e) => {
+                  if (e.key === 'g') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }
+                }}
+                className="inline-flex h-12 w-32 max-w-32 items-center justify-between rounded border border-slate-300 bg-white px-4 py-2 pr-2 text-sm leading-none focus:outline-none focus:ring-0 sm:w-[240px] sm:max-w-[240px]"
+              >
+                <Select.Value>
+                  <div className="flex flex-col items-start justify-start gap-y-0.5 text-left">
+                    <div className="font-mono text-[11px] font-medium leading-relaxed text-sky-700">
+                      {selectedSourceSetName === ''
+                        ? 'Unknown Source Set'
+                        : ANTHROPIC_MODEL_TO_DISPLAY_NAME.get(selectedModelId)
+                          ? 'Cross-Layer Transcoders'
+                          : (
+                              getSourceSet(selectedModelId, selectedSourceSetName)?.name || selectedSourceSetName
+                            ).toUpperCase()}
+                    </div>
+                    <div className="w-full text-[9px] font-normal text-slate-400">
+                      {selectedSourceSetName === ''
+                        ? 'Custom Upload'
+                        : ANTHROPIC_MODEL_TO_DISPLAY_NAME.get(selectedModelId)
+                          ? 'Anthropic'
+                          : `${getSourceSet(selectedModelId, selectedSourceSetName)?.description || ''} · ${
+                              getSourceSet(selectedModelId, selectedSourceSetName)?.creatorName || ''
+                            }`}
+                    </div>
+                  </div>
+                </Select.Value>
+                <Select.Icon>
+                  <ChevronDownIcon className="w-4 text-slate-500" />
+                </Select.Icon>
+              </Select.Trigger>
+              <Select.Portal>
+                <Select.Content
+                  position="popper"
+                  align="center"
+                  sideOffset={3}
+                  className="z-[99999] max-h-[400px] min-w-52 overflow-hidden rounded-md border bg-white shadow-lg"
+                >
+                  <Select.ScrollUpButton className="flex h-7 cursor-pointer items-center justify-center bg-white text-slate-700 hover:bg-slate-100">
+                    <ChevronUpIcon className="w-5 text-slate-500" />
+                  </Select.ScrollUpButton>
+                  <Select.Viewport className="w-full divide-y divide-slate-100 text-slate-700">
+                    {getHasGraphsSourceSetsForModelId(selectedModelId).map((sourceSet) => (
+                      <Select.Item
+                        key={sourceSet.name}
+                        value={sourceSet.name}
+                        className="relative flex h-12 w-full cursor-pointer select-none flex-row items-center overflow-x-hidden whitespace-pre rounded py-0 pl-4 pr-6 text-xs hover:bg-slate-100 data-[highlighted]:bg-slate-100 data-[highlighted]:outline-none"
+                      >
+                        <Select.ItemText className="flex w-full flex-1">
+                          <div className="flex w-full flex-1 flex-row items-center gap-x-3">
+                            <div className="flex w-full flex-1 flex-col items-start justify-start gap-y-0">
+                              <div className="w-full truncate text-left font-mono font-medium text-sky-700">
+                                {sourceSet.name === ANTHROPIC_DUMMY_SOURCESET.name
+                                  ? 'Cross-Layer Transcoders'
+                                  : sourceSet.name.toUpperCase()}
+                              </div>
+                              <div className="w-full text-[9px] font-normal text-slate-400">
+                                {sourceSet.description} · {sourceSet.creatorName}
+                              </div>
+                            </div>
+                          </div>
+                        </Select.ItemText>
+                      </Select.Item>
+                    ))}
+                  </Select.Viewport>
+                  <Select.ScrollDownButton className="flex h-7 cursor-pointer items-center justify-center bg-white text-slate-700 hover:bg-slate-100">
+                    <ChevronDownIcon className="w-5 text-slate-500" />
+                  </Select.ScrollDownButton>
+                </Select.Content>
+              </Select.Portal>
+            </Select.Root>
+          </div>
+        )}
         <div className="hidden flex-col">
           <div className="w-full pb-0.5 text-center text-[9px] font-medium uppercase text-slate-400">Filter Graphs</div>
           <ToggleGroup.Root
@@ -309,9 +384,6 @@ export default function GraphToolbar() {
                 <Select.Value asChild>
                   <div className="flex w-full flex-col items-start justify-start gap-y-[7px] overflow-y-visible">
                     <div className="text-overflow-ellipsis whitespace-nowrap text-[10px] font-normal leading-none text-slate-500">
-                      {/* <span className="rounded bg-slate-200 px-1 py-0.5 text-[8px] font-bold text-slate-600">
-                        PROMPT
-                      </span>{' '} */}
                       {selectedMetadataGraph.promptTokens.map((token, i) => (
                         <span
                           key={`${token}-${i}`}
@@ -322,8 +394,13 @@ export default function GraphToolbar() {
                       ))}
                     </div>
                     <div className="flex w-full flex-row items-center justify-between">
-                      <div className="whitespace-pre font-mono text-[10px] font-medium text-sky-700">
+                      <div className="flex-1 whitespace-pre text-left font-mono text-[10px] font-medium text-sky-700">
                         {selectedMetadataGraph.slug}
+                      </div>
+                      <div className="text-[9px] font-normal text-slate-400">
+                        {selectedMetadataGraph.user?.name
+                          ? selectedMetadataGraph.user?.name
+                          : getGraphBaseUrlToName(selectedMetadataGraph.url) || 'Anonymous'}
                       </div>
                     </div>
                   </div>
@@ -348,10 +425,13 @@ export default function GraphToolbar() {
                       modelIdToMetadataMap[selectedModelId]?.filter((graph) => shouldShowGraphToCurrentUser(graph)) ??
                       [];
 
-                    const myGraphs = allVisibleGraphs.filter((graph) => session.data?.user?.id === graph.userId);
-                    const featuredGraphs = allVisibleGraphs.filter(
-                      (graph) => graph.isFeatured && session.data?.user?.id !== graph.userId,
-                    );
+                    const myGraphs = allVisibleGraphs
+                      .filter((graph) => session.data?.user?.id === graph.userId)
+                      .filter((graph) => graph.sourceSetName === selectedSourceSetName);
+                    const featuredGraphs = allVisibleGraphs
+                      .filter((graph) => graph.isFeatured && session.data?.user?.id !== graph.userId)
+                      .filter((graph) => graph.sourceSetName === selectedSourceSetName);
+                    // the currently selected graph
                     const otherSelectedGraph =
                       selectedMetadataGraph &&
                       !myGraphs.some(
@@ -364,9 +444,9 @@ export default function GraphToolbar() {
                       )
                         ? selectedMetadataGraph
                         : null;
-                    const communityGraphs = allVisibleGraphs.filter(
-                      (graph) => !graph.isFeatured && session.data?.user?.id !== graph.userId,
-                    );
+                    const communityGraphs = allVisibleGraphs
+                      .filter((graph) => !graph.isFeatured && session.data?.user?.id !== graph.userId)
+                      .filter((graph) => graph.sourceSetName === selectedSourceSetName);
 
                     let graphsDisplayedCount = 0;
                     if (filterGraphsSetting.includes(FilterGraphType.Mine)) graphsDisplayedCount += myGraphs.length;
@@ -376,7 +456,7 @@ export default function GraphToolbar() {
                       graphsDisplayedCount += communityGraphs.length;
 
                     const renderGraphItem = (graph: (typeof allVisibleGraphs)[0], isMyGraph: boolean) => (
-                      <div className="relative flex w-full flex-row items-center hover:bg-sky-100">
+                      <div key={graph.slug} className="relative flex w-full flex-row items-center hover:bg-sky-100">
                         <Select.Item
                           key={graph.slug}
                           value={graph.slug}
@@ -527,7 +607,7 @@ export default function GraphToolbar() {
             Tools
           </div>
           <div className="flex flex-row gap-x-2">
-            <Button
+            {/* <Button
               variant="outline"
               size="sm"
               disabled={!selectedGraph}
@@ -553,8 +633,22 @@ export default function GraphToolbar() {
               <div className="text-center text-[11px] leading-none text-sky-700 group-hover:text-sky-800">
                 {selectedGraph ? makeCreatorNameFromGraph(selectedGraph) : 'Loading...'}
               </div>
+            </Button> */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex h-12 items-center justify-center gap-x-1 whitespace-nowrap border-emerald-500 bg-emerald-50 text-xs font-medium leading-none text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700"
+              onClick={() => {
+                setIsGenerateGraphModalOpen(true, selectedMetadataGraph?.prompt.replaceAll('<bos>', '') || '');
+              }}
+              title="Modify the prompt or use a different transcoder set."
+              disabled={selectedMetadataGraph === null || !selectedGraph}
+            >
+              <Repeat2 className="h-4 w-4" />
+              <span className="hidden pl-[3px] sm:inline">Remix</span>
             </Button>
             <GraphInfoModal cltGraph={selectedGraph} selectedMetadataGraph={selectedMetadataGraph} />
+
             {session.data?.user ? (
               <UploadGraphModal />
             ) : (
@@ -565,16 +659,17 @@ export default function GraphToolbar() {
                 onClick={() => {
                   setSignInModalOpen(true);
                 }}
+                disabled={selectedMetadataGraph === null || !selectedGraph}
+                title="Upload Graph"
               >
                 <UploadCloud className="h-4 w-4" />
-                Upload
               </Button>
             )}
             {!clientCheckIsEmbed() && (
               <Button
                 variant="outline"
                 size="sm"
-                title="Share Graph, Subgraph, and Custom Labels"
+                title="Share or Embed Graph, Subgraph, and Custom Labels"
                 aria-label="Share Graph Subgraph, and Custom Labels"
                 className="hidden h-12 items-center justify-center gap-x-2 whitespace-nowrap border-slate-300 text-xs text-slate-500 hover:bg-slate-50 sm:flex"
                 onClick={() => {
@@ -583,7 +678,6 @@ export default function GraphToolbar() {
                 disabled={selectedMetadataGraph === null || !selectedGraph}
               >
                 <Share2 className="h-4 w-4" />
-                Share & Embed
               </Button>
             )}
           </div>

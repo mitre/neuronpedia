@@ -10,8 +10,6 @@ import {
   STEER_MAX_PROMPT_CHARS,
   STEER_METHOD,
   STEER_N_COMPLETION_TOKENS_MAX,
-  STEER_STRENGTH_MAX,
-  STEER_STRENGTH_MIN,
   STEER_STRENGTH_MULTIPLIER_MAX,
   STEER_TEMPERATURE_MAX,
   SteerFeature,
@@ -161,8 +159,9 @@ const steerSchema = object({
         index: number().integer().required(),
         strength: number()
           .required()
-          .min(STEER_STRENGTH_MIN)
-          .max(STEER_STRENGTH_MAX)
+          // don't enforce min/max in the api
+          // .min(STEER_STRENGTH_MIN)
+          // .max(STEER_STRENGTH_MAX)
           .transform((value) => value),
       }).required(),
     )

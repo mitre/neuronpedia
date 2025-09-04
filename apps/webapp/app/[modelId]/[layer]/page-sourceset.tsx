@@ -30,6 +30,9 @@ export default function PageSourceSet({ sourceSet }: { sourceSet: SourceSetWithP
       return true;
     });
   }
+  if (!defaultSourceId) {
+    defaultSourceId = sourceSet.sources?.sort((a, b) => a?.id?.localeCompare(b?.id || '') || 0)[0]?.id;
+  }
 
   return (
     <div className="flex w-full flex-col items-center pb-10">

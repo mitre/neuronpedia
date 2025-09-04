@@ -1,6 +1,6 @@
 'use client';
 
-import { CLTGraphNode } from '@/app/[modelId]/graph/utils';
+import { CLTGraphNode } from '@/app/[modelId]/graph/graph-types';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ReactNode, createContext, useCallback, useContext, useMemo, useRef } from 'react';
 

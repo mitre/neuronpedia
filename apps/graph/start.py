@@ -12,11 +12,12 @@ import os
 import subprocess
 import sys
 
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Initialize server configuration for Circuit Tracer Server."
     )
-    
+
     # Server configuration
     parser.add_argument(
         "--host",
@@ -35,16 +36,16 @@ def parse_args():
         default=1,
         help="Number of worker processes",
     )
-    
+
     # Model configuration
     parser.add_argument(
-        "--model_id",   
-        default="google/gemma-2-2b",     
+        "--model_id",
+        default="google/gemma-2-2b",
         choices=["google/gemma-2-2b", "meta-llama/Llama-3.2-1B", "Qwen/Qwen3-4B"],
         help="The ID of the transformerlens model to use. Default is google/gemma-2-2b.",
     )
     parser.add_argument(
-        "--model_dtype",           
+        "--model_dtype",
         default="bfloat16",
         choices=["bfloat16", "float16", "float32"],
         help="The dtype of the transformerlens model to use. Default is bfloat16.",
@@ -53,7 +54,13 @@ def parse_args():
         "--device",
         help="Device to run the model(s) on.",
     )
-    
+
+    # Transcoders configuration
+    parser.add_argument(
+        "--transcoder_set",
+        help="Either HF repo ID eg mwhanna/qwen3-4b-transcoders or shortcuts 'gemma' and 'llama'",
+    )
+
     # Circuit tracer specific settings
     parser.add_argument(
         "--token_limit",
@@ -73,7 +80,7 @@ def parse_args():
         default=1000,
         help="Update interval for progress reporting",
     )
-    
+
     # Uvicorn specific arguments
     parser.add_argument(
         "--reload",
@@ -84,46 +91,55 @@ def parse_args():
         "--reload-dir",
         default="apps/graph",
         help="Directory to watch for changes when reload is enabled",
-    )        
-    
+    )
+
     return parser.parse_args()
+
 
 def main():
     args = parse_args()
-    
+
     # Only set environment variables if they don't already exist
     if "MODEL_ID" not in os.environ:
         os.environ["MODEL_ID"] = args.model_id
-    
+
     if "TOKEN_LIMIT" not in os.environ:
         os.environ["TOKEN_LIMIT"] = str(args.token_limit)
-        
+
     if "MAX_FEATURE_NODES" not in os.environ:
         os.environ["MAX_FEATURE_NODES"] = str(args.max_feature_nodes)
-        
+
     if "UPDATE_INTERVAL" not in os.environ:
         os.environ["UPDATE_INTERVAL"] = str(args.update_interval)
-    
+
     if "DEVICE" not in os.environ and args.device is not None:
         os.environ["DEVICE"] = args.device
-    
+
     if "MODEL_DTYPE" not in os.environ:
         os.environ["MODEL_DTYPE"] = args.model_dtype
-    
+
+    if "TRANSCODER_SET" not in os.environ and args.transcoder_set is not None:
+        os.environ["TRANSCODER_SET"] = args.transcoder_set
+
     # Build uvicorn command
     uvicorn_args = [
-        "python", "-m", "uvicorn",
+        "python",
+        "-m",
+        "uvicorn",
         "neuronpedia_graph.server:app",
-        "--host", args.host,
-        "--port", str(args.port),
-        "--workers", str(args.workers)
+        "--host",
+        args.host,
+        "--port",
+        str(args.port),
+        "--workers",
+        str(args.workers),
     ]
-    
+
     if args.reload:
         uvicorn_args.append("--reload")
         if args.reload_dir:
             uvicorn_args.extend(["--reload-dir", args.reload_dir])
-    
+
     try:
         subprocess.run(uvicorn_args, check=True)
     except subprocess.CalledProcessError as e:
@@ -132,6 +148,7 @@ def main():
     except KeyboardInterrupt:
         print("\nShutting down server...")
         sys.exit(0)
+
 
 if __name__ == "__main__":
     main()

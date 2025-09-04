@@ -14,7 +14,6 @@ import { SourceReleaseWithPartialRelations } from '@/prisma/generated/zod';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as Select from '@radix-ui/react-select';
 import { ChevronDown, ChevronDownIcon, ChevronUpIcon, Plus } from 'lucide-react';
-import { Session } from 'next-auth';
 import { useRouter } from 'next-nprogress-bar';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -22,7 +21,7 @@ import InferenceActivationAllProvider from '../provider/inference-activation-all
 import ModelsDropdown from './models-dropdown';
 import ReleasesDropdown from './releases-dropdown';
 
-export default function NavBarButtons({ session }: { session: Session | null }) {
+export default function NavBarButtons() {
   const router = useRouter();
   const { getSourceSetsForModelId, globalModels, releases, getDefaultModel, getFirstSourceForSourceSet } =
     useGlobalContext();
@@ -383,25 +382,6 @@ export default function NavBarButtons({ session }: { session: Session | null }) 
         >
           SAE Evals
         </Link>
-      )}
-
-      {session && (
-        <>
-          <Link
-            prefetch={false}
-            href={`/user/${session.user.name}/lists`}
-            className="flex cursor-pointer items-center whitespace-nowrap rounded-full px-2.5 py-1 text-[13px] transition-all hover:bg-sky-100 hover:text-sky-700 focus:outline-none data-[state=open]:bg-sky-700 data-[state=open]:text-white"
-          >
-            My Lists
-          </Link>
-          <Link
-            prefetch={false}
-            href={`/user/${session.user.name}/vectors`}
-            className="flex cursor-pointer items-center whitespace-nowrap rounded-full px-2.5 py-1 text-[13px] transition-all hover:bg-sky-100 hover:text-sky-700 focus:outline-none data-[state=open]:bg-sky-700 data-[state=open]:text-white"
-          >
-            My Vectors
-          </Link>
-        </>
       )}
 
       <Link

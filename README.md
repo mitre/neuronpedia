@@ -9,7 +9,7 @@
     open source interpretability platform
     <br />
     <sub>
-    <strong>api · steering · activations · autointerp · scoring · inference · search · filter · dashboards · benchmarks · cossim · umap · embeds · probes · saes · lists · exports · uploads</strong>
+    <strong>api · steering · activations · circuits/graphs · autointerp · scoring · inference · search · filter · dashboards · benchmarks · cossim · umap · embeds · probes · saes · lists · exports · uploads</strong>
     </sub>
   </p>
 </p>
@@ -49,9 +49,6 @@
     - ['Make' Commands Reference](#make-commands-reference)
     - [Import Data Into Your Local Database](#import-data-into-your-local-database)
     - [Why an OpenAI API Key Is Needed for Search Explanations](#why-an-openai-api-key-is-needed-for-search-explanations)
-
-<!-- # ultra-quick start: one-click deploy on vercel
-TODO, after making repo public -->
 
 # About Neuronpedia
 

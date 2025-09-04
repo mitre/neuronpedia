@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 
 const ALWAYS_SHOW_WELCOME_MODAL = false;
 
-export default function WelcomeModal({ hasSlug }: { hasSlug: boolean }) {
+export default function WelcomeModal({ hasSlug, showGenerateModal }: { hasSlug: boolean; showGenerateModal: boolean }) {
   const {
     isWelcomeModalOpen,
     setIsWelcomeModalOpen,
@@ -355,6 +355,11 @@ export default function WelcomeModal({ hasSlug }: { hasSlug: boolean }) {
 
       // // Don't show modal on start if we had a slug on first load (user just wanted to go directly to a graph)
       if (hasSlug) {
+        return;
+      }
+
+      // Don't show modal if we had a generate prompt on first load (user just wanted to generate a graph immediately)
+      if (showGenerateModal) {
         return;
       }
 

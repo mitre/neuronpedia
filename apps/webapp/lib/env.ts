@@ -182,13 +182,6 @@ if (IS_SERVER) {
     throw new Error('At least one OpenAI provider must be enabled');
   }
 
-  // Email provider validation
-  // const awsSesIsEnabled = [env.AWS_ACCESS_KEY_ID, env.AWS_SECRET_ACCESS_KEY].filter(Boolean).length === 2;
-  // const resendDotComIsEnabled = [env.RESEND_EMAIL_API_KEY].filter(Boolean).length === 1;
-  // if (!awsSesIsEnabled && !resendDotComIsEnabled) {
-  //   throw new Error('At least one email provider must be enabled');
-  // }
-
   // Graph server validation
   if (env.USE_RUNPOD_GRAPH && env.USE_LOCALHOST_GRAPH) {
     throw new Error('USE_LOCALHOST_GRAPH and USE_RUNPOD_GRAPH cannot both be true');

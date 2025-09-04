@@ -35,7 +35,7 @@ export default function ActivationSingleForm({
   embed?: boolean;
   hideSteer?: boolean;
 }) {
-  const { getSourceSet, showToastServerError, showToastMessage } = useGlobalContext();
+  const { getSourceSet, showToastServerError, showToastMessage, isGraphEnabledForSource } = useGlobalContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customText, setCustomText] = useState('');
   const [activationResult, setActivationResult] = useState<Activation | undefined>();
@@ -169,7 +169,7 @@ export default function ActivationSingleForm({
             </button>
           </div>
 
-          {!hideSteer && (
+          {!hideSteer && !isGraphEnabledForSource(neuron.modelId, neuron.layer) && (
             <Button
               className="flex h-auto flex-col gap-y-0.5 border-emerald-700 px-2.5 text-[11px] text-xs font-medium text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
               variant="outline"

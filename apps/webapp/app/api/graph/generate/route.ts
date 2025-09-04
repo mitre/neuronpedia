@@ -1,12 +1,9 @@
-import {
-  ATTRIBUTION_GRAPH_SCHEMA,
-  CLTGraph,
-  makeGraphPublicAccessGraphUrl,
-  NP_GRAPH_BUCKET,
-} from '@/app/[modelId]/graph/utils';
+import { CLTGraph } from '@/app/[modelId]/graph/graph-types';
+import { ATTRIBUTION_GRAPH_SCHEMA, makeGraphPublicAccessGraphUrl, NP_GRAPH_BUCKET } from '@/app/[modelId]/graph/utils';
 import { prisma } from '@/lib/db';
-import { env } from '@/lib/env';
-import { RequestOptionalUser } from '@/lib/types/auth';
+import { getGraphServerRunpodHostForSourceSet } from '@/lib/db/graph-host-source';
+import { getModelById } from '@/lib/db/model';
+import { USE_RUNPOD_GRAPH } from '@/lib/env';
 import {
   checkRunpodQueueJobs,
   generateGraphAndUploadToS3,
@@ -25,13 +22,6 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import Ajv from 'ajv';
 import { NextResponse } from 'next/server';
 import * as yup from 'yup';
-
-// const SCAN_TO_SOURCE_URLS = {
-//   'gemma-2-2b': [
-//     'https://neuronpedia.org/gemma-2-2b/gemmascope-transcoder-16k',
-//     'https://huggingface.co/google/gemma-scope-2b-pt-transcoders',
-//   ],
-// };
 
 /**
  * @swagger
@@ -62,6 +52,11 @@ import * as yup from 'yup';
  *                 description: The ID of the model to use for graph generation. Currently only gemma-2-2b is supported.
  *                 pattern: '^[a-zA-Z0-9_-]+$'
  *                 example: "gemma-2-2b"
+ *               sourceSetName:
+ *                 type: string
+ *                 description: Optional. The name of the source set to use for graph generation. If not provided, the default source set for the model will be used.
+ *                 pattern: '^[a-zA-Z0-9_-]+$'
+ *                 example: "gemmascope-transcoder-16k"
  *               slug:
  *                 type: string
  *                 description: A unique identifier for this graph (lowercase, alphanumeric, underscores, and hyphens only)
@@ -173,12 +168,28 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
     }
     const validatedData = await graphGenerateSchemaClient.validate(body);
 
+    // if sourceSetName is not provided, use the default source set for the model
+    if (!validatedData.sourceSetName) {
+      const model = await getModelById(validatedData.modelId);
+      validatedData.sourceSetName = model?.defaultGraphSourceSetName;
+      if (!validatedData.sourceSetName) {
+        return NextResponse.json(
+          {
+            error: 'Source Set Missing',
+            message: `The model ${validatedData.modelId} has no default graph source set, so you must provide one in the sourceSetName parameter.`,
+          },
+          { status: 400 },
+        );
+      }
+    }
+
     try {
       const tokenized = await getGraphTokenize(
         validatedData.prompt,
         validatedData.maxNLogits,
         validatedData.desiredLogitProb,
         validatedData.modelId,
+        validatedData.sourceSetName,
       );
       if (tokenized.input_tokens.length > GRAPH_MAX_TOKENS) {
         return NextResponse.json(
@@ -265,8 +276,12 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
     });
 
     // check the queue
-    if (env.USE_RUNPOD_GRAPH) {
-      const queueNumber = await checkRunpodQueueJobs();
+    if (USE_RUNPOD_GRAPH) {
+      const host = await getGraphServerRunpodHostForSourceSet(validatedData.modelId, validatedData.sourceSetName);
+      if (!host) {
+        throw new Error('No runpod serverless host found.');
+      }
+      const queueNumber = await checkRunpodQueueJobs(host);
       if (queueNumber > MAX_RUNPOD_JOBS_IN_QUEUE) {
         // console.log('larger than queue but continuing');
         return NextResponse.json(
@@ -282,6 +297,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
     await generateGraphAndUploadToS3(
       validatedData.prompt,
       validatedData.modelId,
+      validatedData.sourceSetName,
       validatedData.maxNLogits,
       validatedData.desiredLogitProb,
       validatedData.nodeThreshold,
@@ -293,9 +309,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
     );
 
     // download the file from S3
-    console.log('signedUrl', signedUrl);
     const cleanUrl = signedUrl.split('?')[0];
-    console.log('downloading: ', cleanUrl);
     const response = await fetch(cleanUrl);
     if (!response.ok) {
       return NextResponse.json(
@@ -341,6 +355,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
       update: {
         userId: request.user?.id ? request.user?.id : null,
         modelId: graph.metadata.scan,
+        sourceSetName: validatedData.sourceSetName,
         slug: graph.metadata.slug,
         titlePrefix: '',
         promptTokens: graph.metadata.prompt_tokens,
@@ -351,6 +366,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
       create: {
         userId: request.user?.id ? request.user?.id : null,
         modelId: graph.metadata.scan,
+        sourceSetName: validatedData.sourceSetName,
         slug: graph.metadata.slug,
         titlePrefix: '',
         promptTokens: graph.metadata.prompt_tokens,

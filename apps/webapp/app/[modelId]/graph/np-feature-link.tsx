@@ -1,13 +1,8 @@
 import { useGlobalContext } from '@/components/provider/global-provider';
 import { Button } from '@/components/shadcn/button';
 import { ArrowUpRightFromSquare } from 'lucide-react';
-import {
-  CLTGraph,
-  CLTGraphNode,
-  getIndexFromFeatureAndGraph,
-  getLayerFromFeatureAndGraph,
-  graphModelHasNpDashboards,
-} from './utils';
+import { CLTGraph, CLTGraphNode } from './graph-types';
+import { getIndexFromFeatureAndGraph, getLayerFromFeatureAndGraph, graphModelHasNpDashboards } from './utils';
 
 export default function GraphFeatureLink({
   selectedGraph,
@@ -16,7 +11,7 @@ export default function GraphFeatureLink({
   selectedGraph: CLTGraph | null;
   node: CLTGraphNode;
 }) {
-  const { setFeatureModalFeature, setFeatureModalOpen } = useGlobalContext();
+  const { setFeatureModalFeature, setFeatureModalOpen, getSource } = useGlobalContext();
 
   if (!selectedGraph) {
     return null;
@@ -26,7 +21,10 @@ export default function GraphFeatureLink({
       <Button
         onClick={() => {
           if (node.featureDetailNP) {
-            setFeatureModalFeature(node.featureDetailNP);
+            setFeatureModalFeature({
+              ...node.featureDetailNP,
+              source: getSource(node.featureDetailNP.modelId, node.featureDetailNP.layer),
+            });
             setFeatureModalOpen(true);
           }
         }}

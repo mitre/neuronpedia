@@ -4,11 +4,11 @@ import { useGraphStateContext } from '@/components/provider/graph-state-provider
 import { Circle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Virtuoso } from 'react-virtuoso';
+import { CLTGraphNode } from './graph-types';
 import GraphFeatureLink from './np-feature-link';
 import {
   clientCheckClaudeMode,
   clientCheckIsEmbed,
-  CLTGraphNode,
   featureTypeToText,
   graphModelHasNpDashboards,
   shouldShowNodeForDensityThreshold,
@@ -86,7 +86,7 @@ function FeatureList({
           <svg width={10} height={14} className="mr-0 inline-block">
             <g>
               <g
-                className={`default-icon block fill-none ${(node[linkProp]?.pctInput ?? 0) > 0.25 || (node[linkProp]?.pctInput ?? 0) < -0.25 ? 'stroke-white' : 'stroke-slate-800'} ${node.nodeId && visState.pinnedIds?.includes(node.nodeId) ? 'stroke-[1.7]' : 'stroke-[0.7]'}`}
+                className={`default-icon block fill-none ${node.feature_type === 'mlp reconstruction error' ? 'opacity-35' : ''} ${(node[linkProp]?.pctInput ?? 0) > 0.25 || (node[linkProp]?.pctInput ?? 0) < -0.25 ? 'stroke-white' : 'stroke-slate-800'} ${node.nodeId && visState.pinnedIds?.includes(node.nodeId) ? 'stroke-[1.7]' : 'stroke-[0.7]'}`}
               >
                 <text fontSize={15} textAnchor="middle" dominantBaseline="central" dx={5} dy={5}>
                   {featureTypeToText(node.feature_type)}

@@ -113,19 +113,7 @@ export const GraphMetadataSubgraphScalarFieldEnumSchema = z.enum([
   'updatedAt',
 ]);
 
-export const GraphMetadataScalarFieldEnumSchema = z.enum([
-  'id',
-  'modelId',
-  'slug',
-  'promptTokens',
-  'prompt',
-  'titlePrefix',
-  'isFeatured',
-  'url',
-  'userId',
-  'createdAt',
-  'updatedAt',
-]);
+export const GraphMetadataScalarFieldEnumSchema = z.enum(['id','modelId','sourceSetName','slug','promptTokens','prompt','titlePrefix','isFeatured','url','userId','createdAt','updatedAt']);
 
 export const GraphMetadataDataPutRequestScalarFieldEnumSchema = z.enum([
   'id',
@@ -162,26 +150,7 @@ export const ListsOnActivationsScalarFieldEnumSchema = z.enum(['activationId', '
 
 export const VerificationTokenScalarFieldEnumSchema = z.enum(['identifier', 'token', 'expires']);
 
-export const ModelScalarFieldEnumSchema = z.enum([
-  'id',
-  'displayNameShort',
-  'displayName',
-  'creatorId',
-  'tlensId',
-  'dimension',
-  'thinking',
-  'visibility',
-  'defaultSourceSetName',
-  'defaultSourceId',
-  'inferenceEnabled',
-  'instruct',
-  'layers',
-  'neuronsPerLayer',
-  'createdAt',
-  'owner',
-  'updatedAt',
-  'website',
-]);
+export const ModelScalarFieldEnumSchema = z.enum(['id','displayNameShort','displayName','creatorId','tlensId','dimension','thinking','visibility','defaultSourceSetName','defaultSourceId','defaultGraphSourceSetName','inferenceEnabled','instruct','layers','neuronsPerLayer','createdAt','owner','updatedAt','website']);
 
 export const GraphHostSourceScalarFieldEnumSchema = z.enum([
   'id',
@@ -240,29 +209,7 @@ export const SourceScalarFieldEnumSchema = z.enum([
   'createdAt',
 ]);
 
-export const SourceSetScalarFieldEnumSchema = z.enum([
-  'modelId',
-  'name',
-  'hasDashboards',
-  'allowInferenceSearch',
-  'visibility',
-  'description',
-  'type',
-  'creatorName',
-  'urls',
-  'creatorEmail',
-  'creatorId',
-  'releaseName',
-  'graphEnabled',
-  'defaultOfModelId',
-  'defaultRange',
-  'defaultShowBreaks',
-  'showDfa',
-  'showCorrelated',
-  'showHeadAttribution',
-  'showUmap',
-  'createdAt',
-]);
+export const SourceSetScalarFieldEnumSchema = z.enum(['modelId','name','hasDashboards','allowInferenceSearch','visibility','description','type','creatorName','urls','creatorEmail','creatorId','releaseName','hasGraphs','graphEnabled','defaultOfModelId','defaultGraphModelId','defaultRange','defaultShowBreaks','showDfa','showCorrelated','showHeadAttribution','showUmap','createdAt']);
 
 export const SourceReleaseScalarFieldEnumSchema = z.enum([
   'name',
@@ -1051,6 +998,7 @@ export const GraphMetadataSubgraphWithPartialRelationsSchema: z.ZodType<GraphMet
 export const GraphMetadataSchema = z.object({
   id: z.string().cuid(),
   modelId: z.string(),
+  sourceSetName: z.string().nullable(),
   slug: z.string(),
   promptTokens: z.string().array(),
   prompt: z.string(),
@@ -1077,25 +1025,26 @@ export type GraphMetadataPartial = z.infer<typeof GraphMetadataPartialSchema>;
 
 export type GraphMetadataRelations = {
   model: ModelWithRelations;
+  sourceSet?: SourceSetWithRelations | null;
   subgraphs: GraphMetadataSubgraphWithRelations[];
   user?: UserWithRelations | null;
 };
 
 export type GraphMetadataWithRelations = z.infer<typeof GraphMetadataSchema> & GraphMetadataRelations;
 
-export const GraphMetadataWithRelationsSchema: z.ZodType<GraphMetadataWithRelations> = GraphMetadataSchema.merge(
-  z.object({
-    model: z.lazy(() => ModelWithRelationsSchema),
-    subgraphs: z.lazy(() => GraphMetadataSubgraphWithRelationsSchema).array(),
-    user: z.lazy(() => UserWithRelationsSchema).nullable(),
-  }),
-);
+export const GraphMetadataWithRelationsSchema: z.ZodType<GraphMetadataWithRelations> = GraphMetadataSchema.merge(z.object({
+  model: z.lazy(() => ModelWithRelationsSchema),
+  sourceSet: z.lazy(() => SourceSetWithRelationsSchema).nullable(),
+  subgraphs: z.lazy(() => GraphMetadataSubgraphWithRelationsSchema).array(),
+  user: z.lazy(() => UserWithRelationsSchema).nullable(),
+}))
 
 // GRAPH METADATA PARTIAL RELATION SCHEMA
 //------------------------------------------------------
 
 export type GraphMetadataPartialRelations = {
   model?: ModelPartialWithRelations;
+  sourceSet?: SourceSetPartialWithRelations | null;
   subgraphs?: GraphMetadataSubgraphPartialWithRelations[];
   user?: UserPartialWithRelations | null;
 };
@@ -1103,27 +1052,21 @@ export type GraphMetadataPartialRelations = {
 export type GraphMetadataPartialWithRelations = z.infer<typeof GraphMetadataPartialSchema> &
   GraphMetadataPartialRelations;
 
-export const GraphMetadataPartialWithRelationsSchema: z.ZodType<GraphMetadataPartialWithRelations> =
-  GraphMetadataPartialSchema.merge(
-    z.object({
-      model: z.lazy(() => ModelPartialWithRelationsSchema),
-      subgraphs: z.lazy(() => GraphMetadataSubgraphPartialWithRelationsSchema).array(),
-      user: z.lazy(() => UserPartialWithRelationsSchema).nullable(),
-    }),
-  ).partial();
+export const GraphMetadataPartialWithRelationsSchema: z.ZodType<GraphMetadataPartialWithRelations> = GraphMetadataPartialSchema.merge(z.object({
+  model: z.lazy(() => ModelPartialWithRelationsSchema),
+  sourceSet: z.lazy(() => SourceSetPartialWithRelationsSchema).nullable(),
+  subgraphs: z.lazy(() => GraphMetadataSubgraphPartialWithRelationsSchema).array(),
+  user: z.lazy(() => UserPartialWithRelationsSchema).nullable(),
+})).partial()
 
 export type GraphMetadataWithPartialRelations = z.infer<typeof GraphMetadataSchema> & GraphMetadataPartialRelations;
 
-export const GraphMetadataWithPartialRelationsSchema: z.ZodType<GraphMetadataWithPartialRelations> =
-  GraphMetadataSchema.merge(
-    z
-      .object({
-        model: z.lazy(() => ModelPartialWithRelationsSchema),
-        subgraphs: z.lazy(() => GraphMetadataSubgraphPartialWithRelationsSchema).array(),
-        user: z.lazy(() => UserPartialWithRelationsSchema).nullable(),
-      })
-      .partial(),
-  );
+export const GraphMetadataWithPartialRelationsSchema: z.ZodType<GraphMetadataWithPartialRelations> = GraphMetadataSchema.merge(z.object({
+  model: z.lazy(() => ModelPartialWithRelationsSchema),
+  sourceSet: z.lazy(() => SourceSetPartialWithRelationsSchema).nullable(),
+  subgraphs: z.lazy(() => GraphMetadataSubgraphPartialWithRelationsSchema).array(),
+  user: z.lazy(() => UserPartialWithRelationsSchema).nullable(),
+}).partial())
 
 /////////////////////////////////////////
 // GRAPH METADATA DATA PUT REQUEST SCHEMA
@@ -1528,6 +1471,7 @@ export const ModelSchema = z.object({
   thinking: z.boolean(),
   defaultSourceSetName: z.string().nullable(),
   defaultSourceId: z.string().nullable(),
+  defaultGraphSourceSetName: z.string().nullable(),
   inferenceEnabled: z.boolean(),
   instruct: z.boolean(),
   layers: z.number().int().min(0),
@@ -1554,6 +1498,7 @@ export type ModelPartial = z.infer<typeof ModelPartialSchema>;
 export type ModelRelations = {
   defaultSourceSet?: SourceSetWithRelations | null;
   defaultSource?: SourceWithRelations | null;
+  defaultGraphSourceSet?: SourceSetWithRelations | null;
   explanations: ExplanationWithRelations[];
   creator: UserWithRelations;
   neurons: NeuronWithRelations[];
@@ -1568,22 +1513,21 @@ export type ModelRelations = {
 
 export type ModelWithRelations = z.infer<typeof ModelSchema> & ModelRelations;
 
-export const ModelWithRelationsSchema: z.ZodType<ModelWithRelations> = ModelSchema.merge(
-  z.object({
-    defaultSourceSet: z.lazy(() => SourceSetWithRelationsSchema).nullable(),
-    defaultSource: z.lazy(() => SourceWithRelationsSchema).nullable(),
-    explanations: z.lazy(() => ExplanationWithRelationsSchema).array(),
-    creator: z.lazy(() => UserWithRelationsSchema),
-    neurons: z.lazy(() => NeuronWithRelationsSchema).array(),
-    savedSearches: z.lazy(() => SavedSearchWithRelationsSchema).array(),
-    sourceSets: z.lazy(() => SourceSetWithRelationsSchema).array(),
-    steerOutputs: z.lazy(() => SteerOutputWithRelationsSchema).array(),
-    evals: z.lazy(() => EvalWithRelationsSchema).array(),
-    sourceInferenceHosts: z.lazy(() => InferenceHostSourceWithRelationsSchema).array(),
-    graphHostSources: z.lazy(() => GraphHostSourceWithRelationsSchema).array(),
-    graphMetadata: z.lazy(() => GraphMetadataWithRelationsSchema).array(),
-  }),
-);
+export const ModelWithRelationsSchema: z.ZodType<ModelWithRelations> = ModelSchema.merge(z.object({
+  defaultSourceSet: z.lazy(() => SourceSetWithRelationsSchema).nullable(),
+  defaultSource: z.lazy(() => SourceWithRelationsSchema).nullable(),
+  defaultGraphSourceSet: z.lazy(() => SourceSetWithRelationsSchema).nullable(),
+  explanations: z.lazy(() => ExplanationWithRelationsSchema).array(),
+  creator: z.lazy(() => UserWithRelationsSchema),
+  neurons: z.lazy(() => NeuronWithRelationsSchema).array(),
+  savedSearches: z.lazy(() => SavedSearchWithRelationsSchema).array(),
+  sourceSets: z.lazy(() => SourceSetWithRelationsSchema).array(),
+  steerOutputs: z.lazy(() => SteerOutputWithRelationsSchema).array(),
+  evals: z.lazy(() => EvalWithRelationsSchema).array(),
+  sourceInferenceHosts: z.lazy(() => InferenceHostSourceWithRelationsSchema).array(),
+  graphHostSources: z.lazy(() => GraphHostSourceWithRelationsSchema).array(),
+  graphMetadata: z.lazy(() => GraphMetadataWithRelationsSchema).array(),
+}))
 
 // MODEL PARTIAL RELATION SCHEMA
 //------------------------------------------------------
@@ -1591,6 +1535,7 @@ export const ModelWithRelationsSchema: z.ZodType<ModelWithRelations> = ModelSche
 export type ModelPartialRelations = {
   defaultSourceSet?: SourceSetPartialWithRelations | null;
   defaultSource?: SourcePartialWithRelations | null;
+  defaultGraphSourceSet?: SourceSetPartialWithRelations | null;
   explanations?: ExplanationPartialWithRelations[];
   creator?: UserPartialWithRelations;
   neurons?: NeuronPartialWithRelations[];
@@ -1605,43 +1550,39 @@ export type ModelPartialRelations = {
 
 export type ModelPartialWithRelations = z.infer<typeof ModelPartialSchema> & ModelPartialRelations;
 
-export const ModelPartialWithRelationsSchema: z.ZodType<ModelPartialWithRelations> = ModelPartialSchema.merge(
-  z.object({
-    defaultSourceSet: z.lazy(() => SourceSetPartialWithRelationsSchema).nullable(),
-    defaultSource: z.lazy(() => SourcePartialWithRelationsSchema).nullable(),
-    explanations: z.lazy(() => ExplanationPartialWithRelationsSchema).array(),
-    creator: z.lazy(() => UserPartialWithRelationsSchema),
-    neurons: z.lazy(() => NeuronPartialWithRelationsSchema).array(),
-    savedSearches: z.lazy(() => SavedSearchPartialWithRelationsSchema).array(),
-    sourceSets: z.lazy(() => SourceSetPartialWithRelationsSchema).array(),
-    steerOutputs: z.lazy(() => SteerOutputPartialWithRelationsSchema).array(),
-    evals: z.lazy(() => EvalPartialWithRelationsSchema).array(),
-    sourceInferenceHosts: z.lazy(() => InferenceHostSourcePartialWithRelationsSchema).array(),
-    graphHostSources: z.lazy(() => GraphHostSourcePartialWithRelationsSchema).array(),
-    graphMetadata: z.lazy(() => GraphMetadataPartialWithRelationsSchema).array(),
-  }),
-).partial();
+export const ModelPartialWithRelationsSchema: z.ZodType<ModelPartialWithRelations> = ModelPartialSchema.merge(z.object({
+  defaultSourceSet: z.lazy(() => SourceSetPartialWithRelationsSchema).nullable(),
+  defaultSource: z.lazy(() => SourcePartialWithRelationsSchema).nullable(),
+  defaultGraphSourceSet: z.lazy(() => SourceSetPartialWithRelationsSchema).nullable(),
+  explanations: z.lazy(() => ExplanationPartialWithRelationsSchema).array(),
+  creator: z.lazy(() => UserPartialWithRelationsSchema),
+  neurons: z.lazy(() => NeuronPartialWithRelationsSchema).array(),
+  savedSearches: z.lazy(() => SavedSearchPartialWithRelationsSchema).array(),
+  sourceSets: z.lazy(() => SourceSetPartialWithRelationsSchema).array(),
+  steerOutputs: z.lazy(() => SteerOutputPartialWithRelationsSchema).array(),
+  evals: z.lazy(() => EvalPartialWithRelationsSchema).array(),
+  sourceInferenceHosts: z.lazy(() => InferenceHostSourcePartialWithRelationsSchema).array(),
+  graphHostSources: z.lazy(() => GraphHostSourcePartialWithRelationsSchema).array(),
+  graphMetadata: z.lazy(() => GraphMetadataPartialWithRelationsSchema).array(),
+})).partial()
 
 export type ModelWithPartialRelations = z.infer<typeof ModelSchema> & ModelPartialRelations;
 
-export const ModelWithPartialRelationsSchema: z.ZodType<ModelWithPartialRelations> = ModelSchema.merge(
-  z
-    .object({
-      defaultSourceSet: z.lazy(() => SourceSetPartialWithRelationsSchema).nullable(),
-      defaultSource: z.lazy(() => SourcePartialWithRelationsSchema).nullable(),
-      explanations: z.lazy(() => ExplanationPartialWithRelationsSchema).array(),
-      creator: z.lazy(() => UserPartialWithRelationsSchema),
-      neurons: z.lazy(() => NeuronPartialWithRelationsSchema).array(),
-      savedSearches: z.lazy(() => SavedSearchPartialWithRelationsSchema).array(),
-      sourceSets: z.lazy(() => SourceSetPartialWithRelationsSchema).array(),
-      steerOutputs: z.lazy(() => SteerOutputPartialWithRelationsSchema).array(),
-      evals: z.lazy(() => EvalPartialWithRelationsSchema).array(),
-      sourceInferenceHosts: z.lazy(() => InferenceHostSourcePartialWithRelationsSchema).array(),
-      graphHostSources: z.lazy(() => GraphHostSourcePartialWithRelationsSchema).array(),
-      graphMetadata: z.lazy(() => GraphMetadataPartialWithRelationsSchema).array(),
-    })
-    .partial(),
-);
+export const ModelWithPartialRelationsSchema: z.ZodType<ModelWithPartialRelations> = ModelSchema.merge(z.object({
+  defaultSourceSet: z.lazy(() => SourceSetPartialWithRelationsSchema).nullable(),
+  defaultSource: z.lazy(() => SourcePartialWithRelationsSchema).nullable(),
+  defaultGraphSourceSet: z.lazy(() => SourceSetPartialWithRelationsSchema).nullable(),
+  explanations: z.lazy(() => ExplanationPartialWithRelationsSchema).array(),
+  creator: z.lazy(() => UserPartialWithRelationsSchema),
+  neurons: z.lazy(() => NeuronPartialWithRelationsSchema).array(),
+  savedSearches: z.lazy(() => SavedSearchPartialWithRelationsSchema).array(),
+  sourceSets: z.lazy(() => SourceSetPartialWithRelationsSchema).array(),
+  steerOutputs: z.lazy(() => SteerOutputPartialWithRelationsSchema).array(),
+  evals: z.lazy(() => EvalPartialWithRelationsSchema).array(),
+  sourceInferenceHosts: z.lazy(() => InferenceHostSourcePartialWithRelationsSchema).array(),
+  graphHostSources: z.lazy(() => GraphHostSourcePartialWithRelationsSchema).array(),
+  graphMetadata: z.lazy(() => GraphMetadataPartialWithRelationsSchema).array(),
+}).partial())
 
 /////////////////////////////////////////
 // GRAPH HOST SOURCE SCHEMA
@@ -2069,8 +2010,10 @@ export const SourceSetSchema = z.object({
   creatorEmail: z.string().nullable(),
   creatorId: z.string(),
   releaseName: z.string().nullable(),
+  hasGraphs: z.boolean(),
   graphEnabled: z.boolean(),
   defaultOfModelId: z.string().nullable(),
+  defaultGraphModelId: z.string().nullable(),
   defaultRange: z.number().int(),
   defaultShowBreaks: z.boolean(),
   showDfa: z.boolean(),
@@ -2100,22 +2043,24 @@ export type SourceSetRelations = {
   neurons: NeuronWithRelations[];
   releases?: SourceReleaseWithRelations | null;
   graphHostSources: GraphHostSourceOnSourceSetWithRelations[];
+  graphMetadata: GraphMetadataWithRelations[];
   defaultOfModel?: ModelWithRelations | null;
+  defaultGraphModel?: ModelWithRelations | null;
 };
 
 export type SourceSetWithRelations = z.infer<typeof SourceSetSchema> & SourceSetRelations;
 
-export const SourceSetWithRelationsSchema: z.ZodType<SourceSetWithRelations> = SourceSetSchema.merge(
-  z.object({
-    model: z.lazy(() => ModelWithRelationsSchema),
-    creator: z.lazy(() => UserWithRelationsSchema),
-    sources: z.lazy(() => SourceWithRelationsSchema).array(),
-    neurons: z.lazy(() => NeuronWithRelationsSchema).array(),
-    releases: z.lazy(() => SourceReleaseWithRelationsSchema).nullable(),
-    graphHostSources: z.lazy(() => GraphHostSourceOnSourceSetWithRelationsSchema).array(),
-    defaultOfModel: z.lazy(() => ModelWithRelationsSchema).nullable(),
-  }),
-);
+export const SourceSetWithRelationsSchema: z.ZodType<SourceSetWithRelations> = SourceSetSchema.merge(z.object({
+  model: z.lazy(() => ModelWithRelationsSchema),
+  creator: z.lazy(() => UserWithRelationsSchema),
+  sources: z.lazy(() => SourceWithRelationsSchema).array(),
+  neurons: z.lazy(() => NeuronWithRelationsSchema).array(),
+  releases: z.lazy(() => SourceReleaseWithRelationsSchema).nullable(),
+  graphHostSources: z.lazy(() => GraphHostSourceOnSourceSetWithRelationsSchema).array(),
+  graphMetadata: z.lazy(() => GraphMetadataWithRelationsSchema).array(),
+  defaultOfModel: z.lazy(() => ModelWithRelationsSchema).nullable(),
+  defaultGraphModel: z.lazy(() => ModelWithRelationsSchema).nullable(),
+}))
 
 // SOURCE SET PARTIAL RELATION SCHEMA
 //------------------------------------------------------
@@ -2127,39 +2072,38 @@ export type SourceSetPartialRelations = {
   neurons?: NeuronPartialWithRelations[];
   releases?: SourceReleasePartialWithRelations | null;
   graphHostSources?: GraphHostSourceOnSourceSetPartialWithRelations[];
+  graphMetadata?: GraphMetadataPartialWithRelations[];
   defaultOfModel?: ModelPartialWithRelations | null;
+  defaultGraphModel?: ModelPartialWithRelations | null;
 };
 
 export type SourceSetPartialWithRelations = z.infer<typeof SourceSetPartialSchema> & SourceSetPartialRelations;
 
-export const SourceSetPartialWithRelationsSchema: z.ZodType<SourceSetPartialWithRelations> =
-  SourceSetPartialSchema.merge(
-    z.object({
-      model: z.lazy(() => ModelPartialWithRelationsSchema),
-      creator: z.lazy(() => UserPartialWithRelationsSchema),
-      sources: z.lazy(() => SourcePartialWithRelationsSchema).array(),
-      neurons: z.lazy(() => NeuronPartialWithRelationsSchema).array(),
-      releases: z.lazy(() => SourceReleasePartialWithRelationsSchema).nullable(),
-      graphHostSources: z.lazy(() => GraphHostSourceOnSourceSetPartialWithRelationsSchema).array(),
-      defaultOfModel: z.lazy(() => ModelPartialWithRelationsSchema).nullable(),
-    }),
-  ).partial();
+export const SourceSetPartialWithRelationsSchema: z.ZodType<SourceSetPartialWithRelations> = SourceSetPartialSchema.merge(z.object({
+  model: z.lazy(() => ModelPartialWithRelationsSchema),
+  creator: z.lazy(() => UserPartialWithRelationsSchema),
+  sources: z.lazy(() => SourcePartialWithRelationsSchema).array(),
+  neurons: z.lazy(() => NeuronPartialWithRelationsSchema).array(),
+  releases: z.lazy(() => SourceReleasePartialWithRelationsSchema).nullable(),
+  graphHostSources: z.lazy(() => GraphHostSourceOnSourceSetPartialWithRelationsSchema).array(),
+  graphMetadata: z.lazy(() => GraphMetadataPartialWithRelationsSchema).array(),
+  defaultOfModel: z.lazy(() => ModelPartialWithRelationsSchema).nullable(),
+  defaultGraphModel: z.lazy(() => ModelPartialWithRelationsSchema).nullable(),
+})).partial()
 
 export type SourceSetWithPartialRelations = z.infer<typeof SourceSetSchema> & SourceSetPartialRelations;
 
-export const SourceSetWithPartialRelationsSchema: z.ZodType<SourceSetWithPartialRelations> = SourceSetSchema.merge(
-  z
-    .object({
-      model: z.lazy(() => ModelPartialWithRelationsSchema),
-      creator: z.lazy(() => UserPartialWithRelationsSchema),
-      sources: z.lazy(() => SourcePartialWithRelationsSchema).array(),
-      neurons: z.lazy(() => NeuronPartialWithRelationsSchema).array(),
-      releases: z.lazy(() => SourceReleasePartialWithRelationsSchema).nullable(),
-      graphHostSources: z.lazy(() => GraphHostSourceOnSourceSetPartialWithRelationsSchema).array(),
-      defaultOfModel: z.lazy(() => ModelPartialWithRelationsSchema).nullable(),
-    })
-    .partial(),
-);
+export const SourceSetWithPartialRelationsSchema: z.ZodType<SourceSetWithPartialRelations> = SourceSetSchema.merge(z.object({
+  model: z.lazy(() => ModelPartialWithRelationsSchema),
+  creator: z.lazy(() => UserPartialWithRelationsSchema),
+  sources: z.lazy(() => SourcePartialWithRelationsSchema).array(),
+  neurons: z.lazy(() => NeuronPartialWithRelationsSchema).array(),
+  releases: z.lazy(() => SourceReleasePartialWithRelationsSchema).nullable(),
+  graphHostSources: z.lazy(() => GraphHostSourceOnSourceSetPartialWithRelationsSchema).array(),
+  graphMetadata: z.lazy(() => GraphMetadataPartialWithRelationsSchema).array(),
+  defaultOfModel: z.lazy(() => ModelPartialWithRelationsSchema).nullable(),
+  defaultGraphModel: z.lazy(() => ModelPartialWithRelationsSchema).nullable(),
+}).partial())
 
 /////////////////////////////////////////
 // SOURCE RELEASE SCHEMA

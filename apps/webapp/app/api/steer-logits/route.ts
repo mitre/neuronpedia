@@ -1,4 +1,4 @@
-import { RequestOptionalUser } from '@/lib/types/auth';
+import { getModelById } from '@/lib/db/model';
 import { SteerLogitsRequestSchema, steerLogits } from '@/lib/utils/graph';
 import { withOptionalUser } from '@/lib/with-user';
 import { NextResponse } from 'next/server';
@@ -10,8 +10,23 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
 
   const validatedBody = SteerLogitsRequestSchema.validateSync(body);
 
+  if (!validatedBody.sourceSetName) {
+    const model = await getModelById(validatedBody.modelId);
+    validatedBody.sourceSetName = model?.defaultGraphSourceSetName;
+    if (!validatedBody.sourceSetName) {
+      return NextResponse.json(
+        {
+          error: 'Source Set Missing',
+          message: `The model ${validatedBody.modelId} has no default graph source set, so you must provide one in the sourceSetName parameter.`,
+        },
+        { status: 400 },
+      );
+    }
+  }
+
   const {
     modelId,
+    sourceSetName,
     prompt,
     features,
     nTokens,
@@ -25,6 +40,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
 
   const response = await steerLogits(
     modelId,
+    sourceSetName,
     prompt,
     features,
     nTokens,

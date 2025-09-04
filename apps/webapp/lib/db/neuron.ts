@@ -23,27 +23,36 @@ export const filterToUserCanAccessNeurons = async (
   user: AuthenticatedUser | null = null,
 ) => {
   const alreadyCheckedAndAllowed: { modelId: string; sourceSet: string }[] = [];
-  const allowedNeurons: NeuronIdentifier[] = [];
-  // eslint-disable-next-line no-restricted-syntax
-  for (const feature of features) {
+  // filter features to unique modelId/sourceSet
+  const uniqueFeatures = features.filter(
+    (feature, index, self) =>
+      index === self.findIndex((t) => t.modelId === feature.modelId && t.layer === feature.layer),
+  );
+  console.log('length of unique features', uniqueFeatures.length);
+  // check each of these feature in parallel with await Promise.all userCanAccessModelAndSourceSet
+  const startTime = Date.now();
+  await Promise.all(
+    uniqueFeatures.map(async (feature) => {
+      const sourceSetName = isNeuronLayerSource(feature.layer)
+        ? NEURONS_SOURCESET
+        : getSourceSetNameFromSource(feature.layer);
+      const canAccess = await userCanAccessModelAndSourceSet(feature.modelId, sourceSetName, user, true);
+      if (canAccess) {
+        alreadyCheckedAndAllowed.push({ modelId: feature.modelId, sourceSet: sourceSetName });
+      }
+    }),
+  );
+  const endTime = Date.now();
+  console.log(`Time taken to check access for ${uniqueFeatures.length} unique features: ${endTime - startTime}ms`);
+  // now filter features to only the ones that are allowed
+  const allowedFeatures = features.filter((feature) => {
+    // check if each feature has layer and index that are in a pair in alreadyCheckedAndAllowed
     const sourceSetName = isNeuronLayerSource(feature.layer)
       ? NEURONS_SOURCESET
       : getSourceSetNameFromSource(feature.layer);
-    if (
-      alreadyCheckedAndAllowed.some((n) => n.modelId === feature.modelId && n.sourceSet === sourceSetName) ||
-      // eslint-disable-next-line no-await-in-loop
-      (await userCanAccessModelAndSourceSet(feature.modelId, sourceSetName, user, true))
-    ) {
-      // we don't need to check the same modelId/sourceSet twice
-      alreadyCheckedAndAllowed.push({
-        modelId: feature.modelId,
-        sourceSet: sourceSetName,
-      });
-      // allow it
-      allowedNeurons.push(feature);
-    }
-  }
-  return allowedNeurons;
+    return alreadyCheckedAndAllowed.some((n) => n.modelId === feature.modelId && n.sourceSet === sourceSetName);
+  });
+  return allowedFeatures;
 };
 
 export const upsertVector = async (

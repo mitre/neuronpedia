@@ -294,44 +294,45 @@ def steer_handler(event):
         # set the seed
         if req_data.seed is not None:
             torch.manual_seed(req_data.seed)
-        default_generation = model.generate(
+        default_tokenized = model.generate(
             req_data.prompt,
             do_sample=True,
             use_past_kv_cache=False,
             verbose=False,
-            stop_at_eos=False,
+            stop_at_eos=True,
             max_new_tokens=req_data.n_tokens,
             temperature=req_data.temperature,
             freq_penalty=req_data.freq_penalty,
-        )
+            return_type="tokens",
+        )[0]
+
+        default_tokenized_str_tokens = [
+            model.tokenizer.decode([token]) for token in default_tokenized
+        ]
+
+        default_generation = "".join(default_tokenized_str_tokens)
 
         # reset the seed
         if req_data.seed is not None:
             torch.manual_seed(req_data.seed)
-        (steered_generation, steered_logits, _) = model.feature_intervention_generate(
+        (steered_tokenized, steered_logits, _) = model.feature_intervention_generate(
             req_data.prompt,
             intervention_tuples,
             freeze_attention=req_data.freeze_attention,
             do_sample=True,
             verbose=False,
-            stop_at_eos=False,
+            stop_at_eos=True,
             max_new_tokens=req_data.n_tokens + 1,
             temperature=req_data.temperature,
             freq_penalty=req_data.freq_penalty,
+            return_type="tokens",
         )
 
-        default_tokenized = model.tokenizer.encode(
-            default_generation, add_special_tokens=False
-        )
-        default_tokenized = [
-            model.tokenizer.decode([token]) for token in default_tokenized
-        ]
-        steered_tokenized = model.tokenizer.encode(
-            steered_generation, add_special_tokens=False
-        )
-        steered_tokenized = [
+        steered_tokenized = steered_tokenized[0]
+        steered_tokenized_str_tokens = [
             model.tokenizer.decode([token]) for token in steered_tokenized
         ]
+        steered_generation = "".join(steered_tokenized_str_tokens)
 
         # get the logits at each step
         topk_default_by_token = []
@@ -341,44 +342,45 @@ def steer_handler(event):
             default_logits = model(default_generation)
 
             # iterate through the tokens and get the logits
-            for i in range(len(default_tokenized)):
+            for i in range(len(default_tokenized_str_tokens)):
                 # If we're still processing the original prompt tokens (before generation),
                 # append a blank item since we're only interested in generated tokens
-                if i < sequence_length - 2:
+                if i < sequence_length - 1:
                     topk_default_by_token.append(
-                        {"token": default_tokenized[i], "top_logits": []}
+                        {"token": default_tokenized_str_tokens[i], "top_logits": []}
                     )
                     continue
                 # get the topk tokens
                 topk_default = get_topk(
-                    default_logits[:, : i + 2, :], model.tokenizer, req_data.top_k
+                    default_logits[:, : i + 1, :], model.tokenizer, req_data.top_k
                 )
                 # each topk default should be an object of token, prob
                 topk_default_by_token.append(
                     {
-                        "token": default_tokenized[i],
+                        "token": default_tokenized_str_tokens[i],
                         "top_logits": [
                             {"token": token, "prob": prob}
                             for token, prob in topk_default
                         ],
                     }
                 )
+            # we use the default tokenized str length because max_new_tokens is not +1 for default
+            # we need +1 on steered because we want the logits for the last token
             for i in range(
-                len(steered_tokenized) - 1
-            ):  # -1 because we generated one more token to get the logits for the last token
-                # If we're still processing the original prompt tokens (before generation),
+                len(default_tokenized_str_tokens)
+            ):  # If we're still processing the original prompt tokens (before generation),
                 # append a blank item since we're only interested in generated tokens
-                if i < sequence_length - 2:
+                if i < sequence_length - 1:
                     topk_steered_by_token.append(
-                        {"token": steered_tokenized[i], "top_logits": []}
+                        {"token": steered_tokenized_str_tokens[i], "top_logits": []}
                     )
                     continue
                 topk_steered = get_topk(
-                    steered_logits[:, : i + 2, :], model.tokenizer, req_data.top_k
+                    steered_logits[:, : i + 1, :], model.tokenizer, req_data.top_k
                 )
                 topk_steered_by_token.append(
                     {
-                        "token": steered_tokenized[i],
+                        "token": steered_tokenized_str_tokens[i],
                         "top_logits": [
                             {"token": token, "prob": prob}
                             for token, prob in topk_steered

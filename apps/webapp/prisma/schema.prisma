@@ -156,12 +156,14 @@ model GraphMetadata {
   id String @id @default(cuid())
 
   // following are common with anthropic, but some renamed
-  modelId      String // anthropic equivalent = "scan"
-  model        Model    @relation(fields: [modelId], references: [id], onDelete: Cascade)
-  slug         String // anthropic equivalent = "slug"
-  promptTokens String[] // anthropic equivalent = "prompt_tokens"
-  prompt       String // anthropic equivalent = "prompt"
-  titlePrefix  String // anthropic equivalent = "title_prefix"
+  modelId       String // anthropic equivalent = "scan"
+  model         Model      @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  sourceSetName String?
+  sourceSet     SourceSet? @relation(fields: [modelId, sourceSetName], references: [modelId, name], onDelete: Cascade)
+  slug          String // anthropic equivalent = "slug"
+  promptTokens  String[] // anthropic equivalent = "prompt_tokens"
+  prompt        String // anthropic equivalent = "prompt"
+  titlePrefix   String // anthropic equivalent = "title_prefix"
 
   // following are only ours
   isFeatured Boolean                 @default(false)
@@ -173,9 +175,11 @@ model GraphMetadata {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // slugs must be unique for each model, because sourceSetName can be null (for graphs people upload manually)
   @@unique([modelId, slug])
   @@index([userId])
   @@index([modelId])
+  @@index([modelId, sourceSetName])
 }
 
 model GraphMetadataDataPutRequest {
@@ -277,6 +281,9 @@ model Model {
   defaultSourceId      String?
   defaultSource        Source?    @relation(name: "defaultSource", fields: [defaultSourceId, id], references: [id, modelId], onDelete: Cascade)
 
+  defaultGraphSourceSetName String?
+  defaultGraphSourceSet     SourceSet? @relation(name: "defaultGraphSourceSet", fields: [defaultGraphSourceSetName, id], references: [name, modelId], onDelete: Cascade)
+
   inferenceEnabled Boolean @default(false)
   instruct         Boolean @default(false)
 
@@ -303,6 +310,7 @@ model Model {
 
   @@unique([defaultSourceSetName, id])
   @@unique([defaultSourceId, id])
+  @@unique([defaultGraphSourceSetName, id])
   @@index(visibility)
   @@index(creatorId)
 }
@@ -439,11 +447,17 @@ model SourceSet {
   releaseName  String?
   releases     SourceRelease? @relation(fields: [releaseName], references: [name], onDelete: Cascade)
 
+  // we may have graphs even if we are not actively allowing generation of new graphs for this sourceSet
+  hasGraphs        Boolean @default(false)
   graphEnabled     Boolean                      @default(false)
   graphHostSources GraphHostSourceOnSourceSet[]
+  graphMetadata    GraphMetadata[]
 
   defaultOfModelId String?
   defaultOfModel   Model?  @relation(name: "defaultSourceSet")
+
+  defaultGraphModelId String?
+  defaultGraphModel   Model?  @relation(name: "defaultGraphSourceSet")
 
   // how many tokens to show before and after the max activation token index
   // the value at index in ACTIVATION_DISPLAY_DEFAULT_CONTEXT_TOKENS

@@ -4,7 +4,7 @@
 
 import { env } from '@/lib/env';
 import { formatToGlobalModels } from '@/lib/utils/general';
-import { NEURONS_SOURCESET } from '@/lib/utils/source';
+import { getSourceSetNameFromSource, NEURONS_SOURCESET } from '@/lib/utils/source';
 import {
   Bookmark,
   ExplanationModelType,
@@ -58,6 +58,9 @@ export const [GlobalContext, useGlobalContext] = createContextWrapper<{
     onlyInferenceEnabled?: boolean,
     includeNoDashboards?: boolean,
   ) => string[];
+  getHasGraphsSourceSetsForModelId: (modelId: string) => SourceSetWithPartialRelations[];
+  isGraphEnabledForSourceSet: (modelId: string, sourceSet: string) => boolean;
+  isGraphEnabledForSource: (modelId: string, source: string) => boolean;
   explanationTypes: ExplanationType[];
   explanationModels: ExplanationModelType[];
   explanationScoreTypes: ExplanationScoreType[];
@@ -351,6 +354,29 @@ export default function GlobalProvider({
     return toReturn;
   };
 
+  const getHasGraphsSourceSetsForModelId = (modelId: string) => {
+    const ss = getSourceSetsForModelId(modelId);
+    return ss.filter((s) => s.hasGraphs);
+  };
+
+  const isGraphEnabledForSourceSet = (modelId: string, sourceSet: string) => {
+    // for transcoders / graphs we have a different steering method/server, so we don't show it here
+    const sourceSetObj = getSourceSet(modelId, sourceSet);
+    if (!sourceSetObj) {
+      return false;
+    }
+    return sourceSetObj.graphEnabled;
+  };
+
+  const isGraphEnabledForSource = (modelId: string, source: string) => {
+    // for transcoders / graphs we have a different steering method/server, so we don't show it here
+    const sourceSet = getSourceSet(modelId, getSourceSetNameFromSource(source) || '');
+    if (!sourceSet) {
+      return false;
+    }
+    return sourceSet.graphEnabled;
+  };
+
   const refreshGlobal = () => {
     fetch('/api/global', {
       method: 'POST',
@@ -401,6 +427,9 @@ export default function GlobalProvider({
           getFirstSourceForSourceSet,
           getSourceSetsForModelId,
           getInferenceEnabledSourcesForModel,
+          getHasGraphsSourceSetsForModelId,
+          isGraphEnabledForSourceSet,
+          isGraphEnabledForSource,
           explanationTypes,
           explanationModels,
           explanationScoreTypes,
@@ -442,6 +471,9 @@ export default function GlobalProvider({
           getSourceSetForSource,
           getSourceSetsForModelId,
           getSourcesForSourceSet,
+          getHasGraphsSourceSetsForModelId,
+          isGraphEnabledForSourceSet,
+          isGraphEnabledForSource,
           globalModels,
           featureModalFeature,
           featureModalOpen,

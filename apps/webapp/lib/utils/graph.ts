@@ -1,7 +1,10 @@
-import { ANT_MODEL_ID_TO_NEURONPEDIA_MODEL_ID } from '@/app/[modelId]/graph/utils';
-import { env } from '@/lib/env';
+import { GRAPH_RUNPOD_SECRET, USE_RUNPOD_GRAPH } from '@/lib/env';
 import * as yup from 'yup';
-import { getGraphRunpodServerUrlForModel, getGraphServerUrlForModel } from '../db/graph-host-source';
+import {
+  getAuthHeaderForGraphServerRequest,
+  getGraphServerRequestUrlForSourceSet,
+  wrapRequestBodyForRunpodIfNeeded,
+} from '../db/graph-host-source';
 import {
   STEER_FREEZE_ATTENTION,
   STEER_FREQUENCY_PENALTY,
@@ -59,6 +62,7 @@ export const graphGenerateSchemaClient = yup.object({
     .min(1, 'Prompt is required.')
     .required(),
   modelId: yup.string().min(1, 'Model is required.').oneOf(GRAPH_GENERATION_ENABLED_MODELS).required(),
+  sourceSetName: yup.string().nullable(),
   maxNLogits: yup
     .number()
     .integer('Must be an integer.')
@@ -94,8 +98,8 @@ export const graphGenerateSchemaClient = yup.object({
   slug: yup.string(),
 });
 
-export const checkRunpodQueueJobs = async () => {
-  const response = await fetch(`${env.GRAPH_RUNPOD_SERVER}/health`, {
+export const checkRunpodQueueJobs = async (host: string) => {
+  const response = await fetch(`${host}/health`, {
     headers: {
       Authorization: `Bearer ${env.GRAPH_RUNPOD_SECRET}`,
     },
@@ -133,38 +137,24 @@ export const getGraphTokenize = async (
   maxNLogits: number,
   desiredLogitProb: number,
   modelId: string,
+  sourceSetName: string,
 ): Promise<GraphTokenizeResponse> => {
-  let response;
+  const action = 'forward-pass';
   const body = {
     prompt,
     max_n_logits: maxNLogits,
     desired_logit_prob: desiredLogitProb,
-    request_type: 'forward_pass',
+    request_type: action,
   };
-  if (env.USE_RUNPOD_GRAPH) {
-    response = await fetch(`${getGraphRunpodServerUrlForModel(modelId)}/runsync`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${env.GRAPH_RUNPOD_SECRET}`,
-      },
-      body: JSON.stringify({
-        input: body,
-      }),
-    });
-  } else {
-    response = await fetch(
-      `${env.USE_LOCALHOST_GRAPH ? 'http://127.0.0.1:5004' : getGraphServerUrlForModel(modelId)}/forward-pass`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-secret-key': env.GRAPH_SERVER_SECRET,
-        },
-        body: JSON.stringify(body),
-      },
-    );
-  }
+
+  const response = await fetch(`${await getGraphServerRequestUrlForSourceSet(modelId, sourceSetName, action)}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaderForGraphServerRequest(),
+    },
+    body: JSON.stringify(wrapRequestBodyForRunpodIfNeeded(body)),
+  });
 
   let json = await response.json();
   if (json.error) {
@@ -198,6 +188,7 @@ export const getGraphTokenize = async (
 export const generateGraphAndUploadToS3 = async (
   prompt: string,
   modelId: string,
+  sourceSetName: string,
   maxNLogits: number,
   desiredLogitProb: number,
   nodeThreshold: number,
@@ -207,7 +198,7 @@ export const generateGraphAndUploadToS3 = async (
   signedUrl: string,
   userId: string | undefined,
 ) => {
-  let response;
+  const action = 'generate-graph';
   const body = {
     prompt,
     model_id: GRAPH_MODEL_MAP[modelId as keyof typeof GRAPH_MODEL_MAP],
@@ -221,33 +212,16 @@ export const generateGraphAndUploadToS3 = async (
     signed_url: signedUrl,
     user_id: userId,
   };
-  if (env.USE_RUNPOD_GRAPH) {
-    response = await fetch(`${getGraphRunpodServerUrlForModel(modelId)}/runsync`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${env.GRAPH_RUNPOD_SECRET}`,
-      },
-      body: JSON.stringify({
-        input: body,
-      }),
-    });
-  } else {
-    console.log('body', body);
-    response = await fetch(
-      `${env.USE_LOCALHOST_GRAPH ? 'http://127.0.0.1:5004' : getGraphServerUrlForModel(modelId)}/generate-graph`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-secret-key': env.GRAPH_SERVER_SECRET,
-        },
-        body: JSON.stringify(body),
-      },
-    );
-  }
+  const response = await fetch(`${await getGraphServerRequestUrlForSourceSet(modelId, sourceSetName, action)}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaderForGraphServerRequest(),
+    },
+    body: JSON.stringify(wrapRequestBodyForRunpodIfNeeded(body)),
+  });
+
   const json = await response.json();
-  console.log('server json response', json);
   if (json.error) {
     throw new Error(json.error);
   }
@@ -255,7 +229,8 @@ export const generateGraphAndUploadToS3 = async (
   if (!response.ok) {
     throw new Error(`External API returned ${response.status}: ${response.statusText}`);
   }
-  return json;
+
+  // no need to return anything since it was uploaded to s3
 };
 
 export const SteerLogitFeatureSchema = yup.object({
@@ -272,6 +247,7 @@ export type SteerLogitFeature = yup.InferType<typeof SteerLogitFeatureSchema>;
 
 export const SteerLogitsRequestSchema = yup.object({
   modelId: yup.string().required('Model ID is required'),
+  sourceSetName: yup.string().nullable(),
   prompt: yup.string().required('Prompt is required'),
   features: yup.array().of(SteerLogitFeatureSchema).required('Features are required'),
   nTokens: yup.number().default(STEER_N_COMPLETION_TOKENS).min(1).max(STEER_N_COMPLETION_TOKENS_MAX),
@@ -321,7 +297,7 @@ export const SteerResponseSchema = yup.object({
 export type SteerResponse = yup.InferType<typeof SteerResponseSchema>;
 
 export type SteeredPositionIdentifier = {
-  modelId: keyof typeof ANT_MODEL_ID_TO_NEURONPEDIA_MODEL_ID;
+  modelId: string;
   layer: number;
   index: number;
   tokenActivePosition: number;
@@ -329,6 +305,7 @@ export type SteeredPositionIdentifier = {
 
 export const steerLogits = async (
   modelId: string,
+  sourceSetName: string,
   prompt: string,
   features: SteerLogitFeature[],
   nTokens: number,
@@ -339,7 +316,7 @@ export const steerLogits = async (
   seed: number | null,
   steeredOutputOnly: boolean,
 ) => {
-  let response;
+  const action = 'steer';
   // TODO: clean up model id usage
   const mappedModelId = GRAPH_GENERATION_ENABLED_MODELS.includes(modelId)
     ? GRAPH_MODEL_MAP[modelId as keyof typeof GRAPH_MODEL_MAP]
@@ -351,36 +328,21 @@ export const steerLogits = async (
     n_tokens: nTokens,
     top_k: topK,
     freeze_attention: freezeAttention,
-    request_type: 'steer', // for Runpod
     temperature,
     freq_penalty: freqPenalty,
     seed,
     steered_output_only: steeredOutputOnly,
+    request_type: action,
   };
-  if (env.USE_RUNPOD_GRAPH) {
-    response = await fetch(`${getGraphRunpodServerUrlForModel(modelId)}/runsync`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${env.GRAPH_RUNPOD_SECRET}`,
-      },
-      body: JSON.stringify({
-        input: body,
-      }),
-    });
-  } else {
-    response = await fetch(
-      `${env.USE_LOCALHOST_GRAPH ? 'http://127.0.0.1:5004' : getGraphServerUrlForModel(modelId)}/steer`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-secret-key': env.GRAPH_SERVER_SECRET,
-        },
-        body: JSON.stringify(body),
-      },
-    );
-  }
+
+  const response = await fetch(`${await getGraphServerRequestUrlForSourceSet(modelId, sourceSetName, action)}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaderForGraphServerRequest(),
+    },
+    body: JSON.stringify(wrapRequestBodyForRunpodIfNeeded(body)),
+  });
 
   let json = await response.json();
   if (json.error) {

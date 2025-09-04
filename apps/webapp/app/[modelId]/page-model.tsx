@@ -1,18 +1,28 @@
 import BreadcrumbsComponent from '@/components/breadcrumbs-component';
 import ModelsDropdown from '@/components/nav/models-dropdown';
 import BrowserPane from '@/components/panes/browser-pane/browser-pane';
+import GraphModelPane from '@/components/panes/graph-model-pane';
 import JumpToPane from '@/components/panes/jump-to-pane';
 import ModelReleases from '@/components/panes/model-releases-pane';
 import SearchExplanationsPane from '@/components/panes/search-explanations-pane';
 import SearchInferenceModelPane from '@/components/panes/search-inference-model-pane';
 import { BreadcrumbLink, BreadcrumbPage } from '@/components/shadcn/breadcrumbs';
 import { getVisibilityBadge } from '@/components/visibility-badge';
+import { prisma } from '@/lib/db';
 import { SearchExplanationsType } from '@/lib/utils/general';
 import { getFirstSourceForModel, getFirstSourceSetForModel } from '@/lib/utils/source';
 import { ModelWithPartialRelations } from '@/prisma/generated/zod';
 import { Visibility } from '@prisma/client';
 
-export default function PageModel({ model }: { model: ModelWithPartialRelations }) {
+export default async function PageModel({ model }: { model: ModelWithPartialRelations }) {
+  // prisma find graphMetadatas for this model
+  const graphMetadatas = await prisma.graphMetadata.findMany({
+    where: {
+      modelId: model.id,
+      isFeatured: true,
+    },
+  });
+
   const firstSourceSet = getFirstSourceSetForModel(model, Visibility.PUBLIC, false, false);
   const firstSource = getFirstSourceForModel(model, Visibility.PUBLIC, false, false);
   return (
@@ -54,6 +64,13 @@ export default function PageModel({ model }: { model: ModelWithPartialRelations 
           filterToFeaturedReleases={false}
         />
       </div>
+
+      {graphMetadatas.length > 0 && (
+        <div className="mt-6 w-full max-w-screen-lg">
+          <GraphModelPane model={model} graphMetadatas={graphMetadatas} />
+        </div>
+      )}
+
       <div className="mt-6 w-full max-w-screen-lg">
         <SearchExplanationsPane
           initialModelId={model.id}

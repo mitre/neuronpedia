@@ -7,8 +7,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { GroupedVirtuoso } from 'react-virtuoso';
 import FeatureDashboard from '../[layer]/[index]/feature-dashboard';
 import GraphFeatureDetailItem from './feature-detail-item';
+import { CLTGraphNode } from './graph-types';
 import GraphFeatureLink from './np-feature-link';
-import { clientCheckIsEmbed, CLTGraphNode, nodeTypeHasFeatureDetail } from './utils';
+import { clientCheckIsEmbed, nodeTypeHasFeatureDetail } from './utils';
 
 export default function GraphFeatureDetail() {
   const {

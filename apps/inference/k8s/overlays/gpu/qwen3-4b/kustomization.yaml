@@ -14,5 +14,5 @@ configMapGenerator:
       - TOKEN_LIMIT=400
       - HOST=0.0.0.0
       - PORT=5002
-      - MAX_LOADED_SAES=10
+      - MAX_LOADED_SAES=12
       - SAE_SETS=["transcoder-hp"]
