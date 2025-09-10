@@ -1,0 +1,14 @@
+# We define a function and a variant, just like in our Quick Start...
+# ... but this time we include a schema and a template.
+[functions.autointerp_explainer_logits]
+type = "chat"
+user_schema = "functions/autointerp_explainer_logits/user_schema.json" # relative to tensorzero.toml
+# system_schema = "..."
+# assistant_schema = "..."
+
+[functions.autointerp_explainer_logits.variants.gpt_4o_mini]
+type = "chat_completion"
+model = "openai::gpt-4o-mini"
+user_template = "functions/autointerp_explainer_logits/templates/user/template.minijinja" # relative to tensorzero.toml
+# system_template = ""
+# assistant_template = "..."

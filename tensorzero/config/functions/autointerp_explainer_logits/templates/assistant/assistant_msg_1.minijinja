@@ -1,0 +1,2 @@
+Method 1 fails: MAX_ACTIVATING_TOKENS (She, enjoy) are not similar tokens.
+Method 2 succeeds: All TOKENS_AFTER_MAX_ACTIVATING_TOKEN have a pattern in common: they all start with "w". Explanation: say "w" words

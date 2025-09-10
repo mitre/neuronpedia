@@ -1,0 +1,45 @@
+
+
+Neuron 4
+
+<TOKENS_AFTER_MAX_ACTIVATING_TOKEN>
+
+was
+places
+
+</TOKENS_AFTER_MAX_ACTIVATING_TOKEN>
+
+
+<MAX_ACTIVATING_TOKENS>
+
+war
+some
+
+</MAX_ACTIVATING_TOKENS>
+
+
+<TOP_POSITIVE_LOGITS>
+
+4
+four
+fourth
+4th
+IV
+Four
+FOUR
+~4
+4.0
+quartet
+
+</TOP_POSITIVE_LOGITS>
+
+
+<TOP_ACTIVATING_TEXTS>
+
+the civil war was a major topic in history class .
+seasons of the year are winter , spring , summer , and fall or autumn in some places .
+
+</TOP_ACTIVATING_TEXTS>
+
+
+Explanation of neuron 4 behavior: 

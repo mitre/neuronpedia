@@ -1,0 +1,45 @@
+
+
+Neuron 1
+
+<TOKENS_AFTER_MAX_ACTIVATING_TOKEN>
+
+was
+watching
+
+</TOKENS_AFTER_MAX_ACTIVATING_TOKEN>
+
+
+<MAX_ACTIVATING_TOKENS>
+
+She
+enjoy
+
+</MAX_ACTIVATING_TOKENS>
+
+
+<TOP_POSITIVE_LOGITS>
+
+walking
+WA
+waiting
+was
+we
+WHAM
+wish
+win
+wake
+whisper
+
+</TOP_POSITIVE_LOGITS>
+
+
+<TOP_ACTIVATING_TEXTS>
+
+She was taking a nap when her phone started ringing.
+I enjoy watching movies with my family.
+
+</TOP_ACTIVATING_TEXTS>
+
+
+Explanation of neuron 1 behavior: 

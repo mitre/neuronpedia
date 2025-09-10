@@ -1,0 +1,45 @@
+
+
+Neuron 2
+
+<TOKENS_AFTER_MAX_ACTIVATING_TOKEN>
+
+are
+,
+
+</TOKENS_AFTER_MAX_ACTIVATING_TOKEN>
+
+
+<MAX_ACTIVATING_TOKENS>
+
+banana
+blueberries
+
+</MAX_ACTIVATING_TOKENS>
+
+
+<TOP_POSITIVE_LOGITS>
+
+apple
+orange
+pineapple
+watermelon
+kiwi
+peach
+pear
+grape
+cherry
+plum
+
+</TOP_POSITIVE_LOGITS>
+
+
+<TOP_ACTIVATING_TEXTS>
+
+The apple and banana are delicious foods that provide essential vitamins and nutrients.
+I enjoy eating fresh strawberries, blueberries, and mangoes during the summer months.
+
+</TOP_ACTIVATING_TEXTS>
+
+
+Explanation of neuron 2 behavior: 

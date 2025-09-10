@@ -1,0 +1,45 @@
+
+
+Neuron 3
+
+<TOKENS_AFTER_MAX_ACTIVATING_TOKEN>
+
+warm
+the
+
+</TOKENS_AFTER_MAX_ACTIVATING_TOKEN>
+
+
+<MAX_ACTIVATING_TOKENS>
+
+and
+And
+
+</MAX_ACTIVATING_TOKENS>
+
+
+<TOP_POSITIVE_LOGITS>
+
+elephant
+guitar
+mountain
+bicycle
+ocean
+telescope
+candle
+umbrella
+tornado
+butterfly
+
+</TOP_POSITIVE_LOGITS>
+
+
+<TOP_ACTIVATING_TEXTS>
+
+It was a beautiful day outside with clear skies and warm sunshine.
+And the garden has roses and tulips and daisies and sunflowers blooming together.
+
+</TOP_ACTIVATING_TEXTS>
+
+
+Explanation of neuron 3 behavior: 

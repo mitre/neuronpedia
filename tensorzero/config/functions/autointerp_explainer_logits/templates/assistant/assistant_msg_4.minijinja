@@ -1,0 +1,3 @@
+Method 1 fails: MAX_ACTIVATING_TOKENS (war, some) are not all the same token.
+Method 2 fails: TOKENS_AFTER_MAX_ACTIVATING_TOKEN (was, places) are not all similar tokens and don't have a text pattern in common.
+Method 3 succeeds: All TOP_POSITIVE_LOGITS are the number 4. Explanation: 4

@@ -1,0 +1,37 @@
+{
+ "$schema": "http://json-schema.org/draft-07/schema#",
+ "type": "object",
+ "required": [
+   "TOKENS_AFTER_MAX_ACTIVATING_TOKEN",
+   "MAX_ACTIVATING_TOKENS",
+   "TOP_POSITIVE_LOGITS",
+   "TOP_ACTIVATING_TEXTS"
+ ],
+ "properties": {
+   "TOKENS_AFTER_MAX_ACTIVATING_TOKEN": {
+     "type": "array",
+     "items": {
+       "type": "string"
+     }
+   },
+   "MAX_ACTIVATING_TOKENS": {
+     "type": "array",
+     "items": {
+       "type": "string"
+     }
+   },
+   "TOP_POSITIVE_LOGITS": {
+     "type": "array",
+     "items": {
+       "type": "object"
+     }
+   },
+   "TOP_ACTIVATING_TEXTS": {
+     "type": "array",
+     "items": {
+       "type": "string"
+     }
+   }
+ },
+ "additionalProperties": false
+}
