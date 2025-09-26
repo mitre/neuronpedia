@@ -5,6 +5,9 @@ set -a
 source .env
 set +a
 
+echo "Running Prisma db push..."
+npx prisma db push
+
 echo "Running database migrations..."
 npx prisma migrate deploy
 
