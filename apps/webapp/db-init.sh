@@ -6,12 +6,12 @@ source .env
 set +a
 
 echo "Running Prisma db push..."
-npx prisma db push
+./node_modules/.bin/prisma db push
 
 echo "Running database migrations..."
-npx prisma migrate deploy
+./node_modules/.bin/prisma migrate deploy
 
 echo "Running database seed..."
-npx prisma db seed
+./node_modules/.bin/prisma db seed
 
 echo "Database initialization completed successfully!"
