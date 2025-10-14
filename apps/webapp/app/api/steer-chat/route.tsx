@@ -443,7 +443,8 @@ export type SteerSchemaTypeChat = InferType<typeof steerSchema>;
                 "freq_penalty": 2,
                 "seed": 16,
                 "strength_multiplier": 4,
-                "steer_special_tokens": true
+                "steer_special_tokens": true,
+                "steer_method": "SIMPLE_ADDITIVE"
               },
               "properties": {
                 "defaultChatMessages": {
@@ -524,6 +525,10 @@ export type SteerSchemaTypeChat = InferType<typeof steerSchema>;
                 },
                 "steer_special_tokens": {
                   "type": "boolean"
+                }, 
+                "steer_method": {
+                  "type": "string",
+                  "enum": ["SIMPLE_ADDITIVE", "ORTHOGONAL_DECOMP"]
                 }
               }
             }

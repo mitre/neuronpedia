@@ -282,7 +282,8 @@ async function saveSteerOutput(
                 "n_tokens": 48,
                 "freq_penalty": 2,
                 "seed": 16,
-                "strength_multiplier": 4
+                "strength_multiplier": 4,
+                "steer_method": "SIMPLE_ADDITIVE"
               },
               "properties": {
                 "prompt": {
@@ -331,6 +332,10 @@ async function saveSteerOutput(
                 },
                 "strength_multiplier": {
                   "type": "number"
+                },
+                "steer_method": {
+                  "type": "string",
+                  "enum": ["SIMPLE_ADDITIVE", "ORTHOGONAL_DECOMP"]
                 }
               }
             }

@@ -3,6 +3,51 @@ import { prisma } from '@/lib/db';
 import { RequestAuthedUser, withAuthedUser } from '@/lib/with-user';
 import { NextResponse } from 'next/server';
 
+/**
+ * @swagger
+ * /api/graph/subgraph/delete:
+ *   post:
+ *     summary: Subgraph Delete
+ *     description: Deletes an existing subgraph owned by the authenticated user
+ *     tags:
+ *       - Attribution Graphs
+ *     security:
+ *       - apiKey: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - subgraphId
+ *             properties:
+ *               subgraphId:
+ *                 type: string
+ *                 description: ID of the subgraph to delete
+ *                 example: "clx1234567890abcdef"
+ *     responses:
+ *       200:
+ *         description: Subgraph deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Subgraph deleted successfully"
+ *       403:
+ *         description: Not authorized to delete this subgraph
+ *       404:
+ *         description: Subgraph not found
+ *       500:
+ *         description: Failed to delete subgraph
+ */
+
 export const POST = withAuthedUser(async (request: RequestAuthedUser) => {
   try {
     const body = await request.json();

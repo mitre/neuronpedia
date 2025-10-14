@@ -670,7 +670,7 @@ async def generate_graph(req: Request):
                 "transcoder_set": transcoder_set,
                 "generator": {
                     "name": "circuit-tracer by Hanna & Piotrowski",
-                    "version": "0.2.0 | 3976e39",
+                    "version": "0.2.0 | e4a3c5a",
                     "url": "https://github.com/safety-research/circuit-tracer",
                 },
                 "create_time_ms": current_time_ms,

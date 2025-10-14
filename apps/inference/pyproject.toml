@@ -30,6 +30,7 @@ uvicorn = "^0.34.0"
 sentry-sdk = {extras = ["fastapi"], version = "^2.20.0"}
 nnsight = "^0.4.3"
 neuronpedia-inference-client = {path = "../../packages/python/neuronpedia-inference-client"}
+hf-transfer = "^0.1.9"
 
 [tool.poetry.group.dev.dependencies]
 # line-profiler = "^4.1.3"

@@ -1,8 +1,9 @@
-import { GRAPH_RUNPOD_SECRET, USE_RUNPOD_GRAPH } from '@/lib/env';
+import { GRAPH_RUNPOD_SECRET } from '@/lib/env';
 import * as yup from 'yup';
 import {
   getAuthHeaderForGraphServerRequest,
   getGraphServerRequestUrlForSourceSet,
+  getIsRunpodServerlessHostForSourceSet,
   wrapRequestBodyForRunpodIfNeeded,
 } from '../db/graph-host-source';
 import {
@@ -139,6 +140,7 @@ export const getGraphTokenize = async (
   modelId: string,
   sourceSetName: string,
 ): Promise<GraphTokenizeResponse> => {
+  const isRunpodServerlessHost = await getIsRunpodServerlessHostForSourceSet(modelId, sourceSetName);
   const action = 'forward-pass';
   const body = {
     prompt,
@@ -147,13 +149,13 @@ export const getGraphTokenize = async (
     request_type: action,
   };
 
-  const response = await fetch(`${await getGraphServerRequestUrlForSourceSet(modelId, sourceSetName, action)}`, {
+  const response = await fetch(`${await getGraphServerRequestUrlForSourceSet(modelId, sourceSetName, action, isRunpodServerlessHost)}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...getAuthHeaderForGraphServerRequest(),
+      ...getAuthHeaderForGraphServerRequest(isRunpodServerlessHost),
     },
-    body: JSON.stringify(wrapRequestBodyForRunpodIfNeeded(body)),
+    body: JSON.stringify(wrapRequestBodyForRunpodIfNeeded(body, isRunpodServerlessHost)),
   });
 
   let json = await response.json();
@@ -164,7 +166,7 @@ export const getGraphTokenize = async (
     throw new Error(`External API returned ${response.status}: ${response.statusText}`);
   }
 
-  if (USE_RUNPOD_GRAPH) {
+  if (isRunpodServerlessHost) {
     json = json.output;
   }
 
@@ -198,6 +200,7 @@ export const generateGraphAndUploadToS3 = async (
   signedUrl: string,
   userId: string | undefined,
 ) => {
+  const isRunpodServerlessHost = await getIsRunpodServerlessHostForSourceSet(modelId, sourceSetName);
   const action = 'generate-graph';
   const body = {
     prompt,
@@ -212,13 +215,13 @@ export const generateGraphAndUploadToS3 = async (
     signed_url: signedUrl,
     user_id: userId,
   };
-  const response = await fetch(`${await getGraphServerRequestUrlForSourceSet(modelId, sourceSetName, action)}`, {
+  const response = await fetch(`${await getGraphServerRequestUrlForSourceSet(modelId, sourceSetName, action, isRunpodServerlessHost)}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...getAuthHeaderForGraphServerRequest(),
+      ...getAuthHeaderForGraphServerRequest(isRunpodServerlessHost),
     },
-    body: JSON.stringify(wrapRequestBodyForRunpodIfNeeded(body)),
+    body: JSON.stringify(wrapRequestBodyForRunpodIfNeeded(body, isRunpodServerlessHost)),
   });
 
   const json = await response.json();
@@ -316,6 +319,9 @@ export const steerLogits = async (
   seed: number | null,
   steeredOutputOnly: boolean,
 ) => {
+
+  const isRunpodServerlessHost = await getIsRunpodServerlessHostForSourceSet(modelId, sourceSetName);
+
   const action = 'steer';
   // TODO: clean up model id usage
   const mappedModelId = GRAPH_GENERATION_ENABLED_MODELS.includes(modelId)
@@ -335,13 +341,13 @@ export const steerLogits = async (
     request_type: action,
   };
 
-  const response = await fetch(`${await getGraphServerRequestUrlForSourceSet(modelId, sourceSetName, action)}`, {
+  const response = await fetch(`${await getGraphServerRequestUrlForSourceSet(modelId, sourceSetName, action, isRunpodServerlessHost)}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...getAuthHeaderForGraphServerRequest(),
+      ...getAuthHeaderForGraphServerRequest(isRunpodServerlessHost),
     },
-    body: JSON.stringify(wrapRequestBodyForRunpodIfNeeded(body)),
+    body: JSON.stringify(wrapRequestBodyForRunpodIfNeeded(body, isRunpodServerlessHost)),
   });
 
   let json = await response.json();
@@ -352,7 +358,7 @@ export const steerLogits = async (
     throw new Error(`External API returned ${response.status}: ${response.statusText}`);
   }
 
-  if (USE_RUNPOD_GRAPH) {
+  if (isRunpodServerlessHost) {
     json = json.output;
   }
 

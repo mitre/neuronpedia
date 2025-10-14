@@ -680,7 +680,7 @@ export default function Page() {
                 Johnny Lin
               </a>
               , an ex-Apple engineer who previously founded a privacy startup. Neuronpedia is supported by Decode
-              Research, the Long Term Future Fund, AISTOF, Anthropic, and others.
+              Research, Open Philanthropy, the Long Term Future Fund, AISTOF, Anthropic, Manifund, and others.
             </div>
           </div>
 

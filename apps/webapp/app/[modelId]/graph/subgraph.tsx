@@ -8,7 +8,19 @@ import { Button } from '@/components/shadcn/button';
 import { Card, CardContent } from '@/components/shadcn/card';
 import { useScreenSize } from '@/lib/hooks/use-screen-size';
 import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
-import { Circle, FolderOpen, Joystick, PinIcon, PinOffIcon, Save, Share2, TrashIcon } from 'lucide-react';
+import {
+  Circle,
+  FolderOpen,
+  Fullscreen,
+  Joystick,
+  PinIcon,
+  PinOffIcon,
+  Save,
+  Share2,
+  TrashIcon,
+  ZoomInIcon,
+  ZoomOutIcon,
+} from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import d3 from './d3-jetpack';
 import { CLTGraphLink, CLTGraphNode } from './graph-types';
@@ -124,6 +136,7 @@ export default function Subgraph() {
   const svgPathsRef = useRef<d3.Selection<SVGPathElement, SubgraphLink, SVGGElement, unknown> | null>(null);
   const edgeLabelsRef = useRef<d3.Selection<SVGTextElement, SubgraphLink, SVGGElement, unknown> | null>(null);
   const sgLinksRef = useRef<SubgraphLink[]>([]);
+  const zoomRef = useRef<d3.ZoomBehavior<Element, unknown> | null>(null);
   const [selForceNodes, setSelForceNodes] = useState<ForceNode[]>([]);
   const [nodeIdToNode, setNodeIdToNode] = useState<Record<string, CLTGraphNode>>({});
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -157,8 +170,8 @@ export default function Subgraph() {
   const screenSize = useScreenSize();
 
   // Web worker compute via helper
-  // const latestRequestIdRef = useRef(0);
-  // const [subgraphScores, setSubgraphScores] = useState({ replacementScore: 0, completenessScore: 0 });
+  const latestRequestIdRef = useRef(0);
+  const [subgraphScores, setSubgraphScores] = useState({ replacementScore: 0, completenessScore: 0 });
 
   // Web worker compute for overall graph scores
   const [graphScores, setGraphScores] = useState({ replacementScore: 0, completenessScore: 0 });
@@ -191,23 +204,23 @@ export default function Subgraph() {
       });
   }, [selectedGraph]);
 
-  // useEffect(() => {
-  //   if (!selectedGraph) {
-  //     setSubgraphScores({ replacementScore: 0, completenessScore: 0 });
-  //     return;
-  //   }
-  //   latestRequestIdRef.current += 1;
-  //   const requestId = latestRequestIdRef.current;
-  //   computeGraphScoresInWorker(selectedGraph, visState.pinnedIds)
-  //     .then(({ replacementScore, completenessScore }) => {
-  //       if (requestId !== latestRequestIdRef.current) return;
-  //       setSubgraphScores({ replacementScore, completenessScore });
-  //     })
-  //     .catch(() => {
-  //       if (requestId !== latestRequestIdRef.current) return;
-  //       setSubgraphScores({ replacementScore: 0, completenessScore: 0 });
-  //     });
-  // }, [selectedGraph, visState.pinnedIds]);
+  useEffect(() => {
+    if (!selectedGraph) {
+      setSubgraphScores({ replacementScore: 0, completenessScore: 0 });
+      return;
+    }
+    latestRequestIdRef.current += 1;
+    const requestId = latestRequestIdRef.current;
+    computeGraphScoresInWorker(selectedGraph, visState.pinnedIds)
+      .then(({ replacementScore, completenessScore }) => {
+        if (requestId !== latestRequestIdRef.current) return;
+        setSubgraphScores({ replacementScore, completenessScore });
+      })
+      .catch(() => {
+        if (requestId !== latestRequestIdRef.current) return;
+        setSubgraphScores({ replacementScore: 0, completenessScore: 0 });
+      });
+  }, [selectedGraph, visState.pinnedIds]);
 
   // Helper to create pct input color function
   const pctInputColorFn = useCallback((d: number) => {
@@ -1018,6 +1031,37 @@ export default function Subgraph() {
     renderEdges();
     renderForce(); // Start simulation ticks
 
+    // === Handle Zoom ===
+
+    function handleZoom(e: any) {
+      // Apply transform to both SVG and div with the same coordinate system
+      const svgG = d3.select(svgRef.current).select('g');
+      const divElement = d3.select(divRef.current);
+
+      // Update SVG g element transform (combining margin translation with zoom transform)
+      svgG.attr('transform', `translate(${margin.left},${margin.top}) ${e.transform}`);
+
+      // Update div transform to match, accounting for its CSS positioning
+      divElement
+        .style('transform', `translate(${e.transform.x}px, ${e.transform.y}px) scale(${e.transform.k})`)
+        .style('transform-origin', '0 0');
+    }
+
+    const zoom = d3.zoom().on('zoom', handleZoom);
+    zoomRef.current = zoom;
+
+    function initZoom() {
+      d3.select(divRef.current).call(zoom as any);
+    }
+
+    initZoom();
+
+    // Manually trigger handleZoom when screenSize changes
+    const currentTransform = d3.zoomTransform(divRef.current);
+    handleZoom({ transform: currentTransform });
+
+    // === End handle Zoom ===
+
     // Add tick handler to simulation stored in ref
     simulationRef.current?.on('tick', renderForce);
 
@@ -1040,6 +1084,44 @@ export default function Subgraph() {
     pctInputColorFn,
     bgColorToTextColor,
   ]);
+
+  // Zoom functions
+  const zoomIn = useCallback(() => {
+    if (!divRef.current || !zoomRef.current) return;
+    const currentTransform = d3.zoomTransform(divRef.current);
+    const newScale = currentTransform.k * 1.2; // Increase by 20%
+    const selection = d3.select(divRef.current);
+    selection
+      .transition()
+      .duration(300)
+      .call(
+        zoomRef.current.transform as any,
+        d3.zoomIdentity.translate(currentTransform.x, currentTransform.y).scale(newScale),
+      );
+  }, []);
+
+  const zoomOut = useCallback(() => {
+    if (!divRef.current || !zoomRef.current) return;
+    const currentTransform = d3.zoomTransform(divRef.current);
+    const newScale = currentTransform.k * 0.8; // Decrease by 20%
+    const selection = d3.select(divRef.current);
+    selection
+      .transition()
+      .duration(300)
+      .call(
+        zoomRef.current.transform as any,
+        d3.zoomIdentity.translate(currentTransform.x, currentTransform.y).scale(newScale),
+      );
+  }, []);
+
+  const resetZoom = useCallback(() => {
+    if (!divRef.current || !zoomRef.current) return;
+    const selection = d3.select(divRef.current);
+    selection
+      .transition()
+      .duration(300)
+      .call(zoomRef.current.transform as any, d3.zoomIdentity);
+  }, []);
 
   // Separate useEffect for applying styles based on interaction state
   useEffect(() => {
@@ -1239,16 +1321,20 @@ export default function Subgraph() {
                     Measures the fraction of end-to-end influence from input tokens to output logits that flows through
                     feature nodes rather than error nodes. This is a strict metric that rewards complete explanations
                     where tokens influence logits entirely through features.
+                    <br /><br/>
+                    The graph score is for the entire pruned attribution graph, while the subgraph score is only for your pinned nodes and the nodes that are connected to them. It treats features not included in the subgraph as error nodes by merging their edge
+                    weights with the corresponding error nodes (based on layer and position), then computes replacement
+                    and completeness scores using the modified adjacency matrix.
                   </div>
                 </CustomTooltip>
               </div>
               <div className="flex flex-row items-center justify-center gap-x-2">
                 <div className="font-medium text-slate-600">
-                  Graph: {graphScores.replacementScore?.toFixed(2) || 'N/A'}
+                  Graph: {graphScores.replacementScore?.toFixed(4) || 'N/A'}
                 </div>
-                {/* <div className="font-medium text-slate-600">
-                  Subgraph*: {visState.pinnedIds.length > 0 ? subgraphScores.replacementScore?.toFixed(2) : 'N/A'}
-                </div> */}
+                <div className="font-medium text-slate-600">
+                  Subgraph*: {visState.pinnedIds.length > 0 ? subgraphScores.replacementScore?.toFixed(4) : 'N/A'}
+                </div>
               </div>
             </div>
             <div className="flex flex-1 flex-row items-center justify-center gap-x-3">
@@ -1267,16 +1353,20 @@ export default function Subgraph() {
                     output) that originate from feature or token nodes rather than error nodes. This metric gives
                     partial credit for nodes that are mostly explained by features, even if some error influence
                     remains.
+                    <br /><br/>
+                    The graph score is for the entire pruned attribution graph, while the subgraph score is only for your pinned nodes and the nodes that are connected to them. It treats features not included in the subgraph as error nodes by merging their edge
+                    weights with the corresponding error nodes (based on layer and position), then computes replacement
+                    and completeness scores using the modified adjacency matrix.
                   </div>
                 </CustomTooltip>
               </div>
               <div className="flex flex-row items-center justify-center gap-x-2">
                 <div className="font-medium text-slate-500">
-                  Graph: {graphScores.completenessScore?.toFixed(2) || 'N/A'}
+                  Graph: {graphScores.completenessScore?.toFixed(4) || 'N/A'}
                 </div>
-                {/* <div className="font-medium text-slate-500">
-                  Subgraph*: {visState.pinnedIds.length > 0 ? subgraphScores.completenessScore?.toFixed(2) : 'N/A'}
-                </div> */}
+                <div className="font-medium text-slate-500">
+                  Subgraph*: {visState.pinnedIds.length > 0 ? subgraphScores.completenessScore?.toFixed(4) : 'N/A'}
+                </div>
               </div>
             </div>
           </div>
@@ -1386,6 +1476,36 @@ export default function Subgraph() {
               Please use a larger screen with a keyboard.
             </div>
           )}
+
+          <div className="absolute bottom-3 left-3 flex flex-col gap-x-1.5 gap-y-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={zoomIn}
+              className="h-8 w-8 flex-col items-center justify-center gap-y-[1px] whitespace-nowrap border-none bg-slate-100 px-0 text-[8px] font-medium leading-none text-slate-500 hover:bg-slate-200 hover:text-slate-600"
+              aria-label="Zoom In"
+            >
+              <ZoomInIcon className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={zoomOut}
+              className="h-8 w-8 flex-col items-center justify-center gap-y-[1px] whitespace-nowrap border-none bg-slate-100 px-0 text-[8px] font-medium leading-none text-slate-500 hover:bg-slate-200 hover:text-slate-600"
+              aria-label="Zoom Out"
+            >
+              <ZoomOutIcon className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={resetZoom}
+              className="h-8 w-8 flex-col items-center justify-center gap-y-[1px] whitespace-nowrap border-none bg-slate-100 px-0 text-[8px] font-medium leading-none text-slate-500 hover:bg-slate-200 hover:text-slate-600"
+              aria-label="Reset Zoom"
+            >
+              <Fullscreen className="h-4 w-4" />
+            </Button>
+          </div>
 
           <div className="absolute right-3 top-3 flex flex-col gap-x-2 gap-y-2">
             <Button

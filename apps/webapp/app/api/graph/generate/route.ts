@@ -1,9 +1,8 @@
 import { CLTGraph } from '@/app/[modelId]/graph/graph-types';
 import { ATTRIBUTION_GRAPH_SCHEMA, makeGraphPublicAccessGraphUrl, NP_GRAPH_BUCKET } from '@/app/[modelId]/graph/utils';
 import { prisma } from '@/lib/db';
-import { getGraphServerRunpodHostForSourceSet } from '@/lib/db/graph-host-source';
+import { getGraphServerRunpodHostForSourceSet, getIsRunpodServerlessHostForSourceSet } from '@/lib/db/graph-host-source';
 import { getModelById } from '@/lib/db/model';
-import { USE_RUNPOD_GRAPH } from '@/lib/env';
 import {
   checkRunpodQueueJobs,
   generateGraphAndUploadToS3,
@@ -276,7 +275,8 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
     });
 
     // check the queue
-    if (USE_RUNPOD_GRAPH) {
+    const isRunpodServerlessHost = await getIsRunpodServerlessHostForSourceSet(validatedData.modelId, validatedData.sourceSetName);
+    if (isRunpodServerlessHost) {
       const host = await getGraphServerRunpodHostForSourceSet(validatedData.modelId, validatedData.sourceSetName);
       if (!host) {
         throw new Error('No runpod serverless host found.');

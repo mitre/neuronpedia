@@ -178,9 +178,6 @@ export default function GraphToolbar() {
                       {globalModels[selectedModelId].owner}
                     </div>
                   )}
-                  {ANTHROPIC_MODELS.has(selectedModelId) && (
-                    <div className="w-full text-[9px] font-normal text-slate-400">Anthropic</div>
-                  )}
                 </div>
               </Select.Value>
               <Select.Icon>
@@ -219,9 +216,6 @@ export default function GraphToolbar() {
                               >
                                 {globalModels[modelId].owner}
                               </div>
-                            )}
-                            {ANTHROPIC_MODELS.has(modelId) && (
-                              <div className="w-full text-[9px] font-normal text-slate-400">Anthropic</div>
                             )}
                           </div>
                         </div>
@@ -430,7 +424,9 @@ export default function GraphToolbar() {
                       .filter((graph) => graph.sourceSetName === selectedSourceSetName);
                     const featuredGraphs = allVisibleGraphs
                       .filter((graph) => graph.isFeatured && session.data?.user?.id !== graph.userId)
-                      .filter((graph) => graph.sourceSetName === selectedSourceSetName);
+                      .filter(
+                        (graph) => graph.sourceSetName === selectedSourceSetName || ANTHROPIC_MODELS.has(graph.modelId),
+                      );
                     // the currently selected graph
                     const otherSelectedGraph =
                       selectedMetadataGraph &&

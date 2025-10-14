@@ -1,3 +1,7 @@
+// this updates the apple client secret every 6 months
+// from /webapp directory, run:
+// env $(cat .env.prod | grep -v '^#' | xargs) node scripts/apple-gen-secret.js
+
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const fs = require('fs');

@@ -205,7 +205,7 @@ def handler(event):
     # Check request type
     request_type = event.get("input", {}).get("request_type", "graph")
 
-    if request_type == "forward_pass":
+    if request_type == "forward-pass":
         return forward_pass_handler(event)
     elif request_type == "graph":
         return graph_generation_handler(event)
@@ -529,9 +529,10 @@ def graph_generation_handler(event):
             "creator_name": user_id if user_id else "Anonymous (CT)",
             "creator_url": "https://neuronpedia.org",
             "source_urls": ["https://huggingface.co/mwhanna/qwen3-4b-transcoders"],
+            "transcoder_set": "mwhanna/qwen3-4b-transcoders",
             "generator": {
                 "name": "circuit-tracer by Hanna & Piotrowski",
-                "version": "0.2.0 | 3976e39",
+                "version": "0.2.0 | e4a3c5a",
                 "url": "https://github.com/safety-research/circuit-tracer",
             },
             "create_time_ms": current_time_ms,

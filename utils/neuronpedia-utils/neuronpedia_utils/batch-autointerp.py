@@ -37,6 +37,7 @@ from neuron_explainer.activations.activations import ActivationRecord
 from neuron_explainer.api_client import ApiClient
 from neuron_explainer.explanations.explainer import (
     AttentionHeadExplainer,
+    MaxActivationAndLogitsGeneralExplainer,
     MaxActivationAndLogitsExplainer,
     MaxActivationExplainer,
     TokenActivationPairExplainer,
@@ -55,6 +56,7 @@ VALID_EXPLAINER_TYPE_NAMES = [
     "oai_attention-head",
     "np_max-act-logits",
     "np_max-act",
+    "np_acts-logits-general",
 ]
 
 # you can change this yourself if you want to experiment with other models
@@ -63,12 +65,16 @@ VALID_EXPLAINER_MODEL_NAMES = [
     "gpt-4.1-nano",
     "gemini-2.0-flash",
     "gemini-2.0-flash-lite",
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
 ]
 
 # GEMINI SUPPORT
 GEMINI_MODEL_NAMES = [
     "gemini-2.0-flash",
     "gemini-2.0-flash-lite",
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
 ]
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
@@ -197,8 +203,10 @@ async def call_autointerp_openai_for_activations(
             )
             explanations = await asyncio.wait_for(
                 explainer.generate_explanations(
+                    max_tokens=2000,
                     all_activation_records=activationRecords,
                     num_samples=1,
+                    reasoning_effort=REASONING_EFFORT,
                 ),
                 timeout=20,
             )
@@ -218,12 +226,52 @@ async def call_autointerp_openai_for_activations(
             )
             explanations = await asyncio.wait_for(
                 explainer.generate_explanations(
+                    max_tokens=2000,
                     all_activation_records=activationRecords,
                     max_activation=calculate_max_activation(activationRecords),
                     num_samples=1,
+                    reasoning_effort=REASONING_EFFORT,
                 ),
                 timeout=20,
             )
+        elif EXPLAINER_TYPE_NAME == "np_acts-logits-general":
+            for activation in activations_sorted_by_max_value:
+                activationRecord = ActivationRecord(
+                    tokens=replace_html_anomalies_and_special_chars(activation.tokens),
+                    activations=activation.values,
+                )
+                activationRecords.append(activationRecord)
+            explainer = MaxActivationAndLogitsGeneralExplainer(
+                model_name=model_name,
+                prompt_format=PromptFormat.HARMONY_V4,
+                max_concurrent=1,
+                base_api_url=base_api_url,
+                override_api_key=override_api_key,
+            )
+            try:
+                explanations = await asyncio.wait_for(
+                    explainer.generate_explanations(
+                        all_activation_records=activationRecords,
+                        max_tokens=2000,
+                        max_activation=calculate_max_activation(activationRecords),
+                        top_positive_logits=replace_html_anomalies_and_special_chars(
+                            feature.pos_str
+                        ),
+                        num_samples=1,
+                        reasoning_effort=REASONING_EFFORT,
+                    ),
+                    timeout=20,
+                )
+            except Exception as e:
+                print(
+                    f"Error in MaxActivationAndLogitsGeneralExplainer.generate_explanations for feature index {feature_index}:"
+                )
+                print(f"Exception type: {type(e).__name__}")
+                print(f"Exception message: {str(e)}")
+                import traceback
+
+                print(f"Traceback: {traceback.format_exc()}")
+                raise  # Re-raise to be caught by the outer try-except block
         elif EXPLAINER_TYPE_NAME == "np_max-act-logits":
             for activation in activations_sorted_by_max_value:
                 activationRecord = ActivationRecord(
@@ -242,12 +290,13 @@ async def call_autointerp_openai_for_activations(
                 explanations = await asyncio.wait_for(
                     explainer.generate_explanations(
                         all_activation_records=activationRecords,
-                        max_tokens=200,
+                        max_tokens=2000,
                         max_activation=calculate_max_activation(activationRecords),
                         top_positive_logits=replace_html_anomalies_and_special_chars(
                             feature.pos_str
                         ),
                         num_samples=1,
+                        reasoning_effort=REASONING_EFFORT,
                     ),
                     timeout=20,
                 )
@@ -279,9 +328,10 @@ async def call_autointerp_openai_for_activations(
                 explanations = await asyncio.wait_for(
                     explainer.generate_explanations(
                         all_activation_records=activationRecords,
-                        max_tokens=200,
+                        max_tokens=2000,
                         max_activation=calculate_max_activation(activationRecords),
                         num_samples=1,
+                        reasoning_effort=REASONING_EFFORT,
                     ),
                     timeout=20,
                 )
@@ -387,8 +437,10 @@ async def start(activations_dir: str):
         except (IndexError, ValueError):
             return 0  # Default value if parsing fails
 
+    # don't check subdirectories (eg)
     activations_files = sorted(
-        glob.glob(os.path.join(activations_dir, "*.gz")), key=get_batch_number
+        [f for f in glob.glob(os.path.join(activations_dir, "*.gz")) if os.path.dirname(f) == activations_dir],
+        key=get_batch_number
     )
 
     print(f"got activations files: {len(activations_files)} files")
@@ -418,8 +470,10 @@ async def start(activations_dir: str):
                     activation_json = json.loads(line)
                     activation = Activation.from_dict(activation_json)
                     if int(activation.index) < START_INDEX:
+                        # print(f"Skipping activation {activation.index} because it's less than START_INDEX {START_INDEX}")
                         continue
                     if END_INDEX is not None and int(activation.index) > END_INDEX:
+                        # print(f"Skipping activation {activation.index} because it's greater than END_INDEX {END_INDEX}")
                         continue
                     if IGNORE_FIRST_N_TOKENS > 0:
                         activation.tokens = activation.tokens[IGNORE_FIRST_N_TOKENS:]
@@ -434,6 +488,7 @@ async def start(activations_dir: str):
                         and len(FAILED_FEATURE_INDEXES_QUEUED) > 0
                         and int(activation.index) not in FAILED_FEATURE_INDEXES_QUEUED
                     ):
+                        # print(f"Skipping activation {activation.index} because it's not in FAILED_FEATURE_INDEXES_QUEUED {FAILED_FEATURE_INDEXES_QUEUED}")
                         continue
                     # turn activation into a string and check if it's duplicate
                     activation_text = "".join(activation.tokens)
@@ -463,6 +518,7 @@ async def start(activations_dir: str):
                     # enqueue it
                     # if features_by_index doesn't have "index", skip
                     if index not in features_by_index:
+                        # print(f"Skipping activation {index} because it's not in features_by_index {features_by_index}")
                         continue
                     task = asyncio.create_task(
                         enqueue_autointerp_openai_task_with_activations(
@@ -493,6 +549,7 @@ class AutoInterpConfig:
     end_index: int | None
     explainer_model_name: str
     explainer_type_name: str
+    reasoning_effort: str | None
     max_top_activations_to_show_explainer_per_feature: int
     autointerp_batch_size: int
     gzip_output: bool
@@ -528,6 +585,10 @@ def main(
         help="The type name of the explainer - oai_token-act-pair or oai_attention-head",
         prompt=True,
     ),
+    reasoning_effort: str | None = typer.Option(
+        None,
+        help="The reasoning effort to use for the explainer, only works if the model is a reasoning model. Minimal, low, medium, high.",
+    ),
     max_top_activations_to_show_explainer_per_feature: int = typer.Option(
         20, help="Number of top activations to use for explanation"
     ),
@@ -562,7 +623,7 @@ def main(
             "GEMINI_API_KEY is not set even though you're using a Gemini model"
         )
 
-    global FAILED_FEATURE_INDEXES_QUEUED, INPUT_DIR_WITH_SOURCE_EXPORTS, START_INDEX, END_INDEX, EXPLAINER_MODEL_NAME, EXPLAINER_TYPE_NAME, MAX_TOP_ACTIVATIONS_TO_SHOW_EXPLAINER_PER_FEATURE, AUTOINTERP_BATCH_SIZE, EXPLANATIONS_OUTPUT_DIR, GZIP_OUTPUT, IGNORE_FIRST_N_TOKENS
+    global FAILED_FEATURE_INDEXES_QUEUED, INPUT_DIR_WITH_SOURCE_EXPORTS, START_INDEX, END_INDEX, EXPLAINER_MODEL_NAME, EXPLAINER_TYPE_NAME, MAX_TOP_ACTIVATIONS_TO_SHOW_EXPLAINER_PER_FEATURE, AUTOINTERP_BATCH_SIZE, EXPLANATIONS_OUTPUT_DIR, GZIP_OUTPUT, IGNORE_FIRST_N_TOKENS, REASONING_EFFORT
     INPUT_DIR_WITH_SOURCE_EXPORTS = input_dir_with_source_exports
     if not os.path.exists(INPUT_DIR_WITH_SOURCE_EXPORTS):
         raise ValueError(
@@ -583,6 +644,7 @@ def main(
 
     EXPLAINER_MODEL_NAME = explainer_model_name
     EXPLAINER_TYPE_NAME = explainer_type_name
+    REASONING_EFFORT = reasoning_effort
     MAX_TOP_ACTIVATIONS_TO_SHOW_EXPLAINER_PER_FEATURE = (
         max_top_activations_to_show_explainer_per_feature
     )
@@ -605,6 +667,7 @@ def main(
         end_index=END_INDEX,
         explainer_model_name=EXPLAINER_MODEL_NAME,
         explainer_type_name=EXPLAINER_TYPE_NAME,
+        reasoning_effort=REASONING_EFFORT,
         max_top_activations_to_show_explainer_per_feature=MAX_TOP_ACTIVATIONS_TO_SHOW_EXPLAINER_PER_FEATURE,
         autointerp_batch_size=AUTOINTERP_BATCH_SIZE,
         gzip_output=gzip_output,

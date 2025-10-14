@@ -1272,11 +1272,12 @@ export default function GenerateGraphModal({ showGenerateModal }: { showGenerate
                         slug: '',
                       },
                     });
-                    setGraphTokenizeResponse(null);
-                    setEstimatedTime(null);
-                    setError(null);
-                    setChatPrompts([]);
                   }
+                  setGenerationResult(null);
+                  setGraphTokenizeResponse(null);
+                  setEstimatedTime(null);
+                  setError(null);
+                  setChatPrompts([]);
                 }}
                 disabled={isGenerating}
                 className="flex items-center justify-center gap-x-1.5 text-xs"

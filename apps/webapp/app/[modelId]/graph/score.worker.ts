@@ -29,7 +29,7 @@ function computeInfluence(A: number[][], logitWeights: number[], maxIter: number
   const influence = [...currentInfluence];
   let iterations = 0;
 
-  while (currentInfluence.some((val) => Math.abs(val) > 1e-10)) {
+  while (currentInfluence.some((val) => val !== 0)) {
     if (iterations >= maxIter) {
       throw new Error(`Influence computation failed to converge after ${iterations} iterations`);
     }
@@ -100,45 +100,72 @@ function computeGraphScoresFromGraphData(
   graphData: WorkerGraph,
   pinnedIds: string[] = [],
 ): { replacementScore: number; completenessScore: number } {
-  let graphNodesToUse = graphData.nodes;
-  if (pinnedIds.length > 0) {
-    const pinnedNodes = graphData.nodes.filter((node) => pinnedIds.includes(node.node_id));
-    const filteredGraphNodes: CLTGraphNode[] = graphData.nodes.filter((node) => {
-      if (node.feature_type === 'cross layer transcoder') {
-        return pinnedIds.includes(node.node_id);
-      }
-      if (node.feature_type === 'mlp reconstruction error') {
-        return pinnedNodes.some((pinnedNode) =>
-          graphData.links.some(
-            (l) =>
-              (l.source === node.node_id && l.target === pinnedNode.node_id) ||
-              (l.source === pinnedNode.node_id && l.target === node.node_id),
-          ),
-        );
-      }
-      return true;
-    });
-    graphNodesToUse = filteredGraphNodes;
-    if (graphNodesToUse.filter((node) => node.feature_type === 'cross layer transcoder').length === 0) {
-      return { replacementScore: 0, completenessScore: 0 };
-    }
-  }
+  const graphNodesToUse = graphData.nodes;
 
   const { matrix: adjacencyMatrix, sortedNodes } = reconstructAdjacencyMatrix(graphNodesToUse, graphData.links);
 
-  const logitProbabilities = graphNodesToUse.filter((n) => n.feature_type === 'logit').map((n) => n.token_prob);
-  const nLogits = logitProbabilities.length;
-  const nTokens = graphNodesToUse.filter((n) => n.feature_type === 'embedding').length;
-  const nFeatures = graphNodesToUse.filter((n) => n.feature_type === 'cross layer transcoder').length;
+  // Helper to zero a row and its corresponding column by index
+  const zeroRowAndColumn = (idx: number) => {
+    for (let c = 0; c < adjacencyMatrix.length; c += 1) {
+      adjacencyMatrix[idx][c] = 0;
+    }
+    for (let r = 0; r < adjacencyMatrix.length; r += 1) {
+      adjacencyMatrix[r][idx] = 0;
+    }
+  };
+
+  // If pinnedIds provided, merge non-pinned feature nodes into their corresponding error nodes
+  if (pinnedIds.length > 0) {
+    const pinnedSet = new Set(pinnedIds);
+
+    // Build a lookup from (layer, ctx_idx) to error node index in sortedNodes
+    const errorIndexByKey: Record<string, number> = {};
+    sortedNodes.forEach((node, idx) => {
+      if (node.feature_type === 'mlp reconstruction error') {
+        const key = `${node.layer}|${node.ctx_idx}`;
+        errorIndexByKey[key] = idx;
+      }
+    });
+
+    sortedNodes.forEach((node, featureIdx) => {
+      if (node.feature_type !== 'cross layer transcoder') return;
+      if (pinnedSet.has(node.node_id)) return; // keep pinned features
+
+      const key = `${node.layer}|${node.ctx_idx}`;
+      const errorIdx = errorIndexByKey[key];
+      if (errorIdx === undefined) {
+        // No matching error node found; just zero out the feature node
+        zeroRowAndColumn(featureIdx);
+        return;
+      }
+
+      // Merge outgoing edges (column) of feature into error node's column
+      for (let r = 0; r < adjacencyMatrix.length; r += 1) {
+        adjacencyMatrix[r][errorIdx] += adjacencyMatrix[r][featureIdx];
+      }
+
+      // Zero both incoming and outgoing edges for the feature node
+      zeroRowAndColumn(featureIdx);
+    });
+  }
+
+  // Derive counts from sortedNodes to align with adjacency order
+  const nFeatures = sortedNodes.filter((n) => n.feature_type === 'cross layer transcoder').length;
+  const nErrorNodes = sortedNodes.filter((n) => n.feature_type === 'mlp reconstruction error').length;
+  const nTokens = sortedNodes.filter((n) => n.feature_type === 'embedding').length;
+  const nLogits = sortedNodes.filter((n) => n.feature_type === 'logit').length;
 
   const errorStart = nFeatures;
-  const embeddingIndex = sortedNodes.findIndex((node) => node.feature_type === 'embedding');
-  const errorEnd = embeddingIndex !== -1 ? embeddingIndex : errorStart;
+  const errorEnd = errorStart + nErrorNodes;
   const tokenEnd = errorEnd + nTokens;
 
+  // Align logit weights with sortedNodes order so that the last indices match the correct logits
   const logitWeights = new Array(adjacencyMatrix.length).fill(0);
+  const sortedLogitProbs = sortedNodes
+    .filter((n) => n.feature_type === 'logit')
+    .map((n) => n.token_prob);
   for (let i = 0; i < nLogits; i += 1) {
-    logitWeights[adjacencyMatrix.length - nLogits + i] = logitProbabilities[i];
+    logitWeights[adjacencyMatrix.length - nLogits + i] = sortedLogitProbs[i];
   }
 
   const normalizedMatrix = normalizeMatrix(adjacencyMatrix);

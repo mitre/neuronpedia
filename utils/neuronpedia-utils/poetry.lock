@@ -239,14 +239,14 @@ tests-mypy = ["mypy (>=1.11.1) ; platform_python_implementation == \"CPython\" a
 
 [[package]]
 name = "automated-interpretability"
-version = "0.0.15"
+version = "0.0.17"
 description = "OpenAI and Neuronpedia's implementation of automated-interpretability, with some updates. Not officially affiliated with OpenAI."
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "automated_interpretability-0.0.15-py3-none-any.whl", hash = "sha256:549bce1702bec10df48846a725629e0515cfebe2c7087618dfb14eba1989071c"},
-    {file = "automated_interpretability-0.0.15.tar.gz", hash = "sha256:f8e61b56daf97a802fe6ed9536a4dc7af86caf7c2229ce5d7fd31ed4482e8f93"},
+    {file = "automated_interpretability-0.0.17-py3-none-any.whl", hash = "sha256:eb71562d7349197eb370338fd3b6052a60d2b1a8ad03d626fc8128fd68021965"},
+    {file = "automated_interpretability-0.0.17.tar.gz", hash = "sha256:ea9ec6124497363a3c8826943aa94b14d8be6a7c2cf78f5b5e0fb74d562a1292"},
 ]
 
 [package.dependencies]
@@ -5291,4 +5291,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "f79600c499b1cf805afb852ebb7d6d703ae54ceb81b1238c1e59897dd642618a"
+content-hash = "df06184ece95fd7615761460d41d161b23eacf2edd74bd913b968a0d085a2d1f"

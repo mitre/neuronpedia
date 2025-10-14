@@ -4,7 +4,6 @@ import {
   GRAPH_SERVER_SECRET,
   IS_DOCKER_COMPOSE,
   USE_LOCALHOST_GRAPH,
-  USE_RUNPOD_GRAPH,
 } from '../env';
 import { AuthenticatedUser } from '../with-user';
 import { userCanAccessModelAndSourceSet } from './userCanAccess';
@@ -58,8 +57,8 @@ export const getGraphServerRunpodHostForSourceSet = async (
   return host.graphHostSource.runpodServerlessUrl;
 };
 
-export const getAuthHeaderForGraphServerRequest = () => {
-  if (USE_RUNPOD_GRAPH) {
+export const getAuthHeaderForGraphServerRequest = (isRunpodServerlessHost: boolean) => {
+  if (isRunpodServerlessHost) {
     return {
       Authorization: `Bearer ${GRAPH_RUNPOD_SECRET}`,
       'x-secret-key': '',
@@ -71,8 +70,8 @@ export const getAuthHeaderForGraphServerRequest = () => {
   };
 };
 
-export const wrapRequestBodyForRunpodIfNeeded = (body: any) => {
-  if (USE_RUNPOD_GRAPH) {
+export const wrapRequestBodyForRunpodIfNeeded = (body: any, isRunpodServerlessHost: boolean) => {
+  if (isRunpodServerlessHost) {
     return {
       input: body,
     };
@@ -80,13 +79,18 @@ export const wrapRequestBodyForRunpodIfNeeded = (body: any) => {
   return body;
 };
 
-export const getGraphServerRequestUrlForSourceSet = async (modelId: string, sourceSetName: string, action: string) => {
+export const getGraphServerRequestUrlForSourceSet = async (modelId: string, sourceSetName: string, action: string, isRunpodServerlessHost: boolean) => {
   if (USE_LOCALHOST_GRAPH) {
     return `${LOCALHOST_GRAPH_HOST}/${action}`;
   }
-  if (USE_RUNPOD_GRAPH) {
+  if (isRunpodServerlessHost) {
     // for runpod the action is in the body
     return `${await getGraphServerRunpodHostForSourceSet(modelId, sourceSetName)}/runsync`;
   }
   return `${await getGraphServerHostForSourceSet(modelId, sourceSetName)}/${action}`;
+};
+
+export const getIsRunpodServerlessHostForSourceSet = async (modelId: string, sourceSetName: string) => {
+  const hosts = await getSourceSetGraphHosts(modelId, sourceSetName);
+  return hosts.every((h) => h.graphHostSource.runpodServerlessUrl);
 };
