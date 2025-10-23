@@ -71,7 +71,7 @@ export function EditProfileFormAutointerpKeyField({
             e.preventDefault();
             alert(keyMessage);
             const newKey = prompt(
-              "Your key will only be used for your requests and not for any other user's requests.\n\nIt is your responsibility to monitor your key's usage and to disable it when necessary.\n\nIf you agree with these terms, you can save your OpenRouter API key to Neuronpedia by pasting it below.\n\nIf you wish to remove your key, set it to blank.",
+              "Your key will only be used for your requests and not for any other user's requests.\n\nIt is your responsibility to monitor your key's usage and to disable it when necessary.\n\nIf you agree with these terms, you can save your API key to Neuronpedia by pasting it below.\n\nIf you wish to remove your key, set it to blank.",
             );
             if (newKey || newKey === '') {
               fetch(`/api/user/api-key-update`, {
