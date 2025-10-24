@@ -35,7 +35,7 @@ export const POST = withAuthedUser(async (request: RequestAuthedUser) => {
     try {
       const anthropic = new Anthropic({ apiKey: value });
       await anthropic.messages.create({
-        model: 'claude-3-5-sonnet-20240620',
+        model: 'claude-haiku-4-5',
         messages: [{ role: 'user', content: 'hi' }],
         max_tokens: 1,
         temperature: 0,
