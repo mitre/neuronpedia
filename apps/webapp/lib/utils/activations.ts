@@ -11,7 +11,7 @@ export const BOS_TOKENS = ['<bos>', '<|endoftext|>', '<|begin_of_text|>'];
 
 export const LINE_BREAK_REPLACEMENT_CHAR = '↵';
 
-export const ACTIVATION_PRECISION = 3;
+export const ACTIVATION_PRECISION = 4;
 
 export const ACTIVATION_DISPLAY_DEFAULT_CONTEXT_TOKENS = [
   { text: 'Stacked', size: 5 },
@@ -60,7 +60,7 @@ export const makeActivationBackgroundColorWithDFA = (
 ) => {
   const MINIMUM_OPACITY = 0.05;
   // const MIN_RATIO_TO_HIDE_DFA = 0.1; // if dfa is 10% of max DFA, hide it
-  const MINIMUM_THRESHOLD = 0.0005; // if DFA is lower than 0, hide it
+  const MINIMUM_THRESHOLD = 0.00005; // if DFA is lower than 0, hide it
 
   // make the act color for bottom of gradient
   const realMax = overallMaxValue;
