@@ -60,7 +60,7 @@ export const makeActivationBackgroundColorWithDFA = (
 ) => {
   const MINIMUM_OPACITY = 0.05;
   // const MIN_RATIO_TO_HIDE_DFA = 0.1; // if dfa is 10% of max DFA, hide it
-  const MINIMUM_THRESHOLD = 0.02; // if DFA is lower than 0, hide it
+  const MINIMUM_THRESHOLD = 0.0005; // if DFA is lower than 0, hide it
 
   // make the act color for bottom of gradient
   const realMax = overallMaxValue;
