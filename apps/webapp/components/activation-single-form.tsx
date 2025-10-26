@@ -203,7 +203,11 @@ export default function ActivationSingleForm({
                     color: makeActivationTextColor(1, 1, 0.5),
                   }}
                 >
-                  {activationResult.maxValue.toFixed(2)}
+                  {activationResult.maxValue.toFixed(2) === '0.00'
+                    ? activationResult.maxValue.toFixed(3) === '0.000'
+                      ? activationResult.maxValue.toFixed(4)
+                      : activationResult.maxValue.toFixed(3)
+                    : activationResult.maxValue.toFixed(2)}
                 </div>
               </div>
               <div className="max-h-72 flex-auto overflow-y-scroll px-3 text-sm sm:px-0">
