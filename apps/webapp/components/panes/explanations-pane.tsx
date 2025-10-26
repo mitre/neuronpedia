@@ -59,7 +59,7 @@ export default function ExplanationsPane({
   );
   const [selectedExplanationScoreModelType, setSelectedExplanationScoreModelType] = useState<
     ExplanationScoreModel | undefined
-  >(explanationScoreModelTypes.length > 0 ? explanationScoreModelTypes[0] : undefined);
+  >(explanationScoreModelTypes.length > 0 ? explanationScoreModelTypes.filter((type) => type.featured)[0] : undefined);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isExplaining, setIsExplaining] = useState(false);
 
