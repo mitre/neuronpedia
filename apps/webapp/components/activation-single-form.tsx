@@ -177,7 +177,7 @@ export default function ActivationSingleForm({
               variant="outline"
               onClick={() => {
                 window.open(
-                  `/${neuron.modelId}/steer?source=${neuron.layer}&index=${neuron.index}${neuron.activations && neuron.activations.length > 0 ? `&strength=${neuron.activations?.[0]?.maxValue ? ((neuron.activations?.[0]?.maxValue || 0) * DEFAULT_STEER_MULTIPLIER).toFixed(1) : 10}` : ''}`,
+                  `/${neuron.modelId}/steer?source=${neuron.layer}&index=${neuron.index}${neuron.activations && neuron.activations.length > 0 ? `&strength=${neuron.activations?.[0]?.maxValue ? Math.max((neuron.activations?.[0]?.maxValue || 0) * DEFAULT_STEER_MULTIPLIER, 0.25).toFixed(2) : 10}` : ''}`,
                   '_blank',
                 );
               }}
