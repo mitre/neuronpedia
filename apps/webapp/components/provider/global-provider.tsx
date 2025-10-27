@@ -65,6 +65,7 @@ export const [GlobalContext, useGlobalContext] = createContextWrapper<{
   explanationModels: ExplanationModelType[];
   explanationScoreTypes: ExplanationScoreType[];
   explanationScoreModelTypes: ExplanationScoreModel[];
+  isSimilarityMatrixEnabledForSourceSet: (modelId: string, sourceSet: string) => boolean;
 
   // User
   user: UserWithPartialRelations | undefined;
@@ -377,6 +378,14 @@ export default function GlobalProvider({
     return sourceSet.graphEnabled;
   };
 
+  const isSimilarityMatrixEnabledForSourceSet = (modelId: string, sourceSet: string) => {
+    const sourceSetObj = getSourceSet(modelId, sourceSet);
+    if (!sourceSetObj) {
+      return false;
+    }
+    return sourceSetObj.similarityMatrixEnabled;
+  };
+
   const refreshGlobal = () => {
     fetch('/api/global', {
       method: 'POST',
@@ -434,6 +443,7 @@ export default function GlobalProvider({
           explanationModels,
           explanationScoreTypes,
           explanationScoreModelTypes,
+          isSimilarityMatrixEnabledForSourceSet,
           signInModalOpen,
           setSignInModalOpen,
           showToastServerError,
@@ -474,6 +484,7 @@ export default function GlobalProvider({
           getHasGraphsSourceSetsForModelId,
           isGraphEnabledForSourceSet,
           isGraphEnabledForSource,
+          isSimilarityMatrixEnabledForSourceSet,
           globalModels,
           featureModalFeature,
           featureModalOpen,

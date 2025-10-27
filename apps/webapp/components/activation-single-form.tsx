@@ -8,7 +8,7 @@ import { NEXT_PUBLIC_URL } from '@/lib/env';
 import { BOS_TOKENS } from '@/lib/utils/activations';
 import { Activation } from '@prisma/client';
 import copy from 'copy-to-clipboard';
-import { Check, Copy, Joystick, Play, Share } from 'lucide-react';
+import { Check, Copy, Grid, Joystick, Play, Share } from 'lucide-react';
 import { NeuronWithPartialRelations } from 'prisma/generated/zod';
 import { useEffect, useState } from 'react';
 import ReactTextareaAutosize from 'react-textarea-autosize';
@@ -37,7 +37,13 @@ export default function ActivationSingleForm({
   embed?: boolean;
   hideSteer?: boolean;
 }) {
-  const { getSourceSet, showToastServerError, showToastMessage, isGraphEnabledForSource } = useGlobalContext();
+  const {
+    getSourceSet,
+    showToastServerError,
+    showToastMessage,
+    isGraphEnabledForSource,
+    isSimilarityMatrixEnabledForSourceSet,
+  } = useGlobalContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customText, setCustomText] = useState('');
   const [activationResult, setActivationResult] = useState<Activation | undefined>();
@@ -171,6 +177,18 @@ export default function ActivationSingleForm({
             </button>
           </div>
 
+          {neuron.sourceSet?.name && isSimilarityMatrixEnabledForSourceSet(neuron.modelId, neuron.sourceSet?.name) && (
+            <Button
+              className="flex h-auto flex-col gap-y-0.5 border-emerald-700 px-2.5 text-[11px] text-xs font-medium text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
+              variant="outline"
+              onClick={() => {
+                // window.open(`/${neuron.modelId}/similarity-matrix?source=${neuron.layer}&index=${neuron.index}`, '_blank');
+                console.log('Similarity matrix button clicked');
+              }}
+            >
+              <Grid className="h-4 w-4" /> Similarity Matrix
+            </Button>
+          )}
           {!hideSteer && !isGraphEnabledForSource(neuron.modelId, neuron.layer) && (
             <Button
               className="flex h-auto flex-col gap-y-0.5 border-emerald-700 px-2.5 text-[11px] text-xs font-medium text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
