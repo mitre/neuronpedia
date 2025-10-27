@@ -94,6 +94,13 @@ export const [GlobalContext, useGlobalContext] = createContextWrapper<{
   setFeatureModalFeature: (feature: NeuronWithPartialRelations) => void;
   featureModalopen: boolean;
   setFeatureModalOpen: (open: boolean) => void;
+
+  // UI - Similarity Matrix Modal
+  similarityMatrixModalOpen: boolean;
+  setSimilarityMatrixModalOpen: (open: boolean) => void;
+  setSimilarityMatrix: (feature: NeuronWithPartialRelations, text?: string) => void;
+  similarityMatrixFeature: NeuronWithPartialRelations | undefined;
+  similarityMatrixText: string;
 }>('GlobalContext');
 
 export default function GlobalProvider({
@@ -140,6 +147,9 @@ export default function GlobalProvider({
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [featureModalFeature, setFeatureModalFeature] = useState<NeuronWithPartialRelations>();
   const [featureModalOpen, setFeatureModalOpen] = useState(false);
+  const [similarityMatrixModalOpen, setSimilarityMatrixModalOpen] = useState(false);
+  const [similarityMatrixFeature, setSimilarityMatrixFeature] = useState<NeuronWithPartialRelations>();
+  const [similarityMatrixText, setSimilarityMatrixText] = useState<string>('');
 
   useEffect(() => {
     if (featureModalFeature && !featureModalFeature?.activations) {
@@ -176,6 +186,12 @@ export default function GlobalProvider({
       setToastMessage(message);
       setToastOpen(true);
     }, 100);
+  };
+
+  const setSimilarityMatrix = (feature: NeuronWithPartialRelations, text?: string) => {
+    setSimilarityMatrixFeature(feature);
+    setSimilarityMatrixText(text || '');
+    setSimilarityMatrixModalOpen(true);
   };
 
   const showToastServerError = () => {
@@ -462,6 +478,11 @@ export default function GlobalProvider({
           setFeatureModalFeature,
           featureModalopen: featureModalOpen,
           setFeatureModalOpen,
+          similarityMatrixModalOpen,
+          setSimilarityMatrix,
+          similarityMatrixFeature,
+          similarityMatrixText,
+          setSimilarityMatrixModalOpen,
         }),
         [
           bookmarks,
@@ -489,6 +510,11 @@ export default function GlobalProvider({
           featureModalFeature,
           featureModalOpen,
           releases,
+          similarityMatrixModalOpen,
+          similarityMatrixFeature,
+          similarityMatrixText,
+          setSimilarityMatrix,
+          setSimilarityMatrixModalOpen,
           showToastServerError,
           showUserPopover,
           signInModalOpen,

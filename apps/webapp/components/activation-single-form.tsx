@@ -6,6 +6,7 @@ import ActivationItem from '@/components/activation-item';
 import { useGlobalContext } from '@/components/provider/global-provider';
 import { NEXT_PUBLIC_URL } from '@/lib/env';
 import { BOS_TOKENS } from '@/lib/utils/activations';
+import { getSourceSetNameFromSource } from '@/lib/utils/source';
 import { Activation } from '@prisma/client';
 import copy from 'copy-to-clipboard';
 import { Check, Copy, Grid, Joystick, Play, Share } from 'lucide-react';
@@ -43,6 +44,7 @@ export default function ActivationSingleForm({
     showToastMessage,
     isGraphEnabledForSource,
     isSimilarityMatrixEnabledForSourceSet,
+    setSimilarityMatrix,
   } = useGlobalContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customText, setCustomText] = useState('');
@@ -177,21 +179,23 @@ export default function ActivationSingleForm({
             </button>
           </div>
 
-          {neuron.sourceSet?.name && isSimilarityMatrixEnabledForSourceSet(neuron.modelId, neuron.sourceSet?.name) && (
+          {isSimilarityMatrixEnabledForSourceSet(neuron.modelId, getSourceSetNameFromSource(neuron.layer)) && (
             <Button
-              className="flex h-auto flex-col gap-y-0.5 border-emerald-700 px-2.5 text-[11px] text-xs font-medium text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
+              className="flex h-auto flex-col gap-y-0.5 border-amber-700 px-1 text-[10.5px] font-medium text-amber-700 hover:bg-amber-50 hover:text-amber-800"
               variant="outline"
               onClick={() => {
                 // window.open(`/${neuron.modelId}/similarity-matrix?source=${neuron.layer}&index=${neuron.index}`, '_blank');
-                console.log('Similarity matrix button clicked');
+                // console.log('Similarity matrix button clicked');
+                setSimilarityMatrix(neuron, customText);
               }}
             >
-              <Grid className="h-4 w-4" /> Similarity Matrix
+              <Grid className="h-4 w-4" /> Sim Mat
             </Button>
           )}
+
           {!hideSteer && !isGraphEnabledForSource(neuron.modelId, neuron.layer) && (
             <Button
-              className="flex h-auto flex-col gap-y-0.5 border-emerald-700 px-2.5 text-[11px] text-xs font-medium text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
+              className="flex h-auto flex-col gap-y-0.5 border-emerald-700 px-2.5 text-[10.5px] font-medium text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
               variant="outline"
               onClick={() => {
                 window.open(

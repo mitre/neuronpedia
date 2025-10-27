@@ -44,6 +44,7 @@ from neuronpedia_inference.logging import initialize_logging
 from neuronpedia_inference.sae_manager import SAEManager  # noqa: F401
 from neuronpedia_inference.shared import STR_TO_DTYPE, Model  # noqa: F401
 from neuronpedia_inference.utils import checkCudaError
+from neuronpedia_inference.endpoints.util.similarity_matrix_pred import router as similarity_matrix_pred_router
 
 # Initialize logging at module level
 initialize_logging()
@@ -92,7 +93,7 @@ v1_router.include_router(activation_topk_by_token_router)
 v1_router.include_router(sae_topk_by_decoder_cossim_router)
 v1_router.include_router(sae_vector_router)
 v1_router.include_router(tokenize_router)
-
+v1_router.include_router(similarity_matrix_pred_router)
 app.include_router(v1_router)
 
 
