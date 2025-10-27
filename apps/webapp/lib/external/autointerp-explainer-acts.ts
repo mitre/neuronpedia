@@ -262,6 +262,7 @@ Explanation of neuron 5 behavior: `;
         max_completion_tokens: 4096,
         temperature: 1.0,
         top_p: 1.0,
+        reasoning_effort: 'low',
       });
       // console.log(
       //   `Tokens used - prompt: ${chatCompletion.usage?.prompt_tokens}, completion: ${chatCompletion.usage?.completion_tokens}, total: ${chatCompletion.usage?.total_tokens}`,

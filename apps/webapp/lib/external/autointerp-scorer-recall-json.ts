@@ -189,6 +189,7 @@ Only respond with in JSON with the format {"match": true, "reason": [reason why 
       max_tokens: 5000,
       response_format: { type: 'json_object' },
       temperature: 0,
+      reasoning_effort: 'low',
     });
     const matchResponse = chatCompletion.choices[0].message.content;
     // console.log("Tokens: " + activation.tokens?.join(""));
