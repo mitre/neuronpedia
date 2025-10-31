@@ -3119,37 +3119,33 @@ files = [
 
 [[package]]
 name = "sae-lens"
-version = "6.18.0"
+version = "6.20.1"
 description = "Training and Analyzing Sparse Autoencoders (SAEs)"
 optional = false
-python-versions = "^3.10"
+python-versions = "<4.0,>=3.10"
 groups = ["main"]
-files = []
-develop = false
+files = [
+    {file = "sae_lens-6.20.1-py3-none-any.whl", hash = "sha256:f0be54a8e43145d1cecf589f336a2a359e6da1356c14f487803d29141cddba49"},
+    {file = "sae_lens-6.20.1.tar.gz", hash = "sha256:4923b45d3af4e9aa04fc2a49dc41616c49be21135ac80fe56141cd3ab3829304"},
+]
 
 [package.dependencies]
-babe = "^0.0.7"
+babe = ">=0.0.7,<0.0.8"
 datasets = ">=3.1.0"
-nltk = "^3.8.1"
+nltk = ">=3.8.1,<4.0.0"
 plotly = ">=5.19.0"
 plotly-express = ">=0.4.1"
 python-dotenv = ">=1.0.1"
-pyyaml = "^6.0.1"
+pyyaml = ">=6.0.1,<7.0.0"
 safetensors = ">=0.4.2,<1.0.0"
-simple-parsing = "^0.1.6"
+simple-parsing = ">=0.1.6,<0.2.0"
 tenacity = ">=9.0.0"
-transformer-lens = "^2.16.1"
-transformers = "^4.38.1"
-typing-extensions = "^4.10.0"
+transformer-lens = ">=2.16.1,<3.0.0"
+transformers = ">=4.38.1,<5.0.0"
+typing-extensions = ">=4.10.0,<5.0.0"
 
 [package.extras]
 mamba = ["mamba-lens (>=0.0.4,<0.0.5)"]
-
-[package.source]
-type = "git"
-url = "https://github.com/canrager/SAELens.git"
-reference = "HEAD"
-resolved_reference = "cd68555648e531402d5854fa435bbc0b911e3a0e"
 
 [[package]]
 name = "safetensors"
@@ -4620,4 +4616,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "45ff58e10c661261f53130eb0da3941d446cc68cc4cfb874ec123282d233aabd"
+content-hash = "0f38d29662c37a59f1da39b3a279b2113ecfa51b88cf6cc8f433cec462973e5a"
