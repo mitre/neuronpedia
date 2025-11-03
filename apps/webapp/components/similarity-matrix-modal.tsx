@@ -209,7 +209,7 @@ export default function SimilarityMatrixModal() {
             >
               Done
             </button>
-            <Dialog.Title className="absolute left-1/2 top-[55%] -translate-x-1/2 -translate-y-1/2 text-center text-xs font-medium text-slate-700">
+            <Dialog.Title className="absolute left-1/2 top-[55%] -translate-x-1/2 -translate-y-1/2 text-center text-xs font-medium text-slate-500">
               Similarity Matrix -{' '}
               <span className="font-mono font-bold">
                 {similarityMatrixSource?.modelId} @ {similarityMatrixSource?.id}
@@ -323,7 +323,7 @@ export default function SimilarityMatrixModal() {
               className="flex flex-1 flex-col items-center justify-center overflow-hidden bg-white"
             >
               {loading && (
-                <div className="flex flex-col items-center justify-center gap-y-3 text-center text-sm text-slate-600">
+                <div className="flex flex-col items-center justify-center gap-y-3 text-center text-xs text-slate-500">
                   <LoadingSquare className="h-6 w-6 sm:h-8 sm:w-8" size={32} /> Loading similarity matrix…
                 </div>
               )}

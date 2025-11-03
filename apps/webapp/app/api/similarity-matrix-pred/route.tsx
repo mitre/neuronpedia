@@ -11,6 +11,8 @@ type RequestBody = {
   text: string;
 };
 
+const maxTextLength = 512;
+
 export const POST = withOptionalUser(async (request) => {
   let body: RequestBody;
   try {
@@ -22,6 +24,16 @@ export const POST = withOptionalUser(async (request) => {
   const { modelId, sourceId, text } = body || ({} as RequestBody);
   if (!modelId || !sourceId || !text) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+  }
+
+  // if text is longer than maxTextLength, return error
+  if (text.length > maxTextLength) {
+    return NextResponse.json(
+      {
+        error: `Text is too long. The maximum allowed is ${maxTextLength} characters. Your text is ${text.length} characters long.`,
+      },
+      { status: 400 },
+    );
   }
 
   try {

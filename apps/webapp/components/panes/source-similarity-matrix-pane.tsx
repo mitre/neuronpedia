@@ -30,7 +30,7 @@ export default function SourceSimilarityMatrixPane({ source }: { source: SourceW
                   setSimilarityMatrix(source, customText);
                 }
               }}
-              placeholder="Enter some text to generate a similarity matrix..."
+              placeholder="Enter some text to generate a similarity matrix, or just click 'Generate' to use a demo text."
               className="flex-1 rounded border border-slate-300 px-3 py-2 text-[13px] leading-normal text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
               rows={4}
             />
