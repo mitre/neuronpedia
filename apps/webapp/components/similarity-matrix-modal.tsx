@@ -75,7 +75,7 @@ export default function SimilarityMatrixModal() {
         return;
       }
 
-      const modelId = similarityMatrixSource.modelId;
+      const { modelId } = similarityMatrixSource;
       const sourceId = similarityMatrixSource.id;
 
       // Skip if text is blank
