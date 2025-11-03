@@ -15,6 +15,7 @@ from neuronpedia_inference_client.models.activation_single_post_request import (
     ActivationSinglePostRequest,
 )
 from transformer_lens import ActivationCache, HookedTransformer
+from transformer_lens.model_bridge import TransformerBridge
 
 from neuronpedia_inference.config import Config
 from neuronpedia_inference.sae_manager import SAEManager
@@ -158,9 +159,14 @@ def get_layer_num_from_sae_id(sae_id: str) -> int:
 
 
 def process_activations(
-    model: HookedTransformer, layer: str, index: int, tokens: torch.Tensor
+    model: HookedTransformer | TransformerBridge,
+    layer: str,
+    index: int,
+    tokens: torch.Tensor,
 ) -> ActivationSinglePost200ResponseActivation:
     sae_manager = SAEManager.get_instance()
+    if isinstance(model, TransformerBridge) and tokens.ndim == 1:
+        tokens = tokens.unsqueeze(0)
     _, cache = model.run_with_cache(tokens)
     hook_name = sae_manager.get_sae_hook(layer)
     sae_type = sae_manager.get_sae_type(layer)
@@ -212,7 +218,11 @@ def process_saelens_activations(
     hook_name: str,
     index: int,
 ) -> ActivationSinglePost200ResponseActivation:
-    feature_acts = sae.encode(cache[hook_name])
+    # if the cache[hook_name] is not on the same device as the sae, move it to the sae's device
+    cached_value = cache[hook_name]
+    if cached_value.device != sae.device:
+        cached_value = cached_value.to(sae.device)
+    feature_acts = sae.encode(cached_value)
     values = torch.transpose(feature_acts.squeeze(0), 0, 1)[index].detach().tolist()
     max_value = max(values)
     return ActivationSinglePost200ResponseActivation(

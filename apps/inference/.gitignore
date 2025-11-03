@@ -180,3 +180,5 @@ saes.backup.*
 logs/
 
 docker_configs/
+
+ignore_this_test.py

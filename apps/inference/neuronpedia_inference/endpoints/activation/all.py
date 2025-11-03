@@ -16,6 +16,7 @@ from neuronpedia_inference_client.models.activation_all_post_request import (
     ActivationAllPostRequest,
 )
 from transformer_lens import ActivationCache
+from transformer_lens.model_bridge import TransformerBridge
 
 from neuronpedia_inference.config import Config
 from neuronpedia_inference.sae_manager import SAEManager
@@ -168,6 +169,8 @@ class ActivationProcessor:
         str_tokens = model.to_str_tokens(text, prepend_bos=prepend_bos)
 
         with torch.no_grad():
+            if isinstance(model, TransformerBridge) and tokens.ndim == 1:
+                tokens = tokens.unsqueeze(0)
             if max_layer:
                 _, cache = model.run_with_cache(tokens, stop_at_layer=max_layer)
             else:

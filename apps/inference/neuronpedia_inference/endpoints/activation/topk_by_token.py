@@ -16,6 +16,7 @@ from neuronpedia_inference_client.models.activation_topk_by_token_post_request i
     ActivationTopkByTokenPostRequest,
 )
 from transformer_lens import ActivationCache
+from transformer_lens.model_bridge import TransformerBridge
 
 from neuronpedia_inference.config import Config
 from neuronpedia_inference.sae_manager import SAEManager
@@ -66,6 +67,8 @@ async def activation_topk_by_token(
         )
 
     str_tokens = model.to_str_tokens(prompt, prepend_bos=prepend_bos)
+    if isinstance(model, TransformerBridge) and tokens.ndim == 1:
+        tokens = tokens.unsqueeze(0)
     _, cache = model.run_with_cache(tokens)
 
     hook_name = sae_manager.get_sae_hook(source)

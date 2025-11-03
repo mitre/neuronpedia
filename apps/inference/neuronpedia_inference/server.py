@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from transformer_lens import HookedTransformer
 from transformer_lens.hook_points import HookPoint
+from transformer_lens.model_bridge.sources.transformers import boot
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from neuronpedia_inference.args import list_available_options, parse_env_and_args
@@ -44,7 +45,9 @@ from neuronpedia_inference.logging import initialize_logging
 from neuronpedia_inference.sae_manager import SAEManager  # noqa: F401
 from neuronpedia_inference.shared import STR_TO_DTYPE, Model  # noqa: F401
 from neuronpedia_inference.utils import checkCudaError
-from neuronpedia_inference.endpoints.util.similarity_matrix_pred import router as similarity_matrix_pred_router
+from neuronpedia_inference.endpoints.util.similarity_matrix_pred import (
+    router as similarity_matrix_pred_router,
+)
 
 # Initialize logging at module level
 initialize_logging()
@@ -100,6 +103,9 @@ app.include_router(v1_router)
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+
+USE_TLENS_BRIDGE = False
 
 
 @app.post("/initialize")
@@ -163,38 +169,56 @@ async def initialize(
         )
         Config._instance = config
 
-        logger.info("Loading model...")
+        if USE_TLENS_BRIDGE == False:
+            logger.info("Loading model...")
 
-        hf_model = None
-        hf_tokenizer = None
-        if custom_hf_model_id is not None:
-            logger.info("Loading custom HF model: %s", custom_hf_model_id)
-            hf_model = AutoModelForCausalLM.from_pretrained(
-                custom_hf_model_id,
-                torch_dtype=STR_TO_DTYPE[config.model_dtype],
+            hf_model = None
+            hf_tokenizer = None
+            if custom_hf_model_id is not None:
+                logger.info("Loading custom HF model: %s", custom_hf_model_id)
+                hf_model = AutoModelForCausalLM.from_pretrained(
+                    custom_hf_model_id,
+                    torch_dtype=STR_TO_DTYPE[config.model_dtype],
+                )
+                hf_tokenizer = AutoTokenizer.from_pretrained(custom_hf_model_id)
+
+            model = HookedTransformer.from_pretrained_no_processing(
+                (
+                    config.override_model_id
+                    if config.override_model_id
+                    else config.model_id
+                ),
+                device=args.device,
+                dtype=STR_TO_DTYPE[config.model_dtype],
+                n_devices=device_count,
+                hf_model=hf_model,
+                **({"hf_config": hf_model.config} if hf_model else {}),
+                tokenizer=hf_tokenizer,
+                **config.model_kwargs,
             )
-            hf_tokenizer = AutoTokenizer.from_pretrained(custom_hf_model_id)
 
-        model = HookedTransformer.from_pretrained_no_processing(
-            (config.override_model_id if config.override_model_id else config.model_id),
-            device=args.device,
-            dtype=STR_TO_DTYPE[config.model_dtype],
-            n_devices=device_count,
-            hf_model=hf_model,
-            **({"hf_config": hf_model.config} if hf_model else {}),
-            tokenizer=hf_tokenizer,
-            **config.model_kwargs,
-        )
+            # add hook_in to mlp for transcoders
+            def add_hook_in_to_mlp(mlp):  # type: ignore
+                mlp.hook_in = HookPoint()
+                original_forward = mlp.forward
+                mlp.forward = lambda x: original_forward(mlp.hook_in(x))
 
-        # add hook_in to mlp for transcoders
-        def add_hook_in_to_mlp(mlp):  # type: ignore
-            mlp.hook_in = HookPoint()
-            original_forward = mlp.forward
-            mlp.forward = lambda x: original_forward(mlp.hook_in(x))
+            for block in model.blocks:
+                add_hook_in_to_mlp(block.mlp)
+            model.setup()
+        else:
+            # Load the model utilizing the new transformerlens bridge
+            model = boot(
+                model_name=(
+                    config.override_model_id
+                    if config.override_model_id
+                    else config.model_id
+                ),
+                device=args.device,
+                dtype=STR_TO_DTYPE[config.model_dtype],
+            )
 
-        for block in model.blocks:
-            add_hook_in_to_mlp(block.mlp)
-        model.setup()
+            model.enable_compatibility_mode(no_processing=True)
 
         Model._instance = model
         config.set_num_layers(model.cfg.n_layers)
@@ -208,9 +232,7 @@ async def initialize(
                 + model.tokenizer.additional_special_tokens_ids
             )
             special_token_ids = {
-                tid
-                for tid in special_token_ids
-                if tid is not None  # type: ignore
+                tid for tid in special_token_ids if tid is not None  # type: ignore
             }
             # cache this one time for steering later use
             config.set_steer_special_token_ids(special_token_ids)  # type: ignore
