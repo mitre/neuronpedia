@@ -10,7 +10,7 @@ import { getSourceSetNameFromSource } from '@/lib/utils/source';
 import { Activation } from '@prisma/client';
 import copy from 'copy-to-clipboard';
 import { Check, Copy, Grid, Joystick, Play, Share } from 'lucide-react';
-import { NeuronWithPartialRelations } from 'prisma/generated/zod';
+import { NeuronWithPartialRelations, SourceWithPartialRelations } from 'prisma/generated/zod';
 import { useEffect, useState } from 'react';
 import ReactTextareaAutosize from 'react-textarea-autosize';
 import { Button } from './shadcn/button';
@@ -179,19 +179,18 @@ export default function ActivationSingleForm({
             </button>
           </div>
 
-          {isSimilarityMatrixEnabledForSourceSet(neuron.modelId, getSourceSetNameFromSource(neuron.layer)) && (
-            <Button
-              className="flex h-auto flex-col gap-y-0.5 border-amber-700 px-1 text-[10.5px] font-medium text-amber-700 hover:bg-amber-50 hover:text-amber-800"
-              variant="outline"
-              onClick={() => {
-                // window.open(`/${neuron.modelId}/similarity-matrix?source=${neuron.layer}&index=${neuron.index}`, '_blank');
-                // console.log('Similarity matrix button clicked');
-                setSimilarityMatrix(neuron, customText);
-              }}
-            >
-              <Grid className="h-4 w-4" /> Sim Mat
-            </Button>
-          )}
+          {isSimilarityMatrixEnabledForSourceSet(neuron.modelId, getSourceSetNameFromSource(neuron.layer)) &&
+            neuron.source && (
+              <Button
+                className="flex h-auto flex-col gap-y-0.5 border-amber-700 px-1 text-[10.5px] font-medium text-amber-700 hover:bg-amber-50 hover:text-amber-800"
+                variant="outline"
+                onClick={() => {
+                  setSimilarityMatrix(neuron.source as SourceWithPartialRelations, customText);
+                }}
+              >
+                <Grid className="h-4 w-4" /> Sim Mat
+              </Button>
+            )}
 
           {!hideSteer && !isGraphEnabledForSource(neuron.modelId, neuron.layer) && neuron.modelId !== 'gpt-oss-20b' && (
             <Button

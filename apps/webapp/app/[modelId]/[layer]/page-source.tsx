@@ -5,6 +5,7 @@ import SAEEvalsPane from '@/components/panes/sae-evals-pane/sae-evals-pane';
 import SearchExplanationsPane from '@/components/panes/search-explanations-pane';
 import SearchInferenceSourcePane from '@/components/panes/search-inference-source-pane';
 import SearchTopkByTokenPane from '@/components/panes/search-topk-by-token-pane';
+import SourceSimilarityMatrixPane from '@/components/panes/source-similarity-matrix-pane';
 import UmapPane from '@/components/panes/umap-pane';
 import { BreadcrumbItem, BreadcrumbLink } from '@/components/shadcn/breadcrumbs';
 import { getVisibilityBadge } from '@/components/visibility-badge';
@@ -111,6 +112,8 @@ export default function PageSource({ source }: { source: SourceWithRelations }) 
               <SaeLensConfigPane inSAEPage sae={source as SourceWithPartialRelations} />
             </div>
           </div>
+
+          {source.set?.similarityMatrixEnabled && <SourceSimilarityMatrixPane source={source} />}
 
           {source.inferenceEnabled && (
             <SearchInferenceSourcePane

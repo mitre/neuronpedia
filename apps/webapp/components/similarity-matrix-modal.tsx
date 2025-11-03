@@ -1,12 +1,36 @@
 'use client';
 
 import { useGlobalContext } from '@/components/provider/global-provider';
-import { replaceHtmlAnomalies } from '@/lib/utils/activations';
 import * as Dialog from '@radix-ui/react-dialog';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { LoadingSquare } from './svg/loading-square';
+
+// Demo button configurations
+const DEMO_BUTTONS = [
+  {
+    label: 'Alice & Maya Story',
+    text: "Once upon a time, a little girl named Alice loved looking at the night sky. 'I wish I could count all the stars!' Alice said to her best friend Maya. The two girls stood on a big grass field as the moon rose from the trees. Suddenly, Maya had a striking idea. She opened her laptop and started typing:\n```python\narray = []\nfor i in range(1, 6):\n    s = int(input(f'num_stars:'))\n    array.append(s)\ntot = sum(array)\navg = tot / len(array)\nprint(f'Avg / night: {avg:.1f}')",
+  },
+  {
+    label: 'Mechanistic Interpretability',
+    text: 'Mechanistic interpretability (often abbreviated as mech interp, mechinterp, or MI) is a subfield of research within explainable artificial intelligence that aims to understand the internal workings of neural networks by analyzing the mechanisms present in their computations. The approach seeks to analyze neural networks in a manner similar to how binary computer programs can be reverse-engineered to understand their functions.',
+  },
+  {
+    label: 'Obama Ice Cream',
+    text: 'In a LinkedIn post published today, President Obama announced his "Summer Opportunity Project" by talking about his first job: scooping ice cream.\n\n"Scooping ice cream is tougher than it looks. Rows and rows of rock-hard ice cream can be brutal on the wrists," he wrote. "As a teenager working behind the counter at Baskin-Robbins in Honolulu, I was less interested in what the job meant for my future and more concerned about what it meant for my jump shot."',
+  },
+  {
+    label: 'Huckleberry Finn',
+    text: "You don't know about me without you have read a book by the name of The Adventures of Tom Sawyer; but that ain't no matter.  That book was made by Mr. Mark Twain, and he told the truth, mainly.  There was things which he stretched, but mainly he told the truth.  That is nothing.",
+  },
+  {
+    label: 'Dr. Seuss',
+    text: "You have brains in your head.\nYou have feet in your shoes.\nYou can steer yourself in any direction you choose.\nYou're on your own.\nAnd you know what you know.\nYou are the guy who'll decide where to go.\n~Dr. Seuss",
+  },
+];
 
 export default function SimilarityMatrixModal() {
-  const { similarityMatrixFeature, similarityMatrixText, similarityMatrixModalOpen, setSimilarityMatrixModalOpen } =
+  const { similarityMatrixSource, similarityMatrixText, similarityMatrixModalOpen, setSimilarityMatrixModalOpen } =
     useGlobalContext();
 
   // State for tokens and similarity matrix
@@ -15,47 +39,117 @@ export default function SimilarityMatrixModal() {
   const [selectedToken, setSelectedToken] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [customText, setCustomText] = useState<string>(similarityMatrixText || DEMO_BUTTONS[0].text);
+  const [cellSize, setCellSize] = useState<number>(0);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Function to reset all state
+  const resetState = () => {
+    setTokens([]);
+    setSimilarityMatrix([]);
+    setSelectedToken(null);
+    setError(null);
+    setCustomText(DEMO_BUTTONS[0].text);
+    setLoading(false);
+  };
+
+  // Function to fetch similarity matrix
+  const fetchSimilarityMatrix = async (text: string) => {
+    try {
+      // Clear tokens and matrix immediately
+      setTokens([]);
+      setSimilarityMatrix([]);
+      setLoading(true);
+      setError(null);
+      setSelectedToken(null);
+
+      if (!similarityMatrixSource?.modelId) {
+        alert('No model ID found for similarity matrix source');
+        setLoading(false);
+        return;
+      }
+      if (!similarityMatrixSource?.id) {
+        alert('No source ID found for similarity matrix source');
+        setLoading(false);
+        return;
+      }
+
+      const modelId = similarityMatrixSource.modelId;
+      const sourceId = similarityMatrixSource.id;
+
+      // Skip if text is blank
+      if (!text.trim()) {
+        setLoading(false);
+        return;
+      }
+
+      const resp = await fetch('/api/similarity-matrix-pred', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ modelId, sourceId, text }),
+      });
+      if (!resp.ok) {
+        const detail = await resp.text();
+        throw new Error(detail || 'Request failed');
+      }
+      const data = await resp.json();
+      const newTokens: string[] = data.tokens || [];
+      const matrix: number[][] = data.similarity_matrix || [];
+      setTokens(newTokens);
+      setSimilarityMatrix(matrix);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update customText when similarityMatrixText changes
+  useEffect(() => {
+    if (similarityMatrixText) {
+      setCustomText(similarityMatrixText);
+    }
+  }, [similarityMatrixText]);
 
   // Fetch similarity matrix from server when modal opens
   useEffect(() => {
     if (!similarityMatrixModalOpen) return;
-    const run = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        setSelectedToken(null);
-        const modelId = similarityMatrixFeature?.modelId || 'gemma-2-2b';
-        const sourceId = (similarityMatrixFeature?.layer as string) || '12-temporal-res';
-        const indexRaw = (similarityMatrixFeature?.index as unknown) ?? 0;
-        const index = typeof indexRaw === 'string' ? parseInt(indexRaw, 10) : (indexRaw as number);
-        const text =
-          similarityMatrixText && similarityMatrixText.trim().length > 0
-            ? similarityMatrixText
-            : 'The cat sat on the mat';
-
-        const resp = await fetch('/api/similarity-matrix-pred', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ modelId, sourceId, index, text }),
-        });
-        if (!resp.ok) {
-          const detail = await resp.text();
-          throw new Error(detail || 'Request failed');
-        }
-        const data = await resp.json();
-        const newTokens: string[] = data.tokens || [];
-        const matrix: number[][] = data.similarity_matrix || [];
-        setTokens(newTokens);
-        setSimilarityMatrix(matrix);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
-      } finally {
-        setLoading(false);
-      }
-    };
-    run();
+    fetchSimilarityMatrix(customText);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [similarityMatrixModalOpen, similarityMatrixFeature, similarityMatrixText]);
+  }, [similarityMatrixModalOpen, similarityMatrixSource]);
+
+  // Calculate cell size based on available height
+  useEffect(() => {
+    const calculateCellSize = () => {
+      if (!containerRef.current || tokens.length === 0) return;
+
+      const availableHeight = containerRef.current.clientHeight;
+      const availableWidth = containerRef.current.clientWidth;
+
+      // Account for padding and margins (32px padding on each side, plus some buffer)
+      const usableHeight = availableHeight - 32;
+      const usableWidth = availableWidth - 32;
+
+      // Calculate the maximum cell size that fits both dimensions
+      const maxCellSizeByHeight = Math.floor(usableHeight / tokens.length);
+      const maxCellSizeByWidth = Math.floor(usableWidth / tokens.length);
+
+      // Use the smaller of the two to ensure it fits
+      const calculatedSize = Math.min(maxCellSizeByHeight, maxCellSizeByWidth);
+
+      // Set maximum cell size only (no minimum)
+      const finalSize = Math.min(100, calculatedSize);
+
+      setCellSize(finalSize);
+    };
+
+    calculateCellSize();
+
+    // Recalculate on window resize
+    window.addEventListener('resize', calculateCellSize);
+    return () => window.removeEventListener('resize', calculateCellSize);
+  }, [tokens.length, similarityMatrix, similarityMatrixModalOpen]);
 
   // Magma color scheme interpolation
   const getMagmaColor = (value: number) => {
@@ -89,177 +183,218 @@ export default function SimilarityMatrixModal() {
     return `rgb(${r}, ${g}, ${b})`;
   };
 
-  const handleTokenClick = (index: number) => {
-    setSelectedToken(selectedToken === index ? null : index);
-  };
-
-  // Dynamic cell size based on number of tokens to maintain consistent grid size
-  const maxGridSize = 400; // Maximum size for the heatmap grid
-  const cellSize = Math.max(20, Math.min(70, maxGridSize / tokens.length));
-  const labelSize = 30;
-  const padding = 40;
-
   return (
     <Dialog.Root open={similarityMatrixModalOpen}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-slate-600/20" />
         <Dialog.Content
           onPointerDownOutside={() => {
+            resetState();
             setSimilarityMatrixModalOpen(false);
           }}
-          className="fixed left-[50%] top-[50%] z-50 flex h-[100vh] max-h-[100vh] w-[100vw] max-w-[100%] translate-x-[-50%] translate-y-[-50%] flex-col overflow-y-scroll bg-slate-50 shadow-xl focus:outline-none sm:top-[50%] sm:h-[90vh] sm:max-h-[90vh] sm:w-[95vw] sm:max-w-[95%] sm:rounded-md"
+          className="fixed left-[50%] top-[50%] z-50 flex h-[100vh] max-h-[100vh] w-[100vw] max-w-[100%] translate-x-[-50%] translate-y-[-50%] flex-col overflow-hidden bg-slate-50 shadow-xl focus:outline-none sm:top-[50%] sm:h-[90vh] sm:max-h-[90vh] sm:w-[95vw] sm:max-w-[95%] sm:rounded-md"
         >
-          <div className="sticky top-0 z-20 w-full flex-col items-center border-slate-300">
-            <div className="mb-0 flex w-full flex-row items-start justify-between gap-x-4 rounded-t-md border-b bg-white px-2 pb-2 pt-2 sm:px-4">
-              <button
-                type="button"
-                className="flex flex-row items-center justify-center gap-x-1 rounded-full bg-slate-300 px-3 py-1.5 text-[11px] text-slate-600 hover:bg-sky-700 hover:text-white focus:outline-none"
-                aria-label="Close"
-                onClick={() => {
-                  setSimilarityMatrixModalOpen(false);
-                }}
-              >
-                Done
-              </button>
-              <Dialog.Title className="absolute left-1/2 top-[55%] -translate-x-1/2 -translate-y-1/2 text-center text-xs font-medium text-slate-700">
-                Similarity Matrix
-              </Dialog.Title>
-            </div>
+          <div
+            className="relative flex w-full flex-row items-start justify-between gap-x-4 rounded-t-md border-b bg-white px-2 pb-2 pt-2 sm:px-4"
+            style={{ height: '45px' }}
+          >
+            <button
+              type="button"
+              className="flex flex-row items-center justify-center gap-x-1 rounded-full bg-slate-300 px-3 py-1.5 text-[11px] text-slate-600 hover:bg-sky-700 hover:text-white focus:outline-none"
+              aria-label="Close"
+              onClick={() => {
+                resetState();
+                setSimilarityMatrixModalOpen(false);
+              }}
+            >
+              Done
+            </button>
+            <Dialog.Title className="absolute left-1/2 top-[55%] -translate-x-1/2 -translate-y-1/2 text-center text-xs font-medium text-slate-700">
+              Similarity Matrix -{' '}
+              <span className="font-mono font-bold">
+                {similarityMatrixSource?.modelId} @ {similarityMatrixSource?.id}
+              </span>
+            </Dialog.Title>
           </div>
-          <div className="flex flex-1 flex-col overflow-x-auto overflow-y-auto bg-slate-50 p-0">
-            <div className="flex w-full flex-1 flex-col rounded-lg bg-white p-0 shadow-lg">
-              {loading && <div className="mb-6 pt-6 text-center text-sm text-gray-600">Loading similarity matrix…</div>}
-              {error && <div className="mb-6 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
+
+          {/* Text input and tokens - auto height */}
+
+          <div className="flex w-full flex-1 flex-row items-stretch justify-start overflow-hidden bg-white">
+            <div className="flex w-1/5 flex-shrink-0 flex-col gap-2 bg-slate-50 px-2 pb-3 pt-3 sm:px-4">
+              <div className="text-center text-sm font-medium text-slate-700">Instructions</div>
+              <ol className="list-decimal space-y-1 pl-4 text-xs text-slate-600">
+                <li>Type some text, ideally at least a sentence.</li>
+                <li>Click &quot;Generate&quot;.</li>
+                <li>Hover over tokens to highlight their matrix cell.</li>
+                <li>Hover over cells to see which token it&apos;s on.</li>
+              </ol>
+              <div className="mt-1 text-center text-sm font-medium text-slate-700">Click a Demo</div>
+              {DEMO_BUTTONS.map((demo, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    setCustomText(demo.text);
+                    fetchSimilarityMatrix(demo.text);
+                  }}
+                  disabled={customText === demo.text}
+                  className="rounded bg-sky-700 px-3 py-2.5 text-xs text-white hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {demo.label} {customText === demo.text ? '(Selected)' : ''}
+                </button>
+              ))}
+            </div>
+            <div className="flex w-1/3 flex-shrink-0 flex-wrap content-start items-start justify-start gap-1 gap-y-[3px] overflow-y-auto p-4">
+              <div className="flex w-full gap-2">
+                <textarea
+                  value={customText}
+                  onChange={(e) => setCustomText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      fetchSimilarityMatrix(customText);
+                    }
+                  }}
+                  placeholder="Enter some text, then click 'Generate'."
+                  className="flex-1 rounded border border-slate-300 px-3 py-2 text-[12px] leading-normal text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                  disabled={loading}
+                  rows={8}
+                />
+                <div className="flex w-[80px] flex-col gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => fetchSimilarityMatrix(customText)}
+                    disabled={loading || !customText.trim()}
+                    className="w-full flex-1 rounded bg-sky-700 px-2 py-2 text-xs font-medium text-white hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {loading ? 'Loading...' : 'Generate'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCustomText('');
+                      setTokens([]);
+                      setSimilarityMatrix([]);
+                      setSelectedToken(null);
+                      setError(null);
+                    }}
+                    disabled={loading}
+                    className="w-full flex-1 rounded bg-slate-600 px-2 py-2 text-xs font-medium text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+              {tokens.length > 0 && (
+                <div className="mt-4 flex w-full flex-shrink-0 flex-wrap content-start items-start justify-start gap-1 gap-y-[3px] overflow-y-auto border-t px-0 pt-4">
+                  {tokens.map((token, i) => (
+                    <div
+                      key={i}
+                      onMouseEnter={() => setSelectedToken(i)}
+                      onMouseLeave={() => setSelectedToken(null)}
+                      className={`cursor-default select-none rounded py-0.5 font-mono text-[10px] leading-tight transition-all ${
+                        selectedToken === i
+                          ? 'border border-sky-700 bg-sky-700 text-white'
+                          : 'border border-transparent bg-slate-100 text-slate-700 hover:bg-blue-100'
+                      } ${
+                        token.startsWith(' ') && token.endsWith(' ')
+                          ? 'px-2'
+                          : token.startsWith(' ')
+                            ? 'pl-2 pr-0.5'
+                            : token.endsWith(' ')
+                              ? 'pl-0.5 pr-2'
+                              : 'px-0.5'
+                      }`}
+                    >
+                      {token.includes('\n')
+                        ? token.replaceAll('\n', '↵')
+                        : token.trim() === ''
+                          ? token.replaceAll(' ', '\u00A0')
+                          : token}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Matrix container - takes remaining height */}
+            <div
+              ref={containerRef}
+              className="flex flex-1 flex-col items-center justify-center overflow-hidden bg-white"
+            >
+              {loading && (
+                <div className="flex flex-col items-center justify-center gap-y-3 text-center text-sm text-slate-600">
+                  <LoadingSquare className="h-6 w-6 sm:h-8 sm:w-8" size={32} /> Loading similarity matrix…
+                </div>
+              )}
+              {error && <div className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
 
               {!loading && !error && (
-                <div className="flex flex-1 items-center justify-center overflow-x-auto overflow-y-auto p-4 pt-12">
+                <div className="flex items-center justify-center">
                   <div className="inline-block">
-                    {/* Token boxes */}
-                    {/* <div className="mb-6 mt-4 flex justify-start gap-1">
-                      {tokens.map((token, i) => (
-                        <div
-                          key={i}
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => handleTokenClick(i)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              handleTokenClick(i);
-                            }
-                          }}
-                          className="cursor-pointer rounded bg-blue-100 px-2 py-1 text-center text-xs font-medium transition-all hover:bg-blue-200"
-                          style={{
-                            border: selectedToken === i ? '1px solid #3b82f6' : '1px solid #93c5fd',
-                          }}
-                        >
-                          {token}
-                        </div>
-                      ))}
-                    </div> */}
+                    {/* Heatmap */}
+                    <div className="flex">
+                      {/* Similarity matrix heatmap */}
+                      <div className="inline-block border-[0.5px] border-slate-400">
+                        {similarityMatrix.map((row, i) => (
+                          <div key={i} className="flex">
+                            {row.map((value, j) => {
+                              const isInSelectedRow = selectedToken !== null && i === selectedToken;
+                              const isInSelectedCol = selectedToken !== null && j === selectedToken;
+                              const isFirstInRow = j === 0;
+                              const isLastInRow = j === tokens.length - 1;
+                              const isFirstInCol = i === 0;
+                              const isLastInCol = i === tokens.length - 1;
 
-                    {/* Heatmap with axis labels */}
-                    <div className="mb-8 flex">
-                      {/* Y-axis labels */}
-                      <div className="flex flex-col justify-start" style={{ marginTop: `42px` }}>
-                        {tokens.map((token, i) => (
-                          <div
-                            key={`y-label-${i}`}
-                            className="flex items-center justify-end pr-2 text-[11px] text-gray-600"
-                            style={{ height: `${cellSize}px` }}
-                          >
-                            {replaceHtmlAnomalies(token)}
+                              const borderStyle = '0.5px solid rgba(0,0,0,0.2)';
+                              let borderTop = borderStyle;
+                              let borderBottom = borderStyle;
+                              let borderLeft = borderStyle;
+                              let borderRight = borderStyle;
+
+                              const highlightBorder = '2px solid #3b82f6';
+
+                              if (isInSelectedRow) {
+                                borderTop = highlightBorder;
+                                borderBottom = highlightBorder;
+                                if (isFirstInRow) borderLeft = highlightBorder;
+                                if (isLastInRow) borderRight = highlightBorder;
+                              }
+
+                              if (isInSelectedCol) {
+                                borderLeft = highlightBorder;
+                                borderRight = highlightBorder;
+                                if (isFirstInCol) borderTop = highlightBorder;
+                                if (isLastInCol) borderBottom = highlightBorder;
+                              }
+
+                              return (
+                                <div
+                                  key={`${i}-${j}`}
+                                  onMouseEnter={() => setSelectedToken(Math.min(i, j))}
+                                  onMouseLeave={() => setSelectedToken(null)}
+                                  className="flex items-center justify-center font-mono text-[9.5px] transition-all"
+                                  style={{
+                                    width: `${cellSize}px`,
+                                    height: `${cellSize}px`,
+                                    backgroundColor: getMagmaColor(value),
+                                    color: value > 0.5 ? 'black' : 'white',
+                                    borderTop,
+                                    borderBottom,
+                                    borderLeft,
+                                    borderRight,
+                                  }}
+                                >
+                                  {/* {value.toFixed(2)} */}
+                                </div>
+                              );
+                            })}
                           </div>
                         ))}
                       </div>
 
-                      {/* Heatmap container */}
-                      <div>
-                        {/* X-axis labels */}
-                        <div className="flex pb-2 pl-0" style={{ marginBottom: '4px' }}>
-                          {tokens.map((token, i) => (
-                            <div
-                              key={`x-label-${i}`}
-                              className="flex items-end justify-center text-start text-[10px] text-gray-600"
-                              style={{ width: `${cellSize}px`, height: `${labelSize}px` }}
-                            >
-                              <span
-                                className="inline-block -rotate-90 transform text-center"
-                                style={{ width: `${labelSize}px` }}
-                              >
-                                {replaceHtmlAnomalies(token)}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Similarity matrix heatmap */}
-                        <div className="inline-block border-2 border-gray-300">
-                          {similarityMatrix.map((row, i) => (
-                            <div key={i} className="flex">
-                              {row.map((value, j) => {
-                                const isInSelectedRow = selectedToken !== null && i === selectedToken;
-                                const isInSelectedCol = selectedToken !== null && j === selectedToken;
-                                const isFirstInRow = j === 0;
-                                const isLastInRow = j === tokens.length - 1;
-                                const isFirstInCol = i === 0;
-                                const isLastInCol = i === tokens.length - 1;
-
-                                const borderStyle = '1px solid rgba(255,255,255,0.3)';
-                                let borderTop = borderStyle;
-                                let borderBottom = borderStyle;
-                                let borderLeft = borderStyle;
-                                let borderRight = borderStyle;
-
-                                const highlightBorder = '5px solid #3b82f6';
-
-                                if (isInSelectedRow) {
-                                  borderTop = highlightBorder;
-                                  borderBottom = highlightBorder;
-                                  if (isFirstInRow) borderLeft = highlightBorder;
-                                  if (isLastInRow) borderRight = highlightBorder;
-                                }
-
-                                if (isInSelectedCol) {
-                                  borderLeft = highlightBorder;
-                                  borderRight = highlightBorder;
-                                  if (isFirstInCol) borderTop = highlightBorder;
-                                  if (isLastInCol) borderBottom = highlightBorder;
-                                }
-
-                                return (
-                                  <div
-                                    key={`${i}-${j}`}
-                                    role="button"
-                                    tabIndex={0}
-                                    onClick={() => handleTokenClick(Math.min(i, j))}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter' || e.key === ' ') {
-                                        handleTokenClick(Math.min(i, j));
-                                      }
-                                    }}
-                                    className="flex cursor-pointer items-center justify-center font-mono text-[9.5px] transition-all"
-                                    style={{
-                                      width: `${cellSize}px`,
-                                      height: `${cellSize}px`,
-                                      backgroundColor: getMagmaColor(value),
-                                      color: value > 0.5 ? 'black' : 'white',
-                                      borderTop,
-                                      borderBottom,
-                                      borderLeft,
-                                      borderRight,
-                                    }}
-                                  >
-                                    {/* {value.toFixed(2)} */}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
                       {/* Colorbar */}
-                      <div className="ml-6 flex hidden flex-col" style={{ marginTop: `${padding}px` }}>
+                      <div className="ml-6 hidden flex-col">
                         <div className="flex">
                           <div className="flex flex-col border-2 border-gray-300">
                             {Array.from({ length: 50 }).map((_, i) => {
