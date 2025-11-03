@@ -105,7 +105,7 @@ async def health_check():
     return {"status": "healthy"}
 
 
-USE_TLENS_BRIDGE = False
+USE_TLENS_BRIDGE = True
 
 
 @app.post("/initialize")
