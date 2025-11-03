@@ -1,10 +1,11 @@
 'use client';
 
 import { useGlobalContext } from '@/components/provider/global-provider';
+import { NEXT_PUBLIC_URL } from '@/lib/env';
 import * as Dialog from '@radix-ui/react-dialog';
 import copy from 'copy-to-clipboard';
 import { Grid, RotateCcw, Share } from 'lucide-react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { LoadingSquare } from './svg/loading-square';
 
@@ -47,7 +48,6 @@ export default function SimilarityMatrixModal() {
     useGlobalContext();
 
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   // State for tokens and similarity matrix
@@ -78,6 +78,8 @@ export default function SimilarityMatrixModal() {
     const params = new URLSearchParams(searchParams.toString());
     params.delete('simMatrix');
     params.delete('simMatrixDemo');
+    // pathname is the NEXT_PUBLIC_URL + modelId + sourceId
+    const pathname = `${NEXT_PUBLIC_URL}/${similarityMatrixSource?.modelId}/${similarityMatrixSource?.id}/`;
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
@@ -150,6 +152,8 @@ export default function SimilarityMatrixModal() {
         params.delete('simMatrixDemo');
       }
 
+      // pathname is the NEXT_PUBLIC_URL + modelId + sourceId
+      const pathname = `${NEXT_PUBLIC_URL}/${similarityMatrixSource?.modelId}/${similarityMatrixSource?.id}/`;
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
