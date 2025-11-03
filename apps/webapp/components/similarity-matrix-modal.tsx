@@ -16,6 +16,10 @@ const DEMO_BUTTONS = [
     text: 'Mechanistic interpretability (often abbreviated as mech interp, mechinterp, or MI) is a subfield of research within explainable artificial intelligence that aims to understand the internal workings of neural networks by analyzing the mechanisms present in their computations. The approach seeks to analyze neural networks in a manner similar to how binary computer programs can be reverse-engineered to understand their functions.',
   },
   {
+    label: "Audrey's Job",
+    text: 'AUDREY was three days into her new job and still elated about gaining her position at Fayburns, the world-famous West End department store. Glamour and glitz were returning to the big stores, which were starting to lavish attention on their window displays as they had before the war. As a recent arts school graduate, Audrey was well qualified to fill the new role of window dresser and display co-ordinator. Having said that, beginning her job in the run-up to Christmas felt like jumping in at the deep end. She’d been charged with creating a series of extravagant tableaux, in the three windows facing the street, on the theme of the wonderful old poem, “The Night Before Christmas”.',
+  },
+  {
     label: 'Obama Ice Cream',
     text: 'In a LinkedIn post published today, President Obama announced his "Summer Opportunity Project" by talking about his first job: scooping ice cream.\n\n"Scooping ice cream is tougher than it looks. Rows and rows of rock-hard ice cream can be brutal on the wrists," he wrote. "As a teenager working behind the counter at Baskin-Robbins in Honolulu, I was less interested in what the job meant for my future and more concerned about what it meant for my jump shot."',
   },

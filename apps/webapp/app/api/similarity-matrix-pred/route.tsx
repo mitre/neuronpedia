@@ -11,7 +11,7 @@ type RequestBody = {
   text: string;
 };
 
-const maxTextLength = 512;
+const maxTextLength = 700;
 
 export const POST = withOptionalUser(async (request) => {
   let body: RequestBody;
