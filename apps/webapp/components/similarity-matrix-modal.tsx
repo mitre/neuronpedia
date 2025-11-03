@@ -334,9 +334,35 @@ export default function SimilarityMatrixModal() {
               {error && <div className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
 
               {!loading && !error && (
-                <div className="flex items-center justify-center">
+                <div className="-mt-6 flex flex-col items-center justify-center gap-5">
+                  {/* Horizontal Colorbar */}
+                  {similarityMatrix.length > 0 && (
+                    <div className="flex flex-col items-center gap-0">
+                      <div className="mb-1 text-[9px] font-medium uppercase text-slate-400">Similarity</div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[11px] text-slate-600">0.0</span>
+                        <div className="border-1 flex overflow-hidden rounded-md border-slate-300">
+                          {Array.from({ length: 50 }).map((_, i) => {
+                            const value = i / 49; // Go from 0.0 to 1.0 (left to right)
+                            return (
+                              <div
+                                key={i}
+                                style={{
+                                  width: '8px',
+                                  height: '24px',
+                                  backgroundColor: getMagmaColor(value),
+                                }}
+                              />
+                            );
+                          })}
+                        </div>
+                        <span className="font-mono text-[11px] text-slate-600">1.0</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Heatmap */}
                   <div className="inline-block">
-                    {/* Heatmap */}
                     <div className="flex">
                       {/* Similarity matrix heatmap */}
                       <div className="inline-block border-[0.5px] border-slate-400">
@@ -395,34 +421,6 @@ export default function SimilarityMatrixModal() {
                             })}
                           </div>
                         ))}
-                      </div>
-
-                      {/* Colorbar */}
-                      <div className="ml-6 hidden flex-col">
-                        <div className="flex">
-                          <div className="flex flex-col border-2 border-gray-300">
-                            {Array.from({ length: 50 }).map((_, i) => {
-                              const value = 1 - i / 49; // Go from 1.0 to 0.0
-                              return (
-                                <div
-                                  key={i}
-                                  style={{
-                                    width: '30px',
-                                    height: `${(cellSize * tokens.length) / 50}px`,
-                                    backgroundColor: getMagmaColor(value),
-                                  }}
-                                />
-                              );
-                            })}
-                          </div>
-                          <div className="ml-2 flex flex-col justify-between text-xs text-gray-700">
-                            <span>1.0</span>
-                            <span>0.75</span>
-                            <span>0.5</span>
-                            <span>0.25</span>
-                            <span>0.0</span>
-                          </div>
-                        </div>
                       </div>
                     </div>
                     {/* 
