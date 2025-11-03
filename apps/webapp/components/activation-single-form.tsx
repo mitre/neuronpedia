@@ -75,13 +75,13 @@ export default function ActivationSingleForm({
         neuron,
       }),
     })
-      .then((response) => {
+      .then(async (response) => {
         if (response.status === 429 || response.status === 405) {
           alert('Sorry, we are limiting each user to 250 messages per hour. Please try again later.');
           return null;
         }
         if (response.status !== 200) {
-          alert('Sorry, your request could not be completed at this time. Please try again later.');
+          alert('Please check that your input prompt is less than 400 tokens, or try again later.');
           return null;
         }
         return response.json();
