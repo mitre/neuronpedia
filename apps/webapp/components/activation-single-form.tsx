@@ -193,7 +193,7 @@ export default function ActivationSingleForm({
             </Button>
           )}
 
-          {!hideSteer && !isGraphEnabledForSource(neuron.modelId, neuron.layer) && (
+          {!hideSteer && !isGraphEnabledForSource(neuron.modelId, neuron.layer) && neuron.modelId !== 'gpt-oss-20b' && (
             <Button
               className="flex h-auto flex-col gap-y-0.5 border-emerald-700 px-2.5 text-[10.5px] font-medium text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
               variant="outline"
