@@ -9,7 +9,7 @@ import { useGlobalContext } from '../provider/global-provider';
 
 export default function SourceSimilarityMatrixPane({ source }: { source: SourceWithPartialRelations }) {
   const { setSimilarityMatrix } = useGlobalContext();
-  const [customText, setCustomText] = useState<string>('cats are cats');
+  const [customText, setCustomText] = useState<string>('');
 
   return (
     <div className="flex w-full flex-col items-center">
