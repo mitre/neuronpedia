@@ -2,32 +2,41 @@
 
 import { useGlobalContext } from '@/components/provider/global-provider';
 import * as Dialog from '@radix-ui/react-dialog';
+import copy from 'copy-to-clipboard';
+import { Grid, RotateCcw, Share } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { LoadingSquare } from './svg/loading-square';
 
 // Demo button configurations
-const DEMO_BUTTONS = [
+export const DEMO_BUTTONS = [
   {
+    id: 'alice-maya',
     label: 'Alice & Maya Story',
     text: "Once upon a time, a little girl named Alice loved looking at the night sky. 'I wish I could count all the stars!' Alice said to her best friend Maya. The two girls stood on a big grass field as the moon rose from the trees. Suddenly, Maya had a striking idea. She opened her laptop and started typing:\n```python\narray = []\nfor i in range(1, 6):\n    s = int(input(f'num_stars:'))\n    array.append(s)\ntot = sum(array)\navg = tot / len(array)\nprint(f'Avg / night: {avg:.1f}')",
   },
   {
+    id: 'mech-interp',
     label: 'Mechanistic Interpretability',
     text: 'Mechanistic interpretability (often abbreviated as mech interp, mechinterp, or MI) is a subfield of research within explainable artificial intelligence that aims to understand the internal workings of neural networks by analyzing the mechanisms present in their computations. The approach seeks to analyze neural networks in a manner similar to how binary computer programs can be reverse-engineered to understand their functions.',
   },
   {
+    id: 'audrey-job',
     label: "Audrey's Job",
-    text: 'AUDREY was three days into her new job and still elated about gaining her position at Fayburns, the world-famous West End department store. Glamour and glitz were returning to the big stores, which were starting to lavish attention on their window displays as they had before the war. As a recent arts school graduate, Audrey was well qualified to fill the new role of window dresser and display co-ordinator. Having said that, beginning her job in the run-up to Christmas felt like jumping in at the deep end. She’d been charged with creating a series of extravagant tableaux, in the three windows facing the street, on the theme of the wonderful old poem, “The Night Before Christmas”.',
+    text: 'AUDREY was three days into her new job and still elated about gaining her position at Fayburns, the world-famous West End department store. Glamour and glitz were returning to the big stores, which were starting to lavish attention on their window displays as they had before the war. As a recent arts school graduate, Audrey was well qualified to fill the new role of window dresser and display co-ordinator. Having said that, beginning her job in the run-up to Christmas felt like jumping in at the deep end. She\'d been charged with creating a series of extravagant tableaux, in the three windows facing the street, on the theme of the wonderful old poem, "The Night Before Christmas".',
   },
   {
+    id: 'obama-ice-cream',
     label: 'Obama Ice Cream',
     text: 'In a LinkedIn post published today, President Obama announced his "Summer Opportunity Project" by talking about his first job: scooping ice cream.\n\n"Scooping ice cream is tougher than it looks. Rows and rows of rock-hard ice cream can be brutal on the wrists," he wrote. "As a teenager working behind the counter at Baskin-Robbins in Honolulu, I was less interested in what the job meant for my future and more concerned about what it meant for my jump shot."',
   },
   {
+    id: 'huck-finn',
     label: 'Huckleberry Finn',
     text: "You don't know about me without you have read a book by the name of The Adventures of Tom Sawyer; but that ain't no matter.  That book was made by Mr. Mark Twain, and he told the truth, mainly.  There was things which he stretched, but mainly he told the truth.  That is nothing.",
   },
   {
+    id: 'dr-seuss',
     label: 'Dr. Seuss',
     text: "You have brains in your head.\nYou have feet in your shoes.\nYou can steer yourself in any direction you choose.\nYou're on your own.\nAnd you know what you know.\nYou are the guy who'll decide where to go.\n~Dr. Seuss",
   },
@@ -37,6 +46,10 @@ export default function SimilarityMatrixModal() {
   const { similarityMatrixSource, similarityMatrixText, similarityMatrixModalOpen, setSimilarityMatrixModalOpen } =
     useGlobalContext();
 
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   // State for tokens and similarity matrix
   const [tokens, setTokens] = useState<string[]>([]);
   const [similarityMatrix, setSimilarityMatrix] = useState<number[][]>([]);
@@ -45,6 +58,7 @@ export default function SimilarityMatrixModal() {
   const [error, setError] = useState<string | null>(null);
   const [customText, setCustomText] = useState<string>(similarityMatrixText || DEMO_BUTTONS[0].text);
   const [cellSize, setCellSize] = useState<number>(0);
+  const [lastGeneratedText, setLastGeneratedText] = useState<string>('');
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -56,6 +70,22 @@ export default function SimilarityMatrixModal() {
     setError(null);
     setCustomText(DEMO_BUTTONS[0].text);
     setLoading(false);
+    setLastGeneratedText('');
+  };
+
+  // Function to clear URL params when closing modal
+  const clearUrlParams = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('simMatrix');
+    params.delete('simMatrixDemo');
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  // Function to close modal and clean up
+  const closeModal = () => {
+    resetState();
+    clearUrlParams();
+    setSimilarityMatrixModalOpen(false);
   };
 
   // Function to fetch similarity matrix
@@ -102,6 +132,25 @@ export default function SimilarityMatrixModal() {
       const matrix: number[][] = data.similarity_matrix || [];
       setTokens(newTokens);
       setSimilarityMatrix(matrix);
+      setLastGeneratedText(text);
+
+      // Update URL search params to make it shareable
+      const params = new URLSearchParams(searchParams.toString());
+
+      // Check if the text matches any demo button
+      const matchingDemo = DEMO_BUTTONS.find((demo) => demo.text === text);
+
+      if (matchingDemo) {
+        // If it matches a demo, use the short demo ID
+        params.set('simMatrixDemo', matchingDemo.id);
+        params.delete('simMatrix');
+      } else {
+        // If it's custom text, use the full text
+        params.set('simMatrix', text);
+        params.delete('simMatrixDemo');
+      }
+
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -109,7 +158,7 @@ export default function SimilarityMatrixModal() {
     }
   };
 
-  // Update customText when similarityMatrixText changes
+  // Update customText when similarityMatrixText changes (from URL params)
   useEffect(() => {
     if (similarityMatrixText) {
       setCustomText(similarityMatrixText);
@@ -119,9 +168,16 @@ export default function SimilarityMatrixModal() {
   // Fetch similarity matrix from server when modal opens
   useEffect(() => {
     if (!similarityMatrixModalOpen) return;
-    fetchSimilarityMatrix(customText);
+
+    // Determine what text to use
+    const textToGenerate = similarityMatrixText || customText;
+
+    // Only auto-fetch if we haven't generated this text yet
+    if (textToGenerate && textToGenerate !== lastGeneratedText) {
+      fetchSimilarityMatrix(textToGenerate);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [similarityMatrixModalOpen, similarityMatrixSource]);
+  }, [similarityMatrixModalOpen, similarityMatrixText]);
 
   // Calculate cell size based on available height
   useEffect(() => {
@@ -193,8 +249,7 @@ export default function SimilarityMatrixModal() {
         <Dialog.Overlay className="fixed inset-0 z-50 bg-slate-600/20" />
         <Dialog.Content
           onPointerDownOutside={() => {
-            resetState();
-            setSimilarityMatrixModalOpen(false);
+            closeModal();
           }}
           className="fixed left-[50%] top-[50%] z-50 flex h-[100vh] max-h-[100vh] w-[100vw] max-w-[100%] translate-x-[-50%] translate-y-[-50%] flex-col overflow-hidden bg-slate-50 shadow-xl focus:outline-none sm:top-[50%] sm:h-[90vh] sm:max-h-[90vh] sm:w-[95vw] sm:max-w-[95%] sm:rounded-md"
         >
@@ -207,17 +262,13 @@ export default function SimilarityMatrixModal() {
               className="flex flex-row items-center justify-center gap-x-1 rounded-full bg-slate-300 px-3 py-1.5 text-[11px] text-slate-600 hover:bg-sky-700 hover:text-white focus:outline-none"
               aria-label="Close"
               onClick={() => {
-                resetState();
-                setSimilarityMatrixModalOpen(false);
+                closeModal();
               }}
             >
               Done
             </button>
-            <Dialog.Title className="absolute left-1/2 top-[55%] -translate-x-1/2 -translate-y-1/2 text-center text-xs font-medium text-slate-500">
-              Similarity Matrix -{' '}
-              <span className="font-mono font-bold">
-                {similarityMatrixSource?.modelId} @ {similarityMatrixSource?.id}
-              </span>
+            <Dialog.Title className="absolute left-1/2 top-[55%] -translate-x-1/2 -translate-y-1/2 text-center text-sm font-medium text-slate-600">
+              Similarity Matrix
             </Dialog.Title>
           </div>
 
@@ -225,14 +276,14 @@ export default function SimilarityMatrixModal() {
 
           <div className="flex w-full flex-1 flex-row items-stretch justify-start overflow-hidden bg-white">
             <div className="flex w-1/5 flex-shrink-0 flex-col gap-2 bg-slate-50 px-2 pb-3 pt-3 sm:px-4">
-              <div className="text-center text-sm font-medium text-slate-700">Instructions</div>
+              <div className="mt-2 text-center text-sm font-medium text-slate-700">Instructions</div>
               <ol className="list-decimal space-y-1 pl-4 text-xs text-slate-600">
                 <li>Type some text, ideally at least a sentence.</li>
                 <li>Click &quot;Generate&quot;.</li>
                 <li>Hover over tokens to highlight their matrix cell.</li>
                 <li>Hover over cells to see which token it&apos;s on.</li>
               </ol>
-              <div className="mt-1 text-center text-sm font-medium text-slate-700">Click a Demo</div>
+              <div className="mt-3 text-center text-sm font-medium text-slate-700">Click a Demo</div>
               {DEMO_BUTTONS.map((demo, idx) => (
                 <button
                   key={idx}
@@ -242,13 +293,16 @@ export default function SimilarityMatrixModal() {
                     fetchSimilarityMatrix(demo.text);
                   }}
                   disabled={customText === demo.text}
-                  className="rounded bg-sky-700 px-3 py-2.5 text-xs text-white hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded bg-sky-700 px-3 py-3 text-xs text-white hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {demo.label} {customText === demo.text ? '(Selected)' : ''}
                 </button>
               ))}
             </div>
             <div className="flex w-1/3 flex-shrink-0 flex-wrap content-start items-start justify-start gap-1 gap-y-[3px] overflow-y-auto p-4">
+              <div className="mb-1.5 w-full text-center font-mono text-xs font-bold uppercase text-slate-600">
+                {similarityMatrixSource?.modelId} @ {similarityMatrixSource?.id}
+              </div>
               <div className="flex w-full gap-2">
                 <textarea
                   value={customText}
@@ -262,16 +316,16 @@ export default function SimilarityMatrixModal() {
                   placeholder="Enter some text, then click 'Generate'."
                   className="flex-1 rounded border border-slate-300 px-3 py-2 text-[12px] leading-normal text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
                   disabled={loading}
-                  rows={8}
+                  rows={10}
                 />
                 <div className="flex w-[80px] flex-col gap-1.5">
                   <button
                     type="button"
                     onClick={() => fetchSimilarityMatrix(customText)}
                     disabled={loading || !customText.trim()}
-                    className="w-full flex-1 rounded bg-sky-700 px-2 py-2 text-xs font-medium text-white hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex w-full flex-1 flex-col items-center justify-center gap-y-1 rounded bg-sky-700 px-2 py-2 text-[11px] font-medium text-white hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {loading ? 'Loading...' : 'Generate'}
+                    <Grid className="h-4 w-4" /> Generate
                   </button>
                   <button
                     type="button"
@@ -283,20 +337,32 @@ export default function SimilarityMatrixModal() {
                       setError(null);
                     }}
                     disabled={loading}
-                    className="w-full flex-1 rounded bg-slate-600 px-2 py-2 text-xs font-medium text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex w-full flex-1 flex-col items-center justify-center gap-y-1 rounded bg-slate-600 px-2 py-2 text-[11px] font-medium text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    Reset
+                    <RotateCcw className="h-4 w-4" /> Reset
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const url = window.location.href;
+                      copy(url);
+                      alert('URL copied to clipboard!');
+                    }}
+                    disabled={loading || tokens.length === 0}
+                    className="flex w-full flex-1 flex-col items-center justify-center gap-y-1 rounded bg-emerald-600 px-2 py-2 text-[11px] font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Share className="h-4 w-4" /> Share
                   </button>
                 </div>
               </div>
               {tokens.length > 0 && (
-                <div className="mt-4 flex w-full flex-shrink-0 flex-wrap content-start items-start justify-start gap-1 gap-y-[3px] overflow-y-auto border-t px-0 pt-4">
+                <div className="mt-4 flex w-full flex-shrink-0 flex-wrap content-start items-start justify-start gap-1 gap-y-1.5 overflow-y-auto border-t px-0 pt-4">
                   {tokens.map((token, i) => (
                     <div
                       key={i}
                       onMouseEnter={() => setSelectedToken(i)}
                       onMouseLeave={() => setSelectedToken(null)}
-                      className={`cursor-default select-none rounded py-0.5 font-mono text-[10px] leading-tight transition-all ${
+                      className={`cursor-default select-none rounded py-[1px] font-mono text-[11px] leading-normal transition-all ${
                         selectedToken === i
                           ? 'border border-sky-700 bg-sky-700 text-white'
                           : 'border border-transparent bg-slate-100 text-slate-700 hover:bg-blue-100'
@@ -334,7 +400,7 @@ export default function SimilarityMatrixModal() {
               {error && <div className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
 
               {!loading && !error && (
-                <div className="-mt-6 flex flex-col items-center justify-center gap-5">
+                <div className="-mt-3 flex flex-col items-center justify-center gap-4">
                   {/* Horizontal Colorbar */}
                   {similarityMatrix.length > 0 && (
                     <div className="flex flex-col items-center gap-0">

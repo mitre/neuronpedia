@@ -21,7 +21,15 @@ import { Visibility } from '@prisma/client';
 import Link from 'next/link';
 import SaeLensConfigPane from '../../../components/panes/saelens-config-pane';
 
-export default function PageSource({ source }: { source: SourceWithRelations }) {
+export default function PageSource({
+  source,
+  simMatrix,
+  simMatrixDemo,
+}: {
+  source: SourceWithRelations;
+  simMatrix?: string;
+  simMatrixDemo?: string;
+}) {
   const release = source.set && source.set.releases ? source.set.releases : null;
 
   return (
@@ -113,7 +121,13 @@ export default function PageSource({ source }: { source: SourceWithRelations }) 
             </div>
           </div>
 
-          {source.set?.similarityMatrixEnabled && <SourceSimilarityMatrixPane source={source} />}
+          {source.set?.similarityMatrixEnabled && (
+            <SourceSimilarityMatrixPane
+              source={source}
+              initialSimMatrixText={simMatrix}
+              initialSimMatrixDemo={simMatrixDemo}
+            />
+          )}
 
           {source.inferenceEnabled && (
             <SearchInferenceSourcePane
