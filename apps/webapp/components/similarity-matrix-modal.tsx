@@ -18,7 +18,7 @@ export const DEMO_BUTTONS = [
   },
   {
     id: 'mech-interp',
-    label: 'Mechanistic Interpretability',
+    label: 'Mech Interp',
     text: 'Mechanistic interpretability (often abbreviated as mech interp, mechinterp, or MI) is a subfield of research within explainable artificial intelligence that aims to understand the internal workings of neural networks by analyzing the mechanisms present in their computations. The approach seeks to analyze neural networks in a manner similar to how binary computer programs can be reverse-engineered to understand their functions.',
   },
   {
@@ -28,7 +28,7 @@ export const DEMO_BUTTONS = [
   },
   {
     id: 'obama-ice-cream',
-    label: 'Obama Ice Cream',
+    label: 'Ice Cream',
     text: 'In a LinkedIn post published today, President Obama announced his "Summer Opportunity Project" by talking about his first job: scooping ice cream.\n\n"Scooping ice cream is tougher than it looks. Rows and rows of rock-hard ice cream can be brutal on the wrists," he wrote. "As a teenager working behind the counter at Baskin-Robbins in Honolulu, I was less interested in what the job meant for my future and more concerned about what it meant for my jump shot."',
   },
   {
