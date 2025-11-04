@@ -13,32 +13,32 @@ import { LoadingSquare } from './svg/loading-square';
 export const DEMO_BUTTONS = [
   {
     id: 'alice-maya',
-    label: 'Alice & Maya Story',
+    label: '👯‍♀️ Alice & Maya',
     text: "Once upon a time, a little girl named Alice loved looking at the night sky. 'I wish I could count all the stars!' Alice said to her best friend Maya. The two girls stood on a big grass field as the moon rose from the trees. Suddenly, Maya had a striking idea. She opened her laptop and started typing:\n```python\narray = []\nfor i in range(1, 6):\n    s = int(input(f'num_stars:'))\n    array.append(s)\ntot = sum(array)\navg = tot / len(array)\nprint(f'Avg / night: {avg:.1f}')",
   },
   {
     id: 'mech-interp',
-    label: 'Mech Interp',
+    label: '🧠 Mech Interp',
     text: 'Mechanistic interpretability (often abbreviated as mech interp, mechinterp, or MI) is a subfield of research within explainable artificial intelligence that aims to understand the internal workings of neural networks by analyzing the mechanisms present in their computations. The approach seeks to analyze neural networks in a manner similar to how binary computer programs can be reverse-engineered to understand their functions.',
   },
   {
     id: 'audrey-job',
-    label: "Audrey's Job",
+    label: "👔 Audrey's Job",
     text: 'AUDREY was three days into her new job and still elated about gaining her position at Fayburns, the world-famous West End department store. Glamour and glitz were returning to the big stores, which were starting to lavish attention on their window displays as they had before the war. As a recent arts school graduate, Audrey was well qualified to fill the new role of window dresser and display co-ordinator. Having said that, beginning her job in the run-up to Christmas felt like jumping in at the deep end. She\'d been charged with creating a series of extravagant tableaux, in the three windows facing the street, on the theme of the wonderful old poem, "The Night Before Christmas".',
   },
   {
     id: 'obama-ice-cream',
-    label: 'Ice Cream',
+    label: '🍦 Ice Cream',
     text: 'In a LinkedIn post published today, President Obama announced his "Summer Opportunity Project" by talking about his first job: scooping ice cream.\n\n"Scooping ice cream is tougher than it looks. Rows and rows of rock-hard ice cream can be brutal on the wrists," he wrote. "As a teenager working behind the counter at Baskin-Robbins in Honolulu, I was less interested in what the job meant for my future and more concerned about what it meant for my jump shot."',
   },
   {
     id: 'huck-finn',
-    label: 'Huckleberry Finn',
+    label: '📖 Huck Finn',
     text: "You don't know about me without you have read a book by the name of The Adventures of Tom Sawyer; but that ain't no matter.  That book was made by Mr. Mark Twain, and he told the truth, mainly.  There was things which he stretched, but mainly he told the truth.  That is nothing.",
   },
   {
     id: 'dr-seuss',
-    label: 'Dr. Seuss',
+    label: '🐱 Dr. Seuss',
     text: "You have brains in your head.\nYou have feet in your shoes.\nYou can steer yourself in any direction you choose.\nYou're on your own.\nAnd you know what you know.\nYou are the guy who'll decide where to go.\n~Dr. Seuss",
   },
 ];
