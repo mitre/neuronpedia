@@ -41,7 +41,13 @@ export async function generateMetadata({ params }: { params: { modelId: string; 
   };
 }
 
-export default async function Page({ params }: { params: { modelId: string; layer: string } }) {
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: { modelId: string; layer: string };
+  searchParams: { simMatrix?: string; simMatrixDemo?: string };
+}) {
   // TODO: this is a temporary map since there is a bug in our lesswrong plugin that breaks when dots are in modelIds for hoverover links
   if (params.modelId in REPLACE_MODEL_ID_MAP_FOR_LW_TEMPORARY_REDIRECT) {
     // redirect to the new model id
@@ -60,7 +66,13 @@ export default async function Page({ params }: { params: { modelId: string; laye
   // if it's a model + source (gpt2-small/0-res-jb)
   const source = await getSource(params.modelId, params.layer, await makeAuthedUserFromSessionOrReturnNull());
   if (source) {
-    return <PageSource source={source as SourceWithRelations} />;
+    return (
+      <PageSource
+        source={source as SourceWithRelations}
+        simMatrix={searchParams.simMatrix}
+        simMatrixDemo={searchParams.simMatrixDemo}
+      />
+    );
   }
 
   // else not found

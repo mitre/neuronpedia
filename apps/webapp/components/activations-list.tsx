@@ -408,16 +408,14 @@ export default function ActivationsList({
                     </div>
                   )}
                 </div>
-              ) : (
-                activation.binMax &&
+              ) : activation.binMax &&
                 activationIndex > 0 &&
-                items[activationIndex - 1].binMax !== activation.binMax && (
-                  <div className="absolute left-0 top-0 hidden h-6 w-full flex-row items-center justify-start bg-slate-100 px-3 font-mono text-[8px] font-bold uppercase text-slate-600 sm:flex">
-                    Interval {activation.binMin?.toFixed(3)} - {activation.binMax?.toFixed(3)} (Contains{' '}
-                    {((activation.binContains || 0) * 100).toFixed(3)}%)
-                  </div>
-                )
-              )}
+                items[activationIndex - 1].binMax !== activation.binMax ? (
+                <div className="absolute left-0 top-0 hidden h-6 w-full flex-row items-center justify-start bg-slate-100 px-3 font-mono text-[8px] font-bold uppercase text-slate-600 sm:flex">
+                  Interval {activation.binMin?.toFixed(3)} - {activation.binMax?.toFixed(3)} (Contains{' '}
+                  {((activation.binContains || 0) * 100).toFixed(3)}%)
+                </div>
+              ) : null}
               <div
                 className={`flex w-full flex-row items-center justify-center ${
                   (activation.binMin === -1 &&

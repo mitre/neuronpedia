@@ -264,6 +264,7 @@ Explanation of neuron 4 behavior: the main thing this neuron does is find`;
         max_completion_tokens: 4096,
         temperature: 1.0,
         top_p: 1.0,
+        reasoning_effort: 'low',
       });
       const explanationString = chatCompletion.choices[0].message.content;
       console.log(explanationString);

@@ -453,6 +453,8 @@ model SourceSet {
   graphHostSources GraphHostSourceOnSourceSet[]
   graphMetadata    GraphMetadata[]
 
+  similarityMatrixEnabled Boolean @default(false)
+
   defaultOfModelId String?
   defaultOfModel   Model?  @relation(name: "defaultSourceSet")
 

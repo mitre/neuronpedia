@@ -6,10 +6,11 @@ import ActivationItem from '@/components/activation-item';
 import { useGlobalContext } from '@/components/provider/global-provider';
 import { NEXT_PUBLIC_URL } from '@/lib/env';
 import { BOS_TOKENS } from '@/lib/utils/activations';
+import { getSourceSetNameFromSource } from '@/lib/utils/source';
 import { Activation } from '@prisma/client';
 import copy from 'copy-to-clipboard';
-import { Check, Copy, Joystick, Play, Share } from 'lucide-react';
-import { NeuronWithPartialRelations } from 'prisma/generated/zod';
+import { Check, Copy, Grid, Joystick, Play, Share } from 'lucide-react';
+import { NeuronWithPartialRelations, SourceWithPartialRelations } from 'prisma/generated/zod';
 import { useEffect, useState } from 'react';
 import ReactTextareaAutosize from 'react-textarea-autosize';
 import { Button } from './shadcn/button';
@@ -37,7 +38,14 @@ export default function ActivationSingleForm({
   embed?: boolean;
   hideSteer?: boolean;
 }) {
-  const { getSourceSet, showToastServerError, showToastMessage, isGraphEnabledForSource } = useGlobalContext();
+  const {
+    getSourceSet,
+    showToastServerError,
+    showToastMessage,
+    isGraphEnabledForSource,
+    isSimilarityMatrixEnabledForSourceSet,
+    setSimilarityMatrix,
+  } = useGlobalContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customText, setCustomText] = useState('');
   const [activationResult, setActivationResult] = useState<Activation | undefined>();
@@ -67,13 +75,13 @@ export default function ActivationSingleForm({
         neuron,
       }),
     })
-      .then((response) => {
+      .then(async (response) => {
         if (response.status === 429 || response.status === 405) {
           alert('Sorry, we are limiting each user to 250 messages per hour. Please try again later.');
           return null;
         }
         if (response.status !== 200) {
-          alert('Sorry, your request could not be completed at this time. Please try again later.');
+          alert('Please check that your input prompt is less than 400 tokens, or try again later.');
           return null;
         }
         return response.json();
@@ -171,13 +179,26 @@ export default function ActivationSingleForm({
             </button>
           </div>
 
-          {!hideSteer && !isGraphEnabledForSource(neuron.modelId, neuron.layer) && (
+          {isSimilarityMatrixEnabledForSourceSet(neuron.modelId, getSourceSetNameFromSource(neuron.layer)) &&
+            neuron.source && (
+              <Button
+                className="flex h-auto flex-col gap-y-0.5 border-amber-700 px-1 text-[10.5px] font-medium text-amber-700 hover:bg-amber-50 hover:text-amber-800"
+                variant="outline"
+                onClick={() => {
+                  setSimilarityMatrix(neuron.source as SourceWithPartialRelations, customText);
+                }}
+              >
+                <Grid className="h-4 w-4" /> Sim Mat
+              </Button>
+            )}
+
+          {!hideSteer && !isGraphEnabledForSource(neuron.modelId, neuron.layer) && neuron.modelId !== 'gpt-oss-20b' && (
             <Button
-              className="flex h-auto flex-col gap-y-0.5 border-emerald-700 px-2.5 text-[11px] text-xs font-medium text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
+              className="flex h-auto flex-col gap-y-0.5 border-emerald-700 px-2.5 text-[10.5px] font-medium text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
               variant="outline"
               onClick={() => {
                 window.open(
-                  `/${neuron.modelId}/steer?source=${neuron.layer}&index=${neuron.index}${neuron.activations && neuron.activations.length > 0 ? `&strength=${neuron.activations?.[0]?.maxValue ? ((neuron.activations?.[0]?.maxValue || 0) * DEFAULT_STEER_MULTIPLIER).toFixed(1) : 10}` : ''}`,
+                  `/${neuron.modelId}/steer?source=${neuron.layer}&index=${neuron.index}${neuron.activations && neuron.activations.length > 0 ? `&strength=${neuron.activations?.[0]?.maxValue ? Math.max((neuron.activations?.[0]?.maxValue || 0) * DEFAULT_STEER_MULTIPLIER, 0.25).toFixed(2) : 10}` : ''}`,
                   '_blank',
                 );
               }}
@@ -203,7 +224,11 @@ export default function ActivationSingleForm({
                     color: makeActivationTextColor(1, 1, 0.5),
                   }}
                 >
-                  {activationResult.maxValue.toFixed(2)}
+                  {activationResult.maxValue.toFixed(2) === '0.00'
+                    ? activationResult.maxValue.toFixed(3) === '0.000'
+                      ? activationResult.maxValue.toFixed(4)
+                      : activationResult.maxValue.toFixed(3)
+                    : activationResult.maxValue.toFixed(2)}
                 </div>
               </div>
               <div className="max-h-72 flex-auto overflow-y-scroll px-3 text-sm sm:px-0">

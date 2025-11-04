@@ -199,6 +199,12 @@ export const POST = withAuthedUser(async (request: RequestAuthedUser) => {
     // remove where maxValue is 0 ( in case we had too many duplicates )
     activations = activations.filter((activation) => activation.maxValue > 0);
 
+    // normalize activation values so that the max value is 10
+    activations = activations.map((activation) => ({
+      ...activation,
+      values: activation.values.map((value) => (value * 10) / activation.maxValue),
+    }));
+
     if (explanationScoreType.name === 'recall_alt') {
       try {
         const score = await generateScoreRecallAlt(

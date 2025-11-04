@@ -65,6 +65,7 @@ export const [GlobalContext, useGlobalContext] = createContextWrapper<{
   explanationModels: ExplanationModelType[];
   explanationScoreTypes: ExplanationScoreType[];
   explanationScoreModelTypes: ExplanationScoreModel[];
+  isSimilarityMatrixEnabledForSourceSet: (modelId: string, sourceSet: string) => boolean;
 
   // User
   user: UserWithPartialRelations | undefined;
@@ -93,6 +94,13 @@ export const [GlobalContext, useGlobalContext] = createContextWrapper<{
   setFeatureModalFeature: (feature: NeuronWithPartialRelations) => void;
   featureModalopen: boolean;
   setFeatureModalOpen: (open: boolean) => void;
+
+  // UI - Similarity Matrix Modal
+  similarityMatrixModalOpen: boolean;
+  setSimilarityMatrixModalOpen: (open: boolean) => void;
+  setSimilarityMatrix: (source: SourceWithPartialRelations, text?: string) => void;
+  similarityMatrixSource: SourceWithPartialRelations | undefined;
+  similarityMatrixText: string;
 }>('GlobalContext');
 
 export default function GlobalProvider({
@@ -139,6 +147,9 @@ export default function GlobalProvider({
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [featureModalFeature, setFeatureModalFeature] = useState<NeuronWithPartialRelations>();
   const [featureModalOpen, setFeatureModalOpen] = useState(false);
+  const [similarityMatrixModalOpen, setSimilarityMatrixModalOpen] = useState(false);
+  const [similarityMatrixSource, setSimilarityMatrixSource] = useState<SourceWithPartialRelations>();
+  const [similarityMatrixText, setSimilarityMatrixText] = useState<string>('');
 
   useEffect(() => {
     if (featureModalFeature && !featureModalFeature?.activations) {
@@ -175,6 +186,14 @@ export default function GlobalProvider({
       setToastMessage(message);
       setToastOpen(true);
     }, 100);
+  };
+
+  const setSimilarityMatrix = (source: SourceWithPartialRelations, text?: string) => {
+    setSimilarityMatrixSource(source);
+    setSimilarityMatrixText(text || '');
+    setTimeout(() => {
+      setSimilarityMatrixModalOpen(true);
+    }, 0);
   };
 
   const showToastServerError = () => {
@@ -377,6 +396,14 @@ export default function GlobalProvider({
     return sourceSet.graphEnabled;
   };
 
+  const isSimilarityMatrixEnabledForSourceSet = (modelId: string, sourceSet: string) => {
+    const sourceSetObj = getSourceSet(modelId, sourceSet);
+    if (!sourceSetObj) {
+      return false;
+    }
+    return sourceSetObj.similarityMatrixEnabled;
+  };
+
   const refreshGlobal = () => {
     fetch('/api/global', {
       method: 'POST',
@@ -434,6 +461,7 @@ export default function GlobalProvider({
           explanationModels,
           explanationScoreTypes,
           explanationScoreModelTypes,
+          isSimilarityMatrixEnabledForSourceSet,
           signInModalOpen,
           setSignInModalOpen,
           showToastServerError,
@@ -452,6 +480,11 @@ export default function GlobalProvider({
           setFeatureModalFeature,
           featureModalopen: featureModalOpen,
           setFeatureModalOpen,
+          similarityMatrixModalOpen,
+          setSimilarityMatrix,
+          similarityMatrixSource,
+          similarityMatrixText,
+          setSimilarityMatrixModalOpen,
         }),
         [
           bookmarks,
@@ -474,10 +507,16 @@ export default function GlobalProvider({
           getHasGraphsSourceSetsForModelId,
           isGraphEnabledForSourceSet,
           isGraphEnabledForSource,
+          isSimilarityMatrixEnabledForSourceSet,
           globalModels,
           featureModalFeature,
           featureModalOpen,
           releases,
+          similarityMatrixModalOpen,
+          similarityMatrixSource,
+          similarityMatrixText,
+          setSimilarityMatrix,
+          setSimilarityMatrixModalOpen,
           showToastServerError,
           showUserPopover,
           signInModalOpen,

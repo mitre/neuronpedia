@@ -21,7 +21,10 @@ class SaeLensSAE(BaseSAE):
             device=device,
         )
         loaded_sae.to(device, dtype=DTYPE_MAP[dtype])
-        loaded_sae.fold_W_dec_norm()
+        if loaded_sae.cfg.architecture() in ["temporal"]:
+            print("Temporal architecture detected, skipping fold_W_dec_norm")
+        else:
+            loaded_sae.fold_W_dec_norm()
         loaded_sae.eval()
 
         return loaded_sae, loaded_sae.cfg.metadata.hook_name

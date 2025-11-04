@@ -34,6 +34,38 @@ export default function SteerSelectedFeature({
     return selectedFeatures.find((f) => f.modelId === selectedFeatureModelId && f.layer === layer && f.index === index);
   }
 
+  // Convert linear strength value to exponential slider position
+  // Using base 1.01 for very gentle exponential scaling
+  function strengthToSlider(strength: number): number {
+    if (strength === 0) return 0;
+    const sign = Math.sign(strength);
+    const absStrength = Math.abs(strength);
+    const base = 1.01;
+    const minValue = 0.01; // Allow values down to 0.01
+    const maxLog = Math.log(STEER_STRENGTH_MAX) / Math.log(base);
+    const minLog = Math.log(minValue) / Math.log(base);
+    // Use exponential scale, clamping to minimum value
+    const logValue = Math.log(Math.max(minValue, absStrength)) / Math.log(base);
+    // Normalize to slider range
+    const normalizedLog = (logValue - minLog) / (maxLog - minLog);
+    return sign * normalizedLog * STEER_STRENGTH_MAX;
+  }
+
+  // Convert exponential slider position to linear strength value
+  function sliderToStrength(sliderValue: number): number {
+    if (sliderValue === 0) return 0;
+    const sign = Math.sign(sliderValue);
+    const absSlider = Math.abs(sliderValue);
+    const base = 1.01;
+    const minValue = 0.01; // Allow values down to 0.01
+    const maxLog = Math.log(STEER_STRENGTH_MAX) / Math.log(base);
+    const minLog = Math.log(minValue) / Math.log(base);
+    // Denormalize from slider range
+    const normalizedLog = absSlider / STEER_STRENGTH_MAX;
+    const logValue = minLog + normalizedLog * (maxLog - minLog);
+    return sign * base ** logValue;
+  }
+
   return (
     <div
       key={feature.modelId + feature.layer + feature.index}
@@ -56,20 +88,26 @@ export default function SteerSelectedFeature({
               const value = parseFloat(e.target.value);
               if (!Number.isNaN(value)) {
                 const clampedValue = Math.min(Math.max(value, STEER_STRENGTH_MIN), STEER_STRENGTH_MAX);
-                setFeatureStrength(feature, clampedValue);
+                const roundedValue = Math.round(clampedValue * 100) / 100;
+                setFeatureStrength(feature, roundedValue);
               }
             }}
             className="mr-1 hidden h-6 w-12 rounded border border-sky-600 px-1 py-0.5 text-center text-[10px] font-medium leading-none text-sky-700 ring-0 focus:border-sky-700 sm:block"
           />
           <ChevronsDown className="mt-0 h-3 w-3" />
           <Slider.Root
-            defaultValue={[feature.strength]}
+            defaultValue={[strengthToSlider(feature.strength)]}
             min={STEER_STRENGTH_MIN}
             max={STEER_STRENGTH_MAX}
             step={0.25}
-            value={[findSelectedFeature(feature.modelId, feature.layer, feature.index)?.strength || 0]}
+            value={[
+              strengthToSlider(findSelectedFeature(feature.modelId, feature.layer, feature.index)?.strength || 0),
+            ]}
             onValueChange={(value) => {
-              setFeatureStrength(feature, value[0]);
+              const actualStrength = sliderToStrength(value[0]);
+              const clampedValue = Math.min(Math.max(actualStrength, STEER_STRENGTH_MIN), STEER_STRENGTH_MAX);
+              const roundedValue = Math.round(clampedValue * 100) / 100;
+              setFeatureStrength(feature, roundedValue);
             }}
             className="group relative flex h-5 w-full cursor-pointer items-center"
           >

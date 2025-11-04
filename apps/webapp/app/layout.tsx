@@ -1,6 +1,7 @@
 import Navbar from '@/components/nav/navbar';
 import AuthProvider from '@/components/provider/auth-provider';
 import { Providers } from '@/components/provider/providers';
+import SimilarityMatrixModal from '@/components/similarity-matrix-modal';
 import Toast from '@/components/toast';
 import {
   getExplanationModels,
@@ -107,6 +108,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               </Suspense>
             )}
             <FeatureModal />
+            <SimilarityMatrixModal />
             <main className={`flex w-full flex-1 flex-col items-center gap-0 ${isEmbed ? 'pt-0' : 'pt-12 sm:pt-12'}`}>
               {children}
             </main>

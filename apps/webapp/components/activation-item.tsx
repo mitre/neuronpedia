@@ -182,7 +182,9 @@ export default function ActivationItem({
                 {activation.tokens && replaceHtmlAnomalies(activation.tokens[maxDfaTokenIndex])}
               </div>
               {activation.dfaValues && (
-                <div className="font-sans font-semibold text-orange-500">{maxDfaValue?.toFixed(2)}</div>
+                <div className="font-sans font-semibold text-orange-500">
+                  {maxDfaValue?.toFixed(maxDfaValue.toFixed(2) === '0.00' ? 3 : 2)}
+                </div>
               )}
             </div>
           )}
@@ -190,7 +192,9 @@ export default function ActivationItem({
             <div className="rounded bg-slate-100 px-1.5 font-bold">
               {activation.tokens && replaceHtmlAnomalies(activation.tokens[maxActivationTokenIndex])}
             </div>
-            <div className="font-sans font-semibold text-emerald-600">{maxActivationValue?.toFixed(2)}</div>
+            <div className="font-sans font-semibold text-emerald-600">
+              {maxActivationValue?.toFixed(maxActivationValue.toFixed(2) === '0.00' ? 3 : 2)}
+            </div>
           </div>
         </div>
       )}

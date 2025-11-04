@@ -5,6 +5,7 @@ import SAEEvalsPane from '@/components/panes/sae-evals-pane/sae-evals-pane';
 import SearchExplanationsPane from '@/components/panes/search-explanations-pane';
 import SearchInferenceSourcePane from '@/components/panes/search-inference-source-pane';
 import SearchTopkByTokenPane from '@/components/panes/search-topk-by-token-pane';
+import SourceSimilarityMatrixPane from '@/components/panes/source-similarity-matrix-pane';
 import UmapPane from '@/components/panes/umap-pane';
 import { BreadcrumbItem, BreadcrumbLink } from '@/components/shadcn/breadcrumbs';
 import { getVisibilityBadge } from '@/components/visibility-badge';
@@ -20,7 +21,15 @@ import { Visibility } from '@prisma/client';
 import Link from 'next/link';
 import SaeLensConfigPane from '../../../components/panes/saelens-config-pane';
 
-export default function PageSource({ source }: { source: SourceWithRelations }) {
+export default function PageSource({
+  source,
+  simMatrix,
+  simMatrixDemo,
+}: {
+  source: SourceWithRelations;
+  simMatrix?: string;
+  simMatrixDemo?: string;
+}) {
   const release = source.set && source.set.releases ? source.set.releases : null;
 
   return (
@@ -111,6 +120,14 @@ export default function PageSource({ source }: { source: SourceWithRelations }) 
               <SaeLensConfigPane inSAEPage sae={source as SourceWithPartialRelations} />
             </div>
           </div>
+
+          {source.set?.similarityMatrixEnabled && (
+            <SourceSimilarityMatrixPane
+              source={source}
+              initialSimMatrixText={simMatrix}
+              initialSimMatrixDemo={simMatrixDemo}
+            />
+          )}
 
           {source.inferenceEnabled && (
             <SearchInferenceSourcePane
