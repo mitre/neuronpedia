@@ -52,6 +52,11 @@ const nextConfig = {
         destination: '/sae-bench',
         permanent: true,
       },
+      {
+        source: '/temporal-saes',
+        destination: '/temporal-feature-analysis',
+        permanent: true,
+      },
     ];
   },
   // https://github.com/mjmlio/mjml/issues/2562
