@@ -152,7 +152,6 @@ export default function SimilarityMatrixModal() {
         params.delete('simMatrixDemo');
       }
 
-      // pathname is the NEXT_PUBLIC_URL + modelId + sourceId
       const pathname = `${NEXT_PUBLIC_URL}/${similarityMatrixSource?.modelId}/${similarityMatrixSource?.id}/`;
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     } catch (e) {
