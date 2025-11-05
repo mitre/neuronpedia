@@ -202,7 +202,15 @@ class ActivationProcessor:
                 sae_manager = SAEManager.get_instance()
                 cache = {}
                 with model.trace(tokens):
-                    for selected_source in request.selected_sources:
+                    # since nnsight requires the layers to be accessed in order,
+                    # make an ordered list of selected sources
+                    ordered_selected_sources = []
+                    # ordered_selected_sources is selected_sources sorted by layer number
+                    ordered_selected_sources = sorted(
+                        request.selected_sources,
+                        key=lambda x: self._get_layer_num(x),
+                    )
+                    for selected_source in ordered_selected_sources:
                         layer_num = self._get_layer_num(selected_source)
                         hook_name = sae_manager.get_sae_hook(selected_source)
                         outputs = model.layers_output[layer_num].save()
