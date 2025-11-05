@@ -189,10 +189,11 @@ export default function SimilarityMatrixModal() {
 
       const availableHeight = containerRef.current.clientHeight;
       const availableWidth = containerRef.current.clientWidth;
-
-      // Account for padding and margins (32px padding on each side, plus some buffer)
-      const usableHeight = availableHeight - 32;
-      const usableWidth = availableWidth - 32;
+      // Account for mobile vs desktop padding
+      const isMobile = window.innerWidth < 640; // sm breakpoint
+      const padding = isMobile ? 0 : 32; // 0px each side = 0px total for mobile, 16px each side = 32px total for desktop
+      const usableHeight = availableHeight - padding;
+      const usableWidth = availableWidth - padding;
 
       // Calculate the maximum cell size that fits both dimensions
       const maxCellSizeByHeight = Math.floor(usableHeight / tokens.length);
@@ -277,8 +278,8 @@ export default function SimilarityMatrixModal() {
 
           {/* Text input and tokens - auto height */}
 
-          <div className="flex w-full flex-1 flex-row items-stretch justify-start overflow-hidden bg-white">
-            <div className="flex w-1/5 flex-shrink-0 flex-col gap-2 bg-slate-50 px-2 pb-3 pt-3 sm:px-4">
+          <div className="flex w-full flex-1 flex-col items-stretch justify-start overflow-hidden bg-white sm:flex-row">
+            <div className="hidden flex-shrink-0 flex-col gap-2 bg-slate-50 px-2 pb-3 pt-3 sm:flex sm:w-1/5 sm:px-4">
               <div className="mt-2 text-center text-sm font-medium text-slate-700">Instructions</div>
               <ol className="list-decimal space-y-1 pl-4 text-xs text-slate-600">
                 <li>Type some text, ideally at least a sentence.</li>
@@ -302,7 +303,7 @@ export default function SimilarityMatrixModal() {
                 </button>
               ))}
             </div>
-            <div className="flex w-1/3 flex-shrink-0 flex-wrap content-start items-start justify-start gap-1 gap-y-[3px] overflow-y-auto p-4">
+            <div className="flex flex-shrink-0 flex-wrap content-start items-start justify-start gap-1 gap-y-[3px] overflow-y-auto p-4 sm:w-1/3">
               <div className="mb-1.5 w-full text-center font-mono text-xs font-bold uppercase text-slate-600">
                 {similarityMatrixSource?.modelId} @ {similarityMatrixSource?.id}
               </div>
@@ -317,7 +318,7 @@ export default function SimilarityMatrixModal() {
                     }
                   }}
                   placeholder="Enter some text, then click 'Generate'."
-                  className="flex-1 rounded border border-slate-300 px-3 py-2 text-[12px] leading-normal text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                  className="max-h-[80px] flex-1 rounded border border-slate-300 px-3 py-2 text-[12px] leading-normal text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 sm:max-h-none"
                   disabled={loading}
                   rows={10}
                 />
@@ -340,7 +341,7 @@ export default function SimilarityMatrixModal() {
                       setError(null);
                     }}
                     disabled={loading}
-                    className="flex w-full flex-1 flex-col items-center justify-center gap-y-1 rounded bg-slate-600 px-2 py-2 text-[11px] font-medium text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="hidden w-full flex-1 flex-col items-center justify-center gap-y-1 rounded bg-slate-600 px-2 py-2 text-[11px] font-medium text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:flex"
                   >
                     <RotateCcw className="h-4 w-4" /> Reset
                   </button>
@@ -352,20 +353,20 @@ export default function SimilarityMatrixModal() {
                       alert('URL copied to clipboard!');
                     }}
                     disabled={loading || tokens.length === 0}
-                    className="flex w-full flex-1 flex-col items-center justify-center gap-y-1 rounded bg-emerald-600 px-2 py-2 text-[11px] font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="hidden w-full flex-1 flex-col items-center justify-center gap-y-1 rounded bg-emerald-600 px-2 py-2 text-[11px] font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:flex"
                   >
                     <Share className="h-4 w-4" /> Share
                   </button>
                 </div>
               </div>
               {tokens.length > 0 && (
-                <div className="mt-4 flex w-full flex-shrink-0 flex-wrap content-start items-start justify-start gap-1 gap-y-1.5 overflow-y-auto border-t px-0 pt-4">
+                <div className="mt-4 flex max-h-[120px] w-full flex-shrink-0 flex-wrap content-start items-start justify-start gap-1 gap-y-1.5 overflow-scroll overflow-y-auto border-t px-0 pt-4 sm:max-h-none sm:overflow-auto">
                   {tokens.map((token, i) => (
                     <div
                       key={i}
                       onMouseEnter={() => setSelectedToken(i)}
                       onMouseLeave={() => setSelectedToken(null)}
-                      className={`cursor-default select-none rounded py-[1px] font-mono text-[11px] leading-normal transition-all ${
+                      className={`cursor-default select-none rounded py-[1px] font-mono text-[9px] leading-normal transition-all sm:text-[11px] ${
                         selectedToken === i
                           ? 'border border-sky-700 bg-sky-700 text-white'
                           : 'border border-transparent bg-slate-100 text-slate-700 hover:bg-blue-100'
@@ -393,7 +394,7 @@ export default function SimilarityMatrixModal() {
             {/* Matrix container - takes remaining height */}
             <div
               ref={containerRef}
-              className="flex flex-1 flex-col items-center justify-center overflow-hidden bg-white"
+              className="flex flex-1 flex-col items-center justify-start overflow-hidden border-t bg-white pt-5 sm:justify-center sm:border-t-0 sm:pt-0"
             >
               {loading && (
                 <div className="flex flex-col items-center justify-center gap-y-3 text-center text-xs text-slate-500">
@@ -416,8 +417,8 @@ export default function SimilarityMatrixModal() {
                             return (
                               <div
                                 key={i}
+                                className="w-[4px] sm:w-[8px]"
                                 style={{
-                                  width: '8px',
                                   height: '24px',
                                   backgroundColor: getMagmaColor(value),
                                 }}
