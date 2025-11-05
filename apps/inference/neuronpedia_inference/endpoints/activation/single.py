@@ -3,6 +3,7 @@ from typing import Any
 
 import einops
 import torch
+from nnterp import StandardizedTransformer
 from fastapi import APIRouter, Body
 from fastapi.responses import JSONResponse
 from neuronpedia_inference_client.models.activation_single_post200_response import (
@@ -69,11 +70,16 @@ async def activation_single(
         # this is not exactly correct, but sometimes the SAE doesn't have the prepend_bos flag set
         prepend_bos = sae.cfg.metadata.prepend_bos or model.cfg.tokenizer_prepends_bos
 
-        tokens = model.to_tokens(
-            prompt,
-            prepend_bos=prepend_bos,
-            truncate=False,
-        )[0]
+        if isinstance(model, StandardizedTransformer):
+            tokens = model.tokenizer(
+                prompt, add_special_tokens=True, return_tensors="pt"
+            )["input_ids"][0]
+        else:
+            tokens = model.to_tokens(
+                prompt,
+                prepend_bos=prepend_bos,
+                truncate=False,
+            )[0]
 
         if len(tokens) > config.token_limit:
             logger.error(
@@ -88,7 +94,12 @@ async def activation_single(
                 status_code=400,
             )
 
-        str_tokens: list[str] = model.to_str_tokens(prompt, prepend_bos=prepend_bos)  # type: ignore
+        if isinstance(model, StandardizedTransformer):
+            tokenizer = model.tokenizer
+            str_tokens: list[str] = tokenizer.tokenize(prompt)
+            str_tokens = [tokenizer.convert_tokens_to_string([t]) for t in str_tokens]
+        else:
+            str_tokens: list[str] = model.to_str_tokens(prompt, prepend_bos=prepend_bos)  # type: ignore
         result = process_activations(model, source, index, tokens)
 
         # Calculate DFA if enabled
@@ -159,17 +170,36 @@ def get_layer_num_from_sae_id(sae_id: str) -> int:
 
 
 def process_activations(
-    model: HookedTransformer | TransformerBridge,
+    model: HookedTransformer | TransformerBridge | StandardizedTransformer,
     layer: str,
     index: int,
     tokens: torch.Tensor,
 ) -> ActivationSinglePost200ResponseActivation:
     sae_manager = SAEManager.get_instance()
+    hook_name = sae_manager.get_sae_hook(layer)
+    sae_type = sae_manager.get_sae_type(layer)
+
+    # zero out all values that are the BOS token
+    bos_token_id = model.tokenizer.bos_token_id
+    bos_indices = (tokens == bos_token_id).nonzero(as_tuple=True)[0]
+
+    if isinstance(model, StandardizedTransformer):
+        layer_num = get_layer_num_from_sae_id(layer)
+        with model.trace(tokens):
+            outputs = model.layers_output[layer_num].save()
+        cache = {hook_name: outputs}
+        return process_feature_activations(
+            sae_manager.get_sae(layer),
+            sae_type,
+            cache,
+            hook_name,
+            index,
+            bos_indices,
+        )
+
     if isinstance(model, TransformerBridge) and tokens.ndim == 1:
         tokens = tokens.unsqueeze(0)
     _, cache = model.run_with_cache(tokens)
-    hook_name = sae_manager.get_sae_hook(layer)
-    sae_type = sae_manager.get_sae_type(layer)
 
     if sae_type == "neurons":
         return process_neuron_activations(cache, hook_name, index, sae_manager.device)
@@ -206,9 +236,10 @@ def process_feature_activations(
     cache: ActivationCache | dict[str, torch.Tensor],
     hook_name: str,
     index: int,
+    bos_indices: list[int],
 ) -> ActivationSinglePost200ResponseActivation:
     if sae_type == "saelens-1":
-        return process_saelens_activations(sae, cache, hook_name, index)
+        return process_saelens_activations(sae, cache, hook_name, index, bos_indices)
     raise ValueError(f"Unsupported SAE type: {sae_type}")
 
 
@@ -217,6 +248,7 @@ def process_saelens_activations(
     cache: ActivationCache | dict[str, torch.Tensor],
     hook_name: str,
     index: int,
+    bos_indices: list[int],
 ) -> ActivationSinglePost200ResponseActivation:
     # if the cache[hook_name] is not on the same device as the sae, move it to the sae's device
     cached_value = cache[hook_name]
@@ -224,6 +256,11 @@ def process_saelens_activations(
         cached_value = cached_value.to(sae.device)
     feature_acts = sae.encode(cached_value)
     values = torch.transpose(feature_acts.squeeze(0), 0, 1)[index].detach().tolist()
+
+    # zero out all values that are the BOS token
+    for idx in bos_indices:
+        values[idx] = 0
+
     max_value = max(values)
     return ActivationSinglePost200ResponseActivation(
         values=values,

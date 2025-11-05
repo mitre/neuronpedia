@@ -7,6 +7,7 @@ import sys
 import traceback
 from collections.abc import Awaitable
 from typing import Callable
+from nnterp import StandardizedTransformer
 
 import sentry_sdk
 import torch
@@ -169,7 +170,14 @@ async def initialize(
         )
         Config._instance = config
 
-        if USE_TLENS_BRIDGE == False:
+        if args.nnsight:
+            logger.info("Loading model with nnterp...")
+            model = StandardizedTransformer(
+                config.model_id,
+                dtype=STR_TO_DTYPE[config.model_dtype],
+            )
+
+        elif USE_TLENS_BRIDGE == False:
             logger.info("Loading model...")
 
             hf_model = None
@@ -221,7 +229,10 @@ async def initialize(
             model.enable_compatibility_mode(no_processing=True)
 
         Model._instance = model
-        config.set_num_layers(model.cfg.n_layers)
+        if isinstance(model, StandardizedTransformer):
+            config.set_num_layers(model.num_layers)
+        else:
+            config.set_num_layers(model.cfg.n_layers)
 
         if model.tokenizer:
             special_token_ids = set(
@@ -243,7 +254,7 @@ async def initialize(
         checkCudaError()
 
         logger.info("Loading SAEs...")
-        SAEManager._instance = SAEManager(model.cfg.n_layers, args.device)
+        SAEManager._instance = SAEManager(config.num_layers, args.device)
         SAEManager._instance.load_saes()
 
         global initialized
