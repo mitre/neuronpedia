@@ -34,6 +34,13 @@ class TestDefaultApi(unittest.TestCase):
         """
         pass
 
+    def test_activation_single_batch_post(self) -> None:
+        """Test case for activation_single_batch_post
+
+        Given a batch of text prompts, returns the activation values for a single SAE latent or custom vector+hook.
+        """
+        pass
+
     def test_activation_single_post(self) -> None:
         """Test case for activation_single_post
 

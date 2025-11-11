@@ -7,7 +7,6 @@ import sys
 import traceback
 from collections.abc import Awaitable
 from typing import Callable
-from nnterp import StandardizedTransformer
 
 import sentry_sdk
 import torch
@@ -15,9 +14,11 @@ from dotenv import load_dotenv
 from fastapi import APIRouter, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from nnterp import StandardizedTransformer
 from transformer_lens import HookedTransformer
 from transformer_lens.hook_points import HookPoint
-from transformer_lens.model_bridge.sources.transformers import boot
+
+# from transformer_lens.model_bridge.sources.transformers import boot
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from neuronpedia_inference.args import list_available_options, parse_env_and_args
@@ -27,6 +28,9 @@ from neuronpedia_inference.endpoints.activation.all import (
 )
 from neuronpedia_inference.endpoints.activation.single import (
     router as activation_single_router,
+)
+from neuronpedia_inference.endpoints.activation.single_batch import (
+    router as activation_single_batch_router,
 )
 from neuronpedia_inference.endpoints.activation.topk_by_token import (
     router as activation_topk_by_token_router,
@@ -42,13 +46,13 @@ from neuronpedia_inference.endpoints.util.sae_topk_by_decoder_cossim import (
     router as sae_topk_by_decoder_cossim_router,
 )
 from neuronpedia_inference.endpoints.util.sae_vector import router as sae_vector_router
+from neuronpedia_inference.endpoints.util.similarity_matrix_pred import (
+    router as similarity_matrix_pred_router,
+)
 from neuronpedia_inference.logging import initialize_logging
 from neuronpedia_inference.sae_manager import SAEManager  # noqa: F401
 from neuronpedia_inference.shared import STR_TO_DTYPE, Model  # noqa: F401
 from neuronpedia_inference.utils import checkCudaError
-from neuronpedia_inference.endpoints.util.similarity_matrix_pred import (
-    router as similarity_matrix_pred_router,
-)
 
 # Initialize logging at module level
 initialize_logging()
@@ -93,6 +97,7 @@ v1_router.include_router(activation_all_router)
 v1_router.include_router(steer_completion_chat_router)
 v1_router.include_router(steer_completion_router)
 v1_router.include_router(activation_single_router)
+v1_router.include_router(activation_single_batch_router)
 v1_router.include_router(activation_topk_by_token_router)
 v1_router.include_router(sae_topk_by_decoder_cossim_router)
 v1_router.include_router(sae_vector_router)
@@ -106,7 +111,7 @@ async def health_check():
     return {"status": "healthy"}
 
 
-USE_TLENS_BRIDGE = True
+USE_TLENS_BRIDGE = False
 
 
 @app.post("/initialize")
@@ -214,19 +219,19 @@ async def initialize(
             for block in model.blocks:
                 add_hook_in_to_mlp(block.mlp)
             model.setup()
-        else:
-            # Load the model utilizing the new transformerlens bridge
-            model = boot(
-                model_name=(
-                    config.override_model_id
-                    if config.override_model_id
-                    else config.model_id
-                ),
-                device=args.device,
-                dtype=STR_TO_DTYPE[config.model_dtype],
-            )
+        # else:
+        #     # Load the model utilizing the new transformerlens bridge
+        #     model = boot(
+        #         model_name=(
+        #             config.override_model_id
+        #             if config.override_model_id
+        #             else config.model_id
+        #         ),
+        #         device=args.device,
+        #         dtype=STR_TO_DTYPE[config.model_dtype],
+        #     )
 
-            model.enable_compatibility_mode(no_processing=True)
+        #     model.enable_compatibility_mode(no_processing=True)
 
         Model._instance = model
         if isinstance(model, StandardizedTransformer):
@@ -243,7 +248,9 @@ async def initialize(
                 + model.tokenizer.additional_special_tokens_ids
             )
             special_token_ids = {
-                tid for tid in special_token_ids if tid is not None  # type: ignore
+                tid
+                for tid in special_token_ids
+                if tid is not None  # type: ignore
             }
             # cache this one time for steering later use
             config.set_steer_special_token_ids(special_token_ids)  # type: ignore

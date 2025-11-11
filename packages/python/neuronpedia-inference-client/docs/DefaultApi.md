@@ -5,6 +5,7 @@ All URIs are relative to */v1*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**activation_all_post**](DefaultApi.md#activation_all_post) | **POST** /activation/all | For a given prompt, get the top activating features for a set of SAEs (eg gemmascope-res-65k), or specific SAEs in the set of SAEs (eg 0-gemmascope-res-65k, 5-gemmascope-res-65k). Also has other customization options.
+[**activation_single_batch_post**](DefaultApi.md#activation_single_batch_post) | **POST** /activation/single-batch | Given a batch of text prompts, returns the activation values for a single SAE latent or custom vector+hook.
 [**activation_single_post**](DefaultApi.md#activation_single_post) | **POST** /activation/single | Given a text prompt, returns the activation values for a single SAE latent or custom vector+hook.
 [**activation_topk_by_token_post**](DefaultApi.md#activation_topk_by_token_post) | **POST** /activation/topk-by-token | For a given prompt, get the top activating features at each token position for a single SAE.
 [**steer_completion_chat_post**](DefaultApi.md#steer_completion_chat_post) | **POST** /steer/completion-chat | For a given prompt, complete it by steering with the given feature or vector
@@ -74,6 +75,85 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**ActivationAllPost200Response**](ActivationAllPost200Response.md)
+
+### Authorization
+
+[SimpleSecretAuth](../README.md#SimpleSecretAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successfully retrieved results |  -  |
+**401** | X-SECRET-KEY header is missing or invalid |  * WWW_Authenticate -  <br>  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **activation_single_batch_post**
+> ActivationSingleBatchPost200Response activation_single_batch_post(activation_single_batch_post_request)
+
+Given a batch of text prompts, returns the activation values for a single SAE latent or custom vector+hook.
+
+### Example
+
+* Api Key Authentication (SimpleSecretAuth):
+
+```python
+import neuronpedia_inference_client
+from neuronpedia_inference_client.models.activation_single_batch_post200_response import ActivationSingleBatchPost200Response
+from neuronpedia_inference_client.models.activation_single_batch_post_request import ActivationSingleBatchPostRequest
+from neuronpedia_inference_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to /v1
+# See configuration.py for a list of all supported configuration parameters.
+configuration = neuronpedia_inference_client.Configuration(
+    host = "/v1"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure API key authorization: SimpleSecretAuth
+configuration.api_key['SimpleSecretAuth'] = os.environ["API_KEY"]
+
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# configuration.api_key_prefix['SimpleSecretAuth'] = 'Bearer'
+
+# Enter a context with an instance of the API client
+with neuronpedia_inference_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = neuronpedia_inference_client.DefaultApi(api_client)
+    activation_single_batch_post_request = neuronpedia_inference_client.ActivationSingleBatchPostRequest() # ActivationSingleBatchPostRequest | 
+
+    try:
+        # Given a batch of text prompts, returns the activation values for a single SAE latent or custom vector+hook.
+        api_response = api_instance.activation_single_batch_post(activation_single_batch_post_request)
+        print("The response of DefaultApi->activation_single_batch_post:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling DefaultApi->activation_single_batch_post: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **activation_single_batch_post_request** | [**ActivationSingleBatchPostRequest**](ActivationSingleBatchPostRequest.md)|  | 
+
+### Return type
+
+[**ActivationSingleBatchPost200Response**](ActivationSingleBatchPost200Response.md)
 
 ### Authorization
 

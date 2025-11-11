@@ -17,6 +17,8 @@ import * as runtime from '../runtime';
 import type {
   ActivationAllPost200Response,
   ActivationAllPostRequest,
+  ActivationSingleBatchPost200Response,
+  ActivationSingleBatchPostRequest,
   ActivationSinglePost200Response,
   ActivationSinglePostRequest,
   ActivationTopkByTokenPost200Response,
@@ -37,6 +39,10 @@ import {
     ActivationAllPost200ResponseToJSON,
     ActivationAllPostRequestFromJSON,
     ActivationAllPostRequestToJSON,
+    ActivationSingleBatchPost200ResponseFromJSON,
+    ActivationSingleBatchPost200ResponseToJSON,
+    ActivationSingleBatchPostRequestFromJSON,
+    ActivationSingleBatchPostRequestToJSON,
     ActivationSinglePost200ResponseFromJSON,
     ActivationSinglePost200ResponseToJSON,
     ActivationSinglePostRequestFromJSON,
@@ -69,6 +75,10 @@ import {
 
 export interface ActivationAllPostOperationRequest {
     activationAllPostRequest: ActivationAllPostRequest;
+}
+
+export interface ActivationSingleBatchPostOperationRequest {
+    activationSingleBatchPostRequest: ActivationSingleBatchPostRequest;
 }
 
 export interface ActivationSinglePostOperationRequest {
@@ -141,6 +151,46 @@ export class DefaultApi extends runtime.BaseAPI {
      */
     async activationAllPost(requestParameters: ActivationAllPostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ActivationAllPost200Response> {
         const response = await this.activationAllPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Given a batch of text prompts, returns the activation values for a single SAE latent or custom vector+hook.
+     */
+    async activationSingleBatchPostRaw(requestParameters: ActivationSingleBatchPostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ActivationSingleBatchPost200Response>> {
+        if (requestParameters['activationSingleBatchPostRequest'] == null) {
+            throw new runtime.RequiredError(
+                'activationSingleBatchPostRequest',
+                'Required parameter "activationSingleBatchPostRequest" was null or undefined when calling activationSingleBatchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["X-SECRET-KEY"] = await this.configuration.apiKey("X-SECRET-KEY"); // SimpleSecretAuth authentication
+        }
+
+        const response = await this.request({
+            path: `/activation/single-batch`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ActivationSingleBatchPostRequestToJSON(requestParameters['activationSingleBatchPostRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ActivationSingleBatchPost200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Given a batch of text prompts, returns the activation values for a single SAE latent or custom vector+hook.
+     */
+    async activationSingleBatchPost(requestParameters: ActivationSingleBatchPostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ActivationSingleBatchPost200Response> {
+        const response = await this.activationSingleBatchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -3,7 +3,6 @@ from typing import Any
 
 import einops
 import torch
-from nnterp import StandardizedTransformer
 from fastapi import APIRouter, Body
 from fastapi.responses import JSONResponse
 from neuronpedia_inference_client.models.activation_single_post200_response import (
@@ -15,9 +14,10 @@ from neuronpedia_inference_client.models.activation_single_post200_response_acti
 from neuronpedia_inference_client.models.activation_single_post_request import (
     ActivationSinglePostRequest,
 )
+from nnterp import StandardizedTransformer
 from transformer_lens import ActivationCache, HookedTransformer
-from transformer_lens.model_bridge import TransformerBridge
 
+# from transformer_lens.model_bridge import TransformerBridge
 from neuronpedia_inference.config import Config
 from neuronpedia_inference.sae_manager import SAEManager
 from neuronpedia_inference.shared import Model, with_request_lock
@@ -170,7 +170,7 @@ def get_layer_num_from_sae_id(sae_id: str) -> int:
 
 
 def process_activations(
-    model: HookedTransformer | TransformerBridge | StandardizedTransformer,
+    model: HookedTransformer | StandardizedTransformer,  # | TransformerBridge
     layer: str,
     index: int,
     tokens: torch.Tensor,
@@ -197,8 +197,8 @@ def process_activations(
             bos_indices,
         )
 
-    if isinstance(model, TransformerBridge) and tokens.ndim == 1:
-        tokens = tokens.unsqueeze(0)
+    # if isinstance(model, TransformerBridge) and tokens.ndim == 1:
+    #     tokens = tokens.unsqueeze(0)
     _, cache = model.run_with_cache(tokens)
 
     if sae_type == "neurons":

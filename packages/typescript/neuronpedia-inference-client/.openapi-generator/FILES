@@ -9,6 +9,9 @@ src/index.ts
 src/models/ActivationAllPost200Response.ts
 src/models/ActivationAllPost200ResponseActivationsInner.ts
 src/models/ActivationAllPostRequest.ts
+src/models/ActivationSingleBatchPost200Response.ts
+src/models/ActivationSingleBatchPost200ResponseResultsInner.ts
+src/models/ActivationSingleBatchPostRequest.ts
 src/models/ActivationSinglePost200Response.ts
 src/models/ActivationSinglePost200ResponseActivation.ts
 src/models/ActivationSinglePostRequest.ts

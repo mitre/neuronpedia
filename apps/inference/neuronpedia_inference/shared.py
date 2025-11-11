@@ -2,9 +2,10 @@ import asyncio
 from functools import wraps
 
 import torch
-from transformer_lens import HookedTransformer
-from transformer_lens.model_bridge import TransformerBridge
+
+# from transformer_lens.model_bridge import TransformerBridge
 from nnterp import StandardizedTransformer
+from transformer_lens import HookedTransformer
 
 request_lock = asyncio.Lock()
 
@@ -22,19 +23,22 @@ def with_request_lock():
 
 
 class Model:
-    _instance: HookedTransformer | TransformerBridge | StandardizedTransformer  # type: ignore
+    _instance: (
+        HookedTransformer | StandardizedTransformer
+    )  # | TransformerBridge  # type: ignore
 
     @classmethod
     def get_instance(
         cls,
-    ) -> HookedTransformer | TransformerBridge | StandardizedTransformer:
+    ) -> HookedTransformer | StandardizedTransformer:  # | TransformerBridge:
         if cls._instance is None:
             raise ValueError("Model not initialized")
         return cls._instance
 
     @classmethod
     def set_instance(
-        cls, model: HookedTransformer | TransformerBridge | StandardizedTransformer
+        cls,
+        model: HookedTransformer | StandardizedTransformer,  # | TransformerBridge
     ) -> None:
         cls._instance = model
 

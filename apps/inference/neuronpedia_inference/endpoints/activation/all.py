@@ -4,7 +4,6 @@ from typing import Any
 
 import einops
 import torch
-from nnterp import StandardizedTransformer
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from neuronpedia_inference_client.models.activation_all_post200_response import (
@@ -16,9 +15,10 @@ from neuronpedia_inference_client.models.activation_all_post200_response_activat
 from neuronpedia_inference_client.models.activation_all_post_request import (
     ActivationAllPostRequest,
 )
+from nnterp import StandardizedTransformer
 from transformer_lens import ActivationCache
-from transformer_lens.model_bridge import TransformerBridge
 
+# from transformer_lens.model_bridge import TransformerBridge
 from neuronpedia_inference.config import Config
 from neuronpedia_inference.sae_manager import SAEManager
 from neuronpedia_inference.shared import Model, with_request_lock
@@ -216,8 +216,8 @@ class ActivationProcessor:
                         outputs = model.layers_output[layer_num].save()
                         cache[hook_name] = outputs
             else:
-                if isinstance(model, TransformerBridge) and tokens.ndim == 1:
-                    tokens = tokens.unsqueeze(0)
+                # if isinstance(model, TransformerBridge) and tokens.ndim == 1:
+                #     tokens = tokens.unsqueeze(0)
                 if max_layer:
                     _, cache = model.run_with_cache(tokens, stop_at_layer=max_layer)
                 else:
@@ -287,9 +287,10 @@ class ActivationProcessor:
     ) -> dict[str, Any]:
         model = Model.get_instance()
         if ignore_bos:
-            if isinstance(model, StandardizedTransformer):
-                activations_by_index[:, 0] = 0
-            elif model.cfg.default_prepend_bos:
+            if (
+                isinstance(model, StandardizedTransformer)
+                or model.cfg.default_prepend_bos
+            ):
                 activations_by_index[:, 0] = 0
 
         """Process activations for a single layer."""

@@ -3,7 +3,6 @@ import logging
 import torch
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
-from nnterp import StandardizedTransformer
 from neuronpedia_inference_client.models.activation_topk_by_token_post200_response import (
     ActivationTopkByTokenPost200Response,
 )
@@ -16,9 +15,10 @@ from neuronpedia_inference_client.models.activation_topk_by_token_post200_respon
 from neuronpedia_inference_client.models.activation_topk_by_token_post_request import (
     ActivationTopkByTokenPostRequest,
 )
+from nnterp import StandardizedTransformer
 from transformer_lens import ActivationCache
-from transformer_lens.model_bridge import TransformerBridge
 
+# from transformer_lens.model_bridge import TransformerBridge
 from neuronpedia_inference.config import Config
 from neuronpedia_inference.sae_manager import SAEManager
 from neuronpedia_inference.shared import Model, with_request_lock
@@ -91,7 +91,9 @@ async def activation_topk_by_token(
     hook_name = sae_manager.get_sae_hook(source)
     sae_type = sae_manager.get_sae_type(source)
 
-    if isinstance(model, TransformerBridge) and tokens.ndim == 1:
+    # if isinstance(model, TransformerBridge) and tokens.ndim == 1:
+    #     tokens = tokens.unsqueeze(0)
+    if tokens.ndim == 1:
         tokens = tokens.unsqueeze(0)
     if isinstance(model, StandardizedTransformer):
         layer_num = get_layer_num_from_sae_id(source)
