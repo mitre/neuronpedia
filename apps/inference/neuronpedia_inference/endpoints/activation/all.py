@@ -136,6 +136,10 @@ class ActivationProcessor:
         # first_layer = request.selected_sources[0]
         # prepend_bos = sae_manager.get_sae(first_layer).cfg.metadata.prepend_bos
         prepend_bos = False
+        # if the prompt doesn't start with the bos, prepend it
+        bos_token = model.tokenizer.bos_token
+        if not request.prompt.startswith(bos_token):
+            request.prompt = bos_token + request.prompt
 
         _, str_tokens, cache = self._tokenize_and_get_cache(
             request.prompt, prepend_bos, request, max_layer

@@ -48,7 +48,7 @@ async def activation_topk_by_token(
 
     ignore_bos = request.ignore_bos
 
-    sae = sae_manager.get_sae(source)
+    # sae = sae_manager.get_sae(source)
 
     prepend_bos = False
 
@@ -58,7 +58,7 @@ async def activation_topk_by_token(
         prompt = bos_token + prompt
 
     if isinstance(model, StandardizedTransformer):
-        tokens = model.tokenizer(prompt, add_special_tokens=True, return_tensors="pt")[
+        tokens = model.tokenizer(prompt, add_special_tokens=False, return_tensors="pt")[
             "input_ids"
         ][0]
     else:

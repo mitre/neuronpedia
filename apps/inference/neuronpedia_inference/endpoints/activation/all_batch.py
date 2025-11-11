@@ -226,17 +226,23 @@ class ActivationProcessor:
         config = Config.get_instance()
 
         # Get the first sae and check if prepend bos is true
-        first_layer = request.selected_sources[0]
-        prepend_bos = sae_manager.get_sae(first_layer).cfg.metadata.prepend_bos
+        # first_layer = request.selected_sources[0]
+        # prepend_bos = sae_manager.get_sae(first_layer).cfg.metadata.prepend_bos
+        prepend_bos = False
 
         # Tokenize all prompts
         all_tokens = []
         all_str_tokens = []
 
         for prompt in prompts:
+            # if the prompt doesn't start with the bos, prepend it
+            bos_token = model.tokenizer.bos_token
+            if not prompt.startswith(bos_token):
+                prompt = bos_token + prompt
+
             if isinstance(model, StandardizedTransformer):
                 tokens = model.tokenizer(
-                    prompt, add_special_tokens=True, return_tensors="pt"
+                    prompt, add_special_tokens=False, return_tensors="pt"
                 )["input_ids"][0]
             else:
                 tokens = model.to_tokens(

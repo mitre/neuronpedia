@@ -68,7 +68,12 @@ async def activation_single(
 
         # TODO: we assume that if either SAE or model prepends bos, then we should prepend bos
         # this is not exactly correct, but sometimes the SAE doesn't have the prepend_bos flag set
-        prepend_bos = sae.cfg.metadata.prepend_bos or model.cfg.tokenizer_prepends_bos
+        # prepend_bos = sae.cfg.metadata.prepend_bos or model.cfg.tokenizer_prepends_bos
+        prepend_bos = False
+        # if the prompt doesn't start with the bos, prepend it
+        bos_token = model.tokenizer.bos_token
+        if not prompt.startswith(bos_token):
+            prompt = bos_token + prompt
 
         if isinstance(model, StandardizedTransformer):
             tokens = model.tokenizer(
@@ -263,6 +268,9 @@ def process_saelens_activations(
     # zero out all values that are the BOS token
     for idx in bos_indices:
         values[idx] = 0
+    # if the first token was the BOS token, then offset outputs by one removing teh first token
+    if len(bos_indices) > 0:
+        values = values[1:]
 
     max_value = max(values)
     return ActivationSinglePost200ResponseActivation(
