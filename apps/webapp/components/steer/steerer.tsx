@@ -39,7 +39,7 @@ import SteerPresetSelector from './preset-selector';
 import SteerSelectedFeature from './selected-feature';
 import SteerTooltip from './tooltip';
 
-const MODELS_TO_FILTER_OUT = ['gpt-oss-20b'];
+const MODELS_TO_FILTER_OUT = ['gpt-oss-20b', 'llama3.3-70b-it'];
 
 export default function Steerer({
   initialModelId,
