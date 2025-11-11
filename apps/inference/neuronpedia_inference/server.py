@@ -26,6 +26,9 @@ from neuronpedia_inference.config import Config, get_saelens_neuronpedia_directo
 from neuronpedia_inference.endpoints.activation.all import (
     router as activation_all_router,
 )
+from neuronpedia_inference.endpoints.activation.all_batch import (
+    router as activation_all_batch_router,
+)
 from neuronpedia_inference.endpoints.activation.single import (
     router as activation_single_router,
 )
@@ -51,7 +54,11 @@ from neuronpedia_inference.endpoints.util.similarity_matrix_pred import (
 )
 from neuronpedia_inference.logging import initialize_logging
 from neuronpedia_inference.sae_manager import SAEManager  # noqa: F401
-from neuronpedia_inference.shared import STR_TO_DTYPE, Model  # noqa: F401
+from neuronpedia_inference.shared import (  # noqa: F401
+    STR_TO_DTYPE,
+    Model,
+    replace_tlens_model_id_with_hf_model_id,
+)
 from neuronpedia_inference.utils import checkCudaError
 
 # Initialize logging at module level
@@ -94,6 +101,7 @@ async def startup_event():
 v1_router = APIRouter(prefix="/v1")
 
 v1_router.include_router(activation_all_router)
+v1_router.include_router(activation_all_batch_router)
 v1_router.include_router(steer_completion_chat_router)
 v1_router.include_router(steer_completion_router)
 v1_router.include_router(activation_single_router)
@@ -177,8 +185,9 @@ async def initialize(
 
         if args.nnsight:
             logger.info("Loading model with nnterp...")
+
             model = StandardizedTransformer(
-                config.model_id,
+                replace_tlens_model_id_with_hf_model_id(config.model_id),
                 dtype=STR_TO_DTYPE[config.model_dtype],
             )
 

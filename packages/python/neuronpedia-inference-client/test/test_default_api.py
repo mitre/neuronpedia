@@ -27,6 +27,13 @@ class TestDefaultApi(unittest.TestCase):
     def tearDown(self) -> None:
         pass
 
+    def test_activation_all_batch_post(self) -> None:
+        """Test case for activation_all_batch_post
+
+        For a given batch of prompts, get the top activating features for a set of SAEs (eg gemmascope-res-65k), or specific SAEs in the set of SAEs (eg 0-gemmascope-res-65k, 5-gemmascope-res-65k). Also has other customization options.
+        """
+        pass
+
     def test_activation_all_post(self) -> None:
         """Test case for activation_all_post
 

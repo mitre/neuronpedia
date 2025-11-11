@@ -98,7 +98,10 @@ async def activation_topk_by_token(
     if isinstance(model, StandardizedTransformer):
         layer_num = get_layer_num_from_sae_id(source)
         with model.trace(tokens):
-            outputs = model.layers_output[layer_num].save()
+            if "resid_post" in hook_name:
+                outputs = model.layers_output[layer_num].save()
+            else:
+                raise ValueError(f"Unsupported hook name for nnsight: {hook_name}")
         cache = {hook_name: outputs}
     else:
         _, cache = model.run_with_cache(tokens)

@@ -186,7 +186,10 @@ def process_activations(
     if isinstance(model, StandardizedTransformer):
         layer_num = get_layer_num_from_sae_id(layer)
         with model.trace(tokens):
-            outputs = model.layers_output[layer_num].save()
+            if "resid_post" in hook_name:
+                outputs = model.layers_output[layer_num].save()
+            else:
+                raise ValueError(f"Unsupported hook name for nnsight: {hook_name}")
         cache = {hook_name: outputs}
         return process_feature_activations(
             sae_manager.get_sae(layer),

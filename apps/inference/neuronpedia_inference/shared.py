@@ -50,3 +50,16 @@ STR_TO_DTYPE = {
     "float16": torch.float16,
     "bfloat16": torch.bfloat16,
 }
+
+
+TLENS_MODEL_ID_TO_HF_MODEL_ID = {
+    "gpt2-small": "openai-community/gpt2",
+    "gemma-2-2b": "google/gemma-2-2b",
+    "gemma-2-2b-it": "google/gemma-2-2b-it",
+}
+
+
+def replace_tlens_model_id_with_hf_model_id(model_id: str) -> str:
+    if model_id in TLENS_MODEL_ID_TO_HF_MODEL_ID:
+        return TLENS_MODEL_ID_TO_HF_MODEL_ID[model_id]
+    return model_id

@@ -6,14 +6,20 @@ import einops
 import torch
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
+from neuronpedia_inference_client.models.activation_all_batch_post200_response import (
+    ActivationAllBatchPost200Response,
+)
+from neuronpedia_inference_client.models.activation_all_batch_post200_response_results_inner import (
+    ActivationAllBatchPost200ResponseResultsInner,
+)
+from neuronpedia_inference_client.models.activation_all_batch_post_request import (
+    ActivationAllBatchPostRequest,
+)
 from neuronpedia_inference_client.models.activation_all_post200_response import (
     ActivationAllPost200Response,
 )
 from neuronpedia_inference_client.models.activation_all_post200_response_activations_inner import (
     ActivationAllPost200ResponseActivationsInner,
-)
-from neuronpedia_inference_client.models.activation_all_post_request import (
-    ActivationAllPostRequest,
 )
 from nnterp import StandardizedTransformer
 from transformer_lens import ActivationCache
@@ -27,14 +33,34 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+# Maximum number of prompts that can be processed in a single batch
+MAX_BATCH_SIZE = 8
 
-@router.post("/activation/all")
+
+@router.post("/activation/all-batch")
 @with_request_lock()
-async def activation_all(
-    request: ActivationAllPostRequest,
+async def activation_all_batch(
+    request: ActivationAllBatchPostRequest,
 ):
     sae_manager = SAEManager.get_instance()
     config = Config.get_instance()
+
+    # Validate batch size
+    prompts = request.prompts
+    if len(prompts) == 0:
+        return JSONResponse(
+            content={"error": "At least one prompt is required"},
+            status_code=400,
+        )
+
+    if len(prompts) > MAX_BATCH_SIZE:
+        return JSONResponse(
+            content={
+                "error": f"Batch size {len(prompts)} exceeds maximum of {MAX_BATCH_SIZE}"
+            },
+            status_code=400,
+        )
+
     if request.model not in config.get_valid_model_ids():
         logger.error(
             "Invalid model: %s, valid models are %s",
@@ -53,12 +79,17 @@ async def activation_all(
     if len(request.selected_sources) == 0:
         request.selected_sources = sae_manager.sae_set_to_saes[request.source_set]
 
-    # if the request doesn't start with the bos, prepend it
+    # Prepend BOS token to prompts that don't have it
     bos_token = Model.get_instance().tokenizer.bos_token
-    if not request.prompt.startswith(bos_token):
-        request.prompt = bos_token + request.prompt
+    processed_prompts = []
+    for prompt in prompts:
+        if not prompt.startswith(bos_token):
+            processed_prompts.append(bos_token + prompt)
+        else:
+            processed_prompts.append(prompt)
 
-    # # Removed this check because our SAE manager will just load and unload as needed (though it will be a little slower)
+    # # Removed this check because our SAE manager will just load and unload as
+    # # needed (though it will be a little slower)
     # # Check if the number of requested layers exceeds the maximum
     # if len(request.selected_sources) > config.max_loaded_saes:
     #     logger.error(
@@ -68,7 +99,10 @@ async def activation_all(
     #     )
     #     return JSONResponse(
     #         content={
-    #             "error": f"Number of requested SAEs ({len(request.selected_sources)}) exceeds the maximum allowed ({config.max_loaded_saes})"
+    #             "error": (
+    #                 f"Number of requested SAEs ({len(request.selected_sources)})"
+    #                 f" exceeds the maximum allowed ({config.max_loaded_saes})"
+    #             )
     #         },
     #         status_code=400,
     #     )
@@ -83,12 +117,25 @@ async def activation_all(
         )
 
     try:
-        logger.info("Processing activations")
+        logger.info("Processing activations for %d prompts", len(processed_prompts))
         processor = ActivationProcessor()
-        result = processor.process_activations(request)
-        logger.info("Activations result processed successfully")
 
-        return result
+        # Process all prompts in parallel using batched GPU operations
+        results = processor.process_activations_batch(request, processed_prompts)
+
+        logger.info("Activations results processed successfully")
+
+        # Build response with results array
+        response_results = [
+            ActivationAllBatchPost200ResponseResultsInner(
+                activations=result.activations,
+                tokens=result.tokens,
+                counts=result.counts,
+            )
+            for result in results
+        ]
+
+        return ActivationAllBatchPost200Response(results=response_results)
     except Exception as e:
         logger.error(f"Error processing activations: {str(e)}")
         import traceback
@@ -121,7 +168,7 @@ def _safe_cast(tensor: torch.Tensor, target_dtype: torch.dtype) -> torch.Tensor:
 class ActivationProcessor:
     @torch.no_grad()
     def process_activations(
-        self, request: ActivationAllPostRequest
+        self, request: ActivationAllBatchPostRequest, prompt: str
     ) -> ActivationAllPost200Response:
         model = Model.get_instance()
         sae_manager = SAEManager.get_instance()
@@ -137,7 +184,7 @@ class ActivationProcessor:
         prepend_bos = sae_manager.get_sae(first_layer).cfg.metadata.prepend_bos
 
         _, str_tokens, cache = self._tokenize_and_get_cache(
-            request.prompt, prepend_bos, request, max_layer
+            prompt, prepend_bos, request, max_layer
         )
 
         # ensure sort_by_token_indexes doesn't have any out of range indexes
@@ -145,7 +192,8 @@ class ActivationProcessor:
         for token_index in request.sort_by_token_indexes:
             if token_index >= len(str_tokens) or token_index < 0:
                 raise ValueError(
-                    f"Sort by token index {token_index} is out of range for the given prompt, which only has {len(str_tokens)} tokens."
+                    f"Sort by token index {token_index} is out of range for "
+                    f"the given prompt, which only has {len(str_tokens)} tokens."
                 )
 
         source_activations = self._process_sources(request, cache)
@@ -164,11 +212,177 @@ class ActivationProcessor:
             counts=table_counts.tolist(),
         )
 
+    @torch.no_grad()
+    def process_activations_batch(
+        self, request: ActivationAllBatchPostRequest, prompts: list[str]
+    ) -> list[ActivationAllPost200Response]:
+        """
+        Process multiple prompts in parallel using batched GPU operations.
+        Returns results in the same order as input prompts.
+        """
+        model = Model.get_instance()
+        sae_manager = SAEManager.get_instance()
+        config = Config.get_instance()
+
+        # Get the first sae and check if prepend bos is true
+        first_layer = request.selected_sources[0]
+        prepend_bos = sae_manager.get_sae(first_layer).cfg.metadata.prepend_bos
+
+        # Tokenize all prompts
+        all_tokens = []
+        all_str_tokens = []
+
+        for prompt in prompts:
+            if isinstance(model, StandardizedTransformer):
+                tokens = model.tokenizer(
+                    prompt, add_special_tokens=True, return_tensors="pt"
+                )["input_ids"][0]
+            else:
+                tokens = model.to_tokens(
+                    prompt,
+                    prepend_bos=prepend_bos,
+                    truncate=False,
+                )[0]
+
+            if len(tokens) > config.token_limit:
+                raise ValueError(
+                    f"Text too long: {len(tokens)} tokens, max is {config.token_limit}"
+                )
+
+            if isinstance(model, StandardizedTransformer):
+                tokenizer = model.tokenizer
+                str_tokens = tokenizer.tokenize(prompt)
+
+                str_tokens = [
+                    tokenizer.convert_tokens_to_string([t]) for t in str_tokens
+                ]
+            else:
+                str_tokens = model.to_str_tokens(prompt, prepend_bos=prepend_bos)
+
+            # Validate sort_by_token_indexes for this prompt
+            for token_index in request.sort_by_token_indexes:
+                if token_index >= len(str_tokens) or token_index < 0:
+                    raise ValueError(
+                        f"Sort by token index {token_index} is out of range for "
+                        f"the given prompt, which only has {len(str_tokens)} tokens."
+                    )
+
+            all_tokens.append(tokens)
+            all_str_tokens.append(str_tokens)
+
+        # Pad sequences to the same length
+        max_len = max(len(tokens) for tokens in all_tokens)
+        batch_size = len(all_tokens)
+
+        # Determine pad token
+        if isinstance(model, StandardizedTransformer):
+            pad_token_id = (
+                model.tokenizer.pad_token_id
+                if model.tokenizer.pad_token_id is not None
+                else model.tokenizer.eos_token_id
+            )
+        else:
+            pad_token_id = (
+                model.tokenizer.pad_token_id
+                if model.tokenizer.pad_token_id is not None
+                else model.tokenizer.eos_token_id
+            )
+
+        # Create padded batch tensor
+        padded_tokens = torch.full(
+            (batch_size, max_len),
+            pad_token_id,
+            dtype=all_tokens[0].dtype,
+            device=all_tokens[0].device,
+        )
+
+        # Track original lengths
+        original_lengths = []
+        for i, tokens in enumerate(all_tokens):
+            padded_tokens[i, : len(tokens)] = tokens
+            original_lengths.append(len(tokens))
+
+        # Calculate max layer needed
+        max_layer = max(self._get_layer_num(s) for s in request.selected_sources) + 1
+        if isinstance(model, StandardizedTransformer):
+            if max_layer >= model.num_layers:
+                max_layer = None
+        elif max_layer >= model.cfg.n_layers:
+            max_layer = None
+
+        # Run batched inference
+        with torch.no_grad():
+            if isinstance(model, StandardizedTransformer):
+                cache = {}
+                with model.trace(padded_tokens):
+                    ordered_selected_sources = sorted(
+                        request.selected_sources,
+                        key=lambda x: self._get_layer_num(x),
+                    )
+                    for selected_source in ordered_selected_sources:
+                        layer_num = self._get_layer_num(selected_source)
+                        hook_name = sae_manager.get_sae_hook(selected_source)
+                        if "resid_post" in hook_name:
+                            outputs = model.layers_output[layer_num].save()
+                        elif "resid_pre" in hook_name:
+                            if layer_num == 0:
+                                outputs = model.embeddings_output.save()
+                            else:
+                                outputs = model.layers_output[layer_num - 1].save()
+                        else:
+                            raise ValueError(
+                                f"Unsupported hook name for nnsight: {hook_name}"
+                            )
+                        cache[hook_name] = outputs
+            else:
+                if max_layer:
+                    _, cache = model.run_with_cache(
+                        padded_tokens, stop_at_layer=max_layer
+                    )
+                else:
+                    _, cache = model.run_with_cache(padded_tokens)
+
+        # Process each prompt's results from the batch
+        results = []
+        for i in range(batch_size):
+            seq_len = original_lengths[i]
+            str_tokens = all_str_tokens[i]
+
+            # Extract this sequence's cache
+            seq_cache = {}
+            for key in cache:
+                if isinstance(cache[key], torch.Tensor):
+                    # Extract the non-padded portion for this sequence
+                    seq_cache[key] = cache[key][i : i + 1, :seq_len]
+                else:
+                    seq_cache[key] = cache[key]
+
+            # Process this prompt's activations
+            source_activations = self._process_sources(request, seq_cache)
+            sorted_activations = self._sort_and_filter_results(
+                source_activations, request
+            )
+            feature_activations = self._format_result_and_calculate_dfa(
+                sorted_activations, seq_cache, request
+            )
+            table_counts = self._calculate_table_counts(
+                source_activations, str_tokens, request.source_set
+            )
+
+            result = ActivationAllPost200Response(
+                activations=feature_activations,
+                tokens=str_tokens,
+                counts=table_counts.tolist(),
+            )
+            results.append(result)
+
+        return results
+
     def _tokenize_and_get_cache(
         self,
         text: str,
         prepend_bos: bool,
-        request: ActivationAllPostRequest,
+        request: ActivationAllBatchPostRequest,
         max_layer: int | None = None,
     ) -> tuple[torch.Tensor, list[str], ActivationCache]:
         """Process input text and return tokens, string tokens, and cache."""
@@ -231,7 +445,7 @@ class ActivationProcessor:
 
     def _process_sources(
         self,
-        request: ActivationAllPostRequest,
+        request: ActivationAllBatchPostRequest,
         cache: ActivationCache,
     ) -> list[dict[str, Any]]:
         """Process activations for each selected layer."""
@@ -290,15 +504,12 @@ class ActivationProcessor:
         sort_by_token_indexes: list[int],
         ignore_bos: bool,
     ) -> dict[str, Any]:
-        model = Model.get_instance()
-        if ignore_bos:
-            if (
-                isinstance(model, StandardizedTransformer)
-                or model.cfg.default_prepend_bos
-            ):
-                activations_by_index[:, 0] = 0
-
         """Process activations for a single layer."""
+        model = Model.get_instance()
+        if ignore_bos and (
+            isinstance(model, StandardizedTransformer) or model.cfg.default_prepend_bos
+        ):
+            activations_by_index[:, 0] = 0
         max_values, max_indices = torch.max(activations_by_index, dim=1)
         layer_num_tensor = torch.full(max_values.shape, layer_num).to(
             Config.get_instance().device
@@ -326,7 +537,7 @@ class ActivationProcessor:
     def _sort_and_filter_results(
         self,
         source_activations: list[dict[str, Any]],
-        request: ActivationAllPostRequest,
+        request: ActivationAllBatchPostRequest,
     ) -> list[list[float]]:
         """Sort and filter activations based on request parameters."""
         device = Config.get_instance().device
@@ -365,7 +576,7 @@ class ActivationProcessor:
         self,
         sorted_activations: list[list[float]],
         cache: ActivationCache,
-        request: ActivationAllPostRequest,
+        request: ActivationAllBatchPostRequest,
     ) -> list[ActivationAllPost200ResponseActivationsInner]:
         """Format results and if needed, calculate DFA values for sorted activations."""
 

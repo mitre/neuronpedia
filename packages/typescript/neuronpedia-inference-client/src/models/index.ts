@@ -1,5 +1,8 @@
 /* tslint:disable */
 /* eslint-disable */
+export * from './ActivationAllBatchPost200Response';
+export * from './ActivationAllBatchPost200ResponseResultsInner';
+export * from './ActivationAllBatchPostRequest';
 export * from './ActivationAllPost200Response';
 export * from './ActivationAllPost200ResponseActivationsInner';
 export * from './ActivationAllPostRequest';

@@ -15,6 +15,8 @@
 
 import * as runtime from '../runtime';
 import type {
+  ActivationAllBatchPost200Response,
+  ActivationAllBatchPostRequest,
   ActivationAllPost200Response,
   ActivationAllPostRequest,
   ActivationSingleBatchPost200Response,
@@ -35,6 +37,10 @@ import type {
   UtilSaeVectorPostRequest,
 } from '../models/index';
 import {
+    ActivationAllBatchPost200ResponseFromJSON,
+    ActivationAllBatchPost200ResponseToJSON,
+    ActivationAllBatchPostRequestFromJSON,
+    ActivationAllBatchPostRequestToJSON,
     ActivationAllPost200ResponseFromJSON,
     ActivationAllPost200ResponseToJSON,
     ActivationAllPostRequestFromJSON,
@@ -72,6 +78,10 @@ import {
     UtilSaeVectorPostRequestFromJSON,
     UtilSaeVectorPostRequestToJSON,
 } from '../models/index';
+
+export interface ActivationAllBatchPostOperationRequest {
+    activationAllBatchPostRequest: ActivationAllBatchPostRequest;
+}
 
 export interface ActivationAllPostOperationRequest {
     activationAllPostRequest: ActivationAllPostRequest;
@@ -113,6 +123,46 @@ export interface UtilSaeVectorPostOperationRequest {
  * 
  */
 export class DefaultApi extends runtime.BaseAPI {
+
+    /**
+     * For a given batch of prompts, get the top activating features for a set of SAEs (eg gemmascope-res-65k), or specific SAEs in the set of SAEs (eg 0-gemmascope-res-65k, 5-gemmascope-res-65k). Also has other customization options.
+     */
+    async activationAllBatchPostRaw(requestParameters: ActivationAllBatchPostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ActivationAllBatchPost200Response>> {
+        if (requestParameters['activationAllBatchPostRequest'] == null) {
+            throw new runtime.RequiredError(
+                'activationAllBatchPostRequest',
+                'Required parameter "activationAllBatchPostRequest" was null or undefined when calling activationAllBatchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["X-SECRET-KEY"] = await this.configuration.apiKey("X-SECRET-KEY"); // SimpleSecretAuth authentication
+        }
+
+        const response = await this.request({
+            path: `/activation/all-batch`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ActivationAllBatchPostRequestToJSON(requestParameters['activationAllBatchPostRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ActivationAllBatchPost200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * For a given batch of prompts, get the top activating features for a set of SAEs (eg gemmascope-res-65k), or specific SAEs in the set of SAEs (eg 0-gemmascope-res-65k, 5-gemmascope-res-65k). Also has other customization options.
+     */
+    async activationAllBatchPost(requestParameters: ActivationAllBatchPostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ActivationAllBatchPost200Response> {
+        const response = await this.activationAllBatchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * For a given prompt, get the top activating features for a set of SAEs (eg gemmascope-res-65k), or specific SAEs in the set of SAEs (eg 0-gemmascope-res-65k, 5-gemmascope-res-65k). Also has other customization options.

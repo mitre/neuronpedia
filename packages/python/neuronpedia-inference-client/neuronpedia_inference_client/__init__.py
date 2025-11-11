@@ -15,7 +15,7 @@
 """  # noqa: E501
 
 
-__version__ = "1.4.1"
+__version__ = "1.5.1"
 
 # import apis into sdk package
 from neuronpedia_inference_client.api.default_api import DefaultApi
@@ -32,6 +32,9 @@ from neuronpedia_inference_client.exceptions import ApiAttributeError
 from neuronpedia_inference_client.exceptions import ApiException
 
 # import models into sdk package
+from neuronpedia_inference_client.models.activation_all_batch_post200_response import ActivationAllBatchPost200Response
+from neuronpedia_inference_client.models.activation_all_batch_post200_response_results_inner import ActivationAllBatchPost200ResponseResultsInner
+from neuronpedia_inference_client.models.activation_all_batch_post_request import ActivationAllBatchPostRequest
 from neuronpedia_inference_client.models.activation_all_post200_response import ActivationAllPost200Response
 from neuronpedia_inference_client.models.activation_all_post200_response_activations_inner import ActivationAllPost200ResponseActivationsInner
 from neuronpedia_inference_client.models.activation_all_post_request import ActivationAllPostRequest
