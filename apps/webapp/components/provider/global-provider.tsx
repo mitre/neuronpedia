@@ -98,8 +98,8 @@ export const [GlobalContext, useGlobalContext] = createContextWrapper<{
   // UI - Similarity Matrix Modal
   similarityMatrixModalOpen: boolean;
   setSimilarityMatrixModalOpen: (open: boolean) => void;
-  setSimilarityMatrix: (feature: NeuronWithPartialRelations, text?: string) => void;
-  similarityMatrixFeature: NeuronWithPartialRelations | undefined;
+  setSimilarityMatrix: (source: SourceWithPartialRelations, text?: string) => void;
+  similarityMatrixSource: SourceWithPartialRelations | undefined;
   similarityMatrixText: string;
 }>('GlobalContext');
 
@@ -148,7 +148,7 @@ export default function GlobalProvider({
   const [featureModalFeature, setFeatureModalFeature] = useState<NeuronWithPartialRelations>();
   const [featureModalOpen, setFeatureModalOpen] = useState(false);
   const [similarityMatrixModalOpen, setSimilarityMatrixModalOpen] = useState(false);
-  const [similarityMatrixFeature, setSimilarityMatrixFeature] = useState<NeuronWithPartialRelations>();
+  const [similarityMatrixSource, setSimilarityMatrixSource] = useState<SourceWithPartialRelations>();
   const [similarityMatrixText, setSimilarityMatrixText] = useState<string>('');
 
   useEffect(() => {
@@ -188,10 +188,12 @@ export default function GlobalProvider({
     }, 100);
   };
 
-  const setSimilarityMatrix = (feature: NeuronWithPartialRelations, text?: string) => {
-    setSimilarityMatrixFeature(feature);
+  const setSimilarityMatrix = (source: SourceWithPartialRelations, text?: string) => {
+    setSimilarityMatrixSource(source);
     setSimilarityMatrixText(text || '');
-    setSimilarityMatrixModalOpen(true);
+    setTimeout(() => {
+      setSimilarityMatrixModalOpen(true);
+    }, 0);
   };
 
   const showToastServerError = () => {
@@ -480,7 +482,7 @@ export default function GlobalProvider({
           setFeatureModalOpen,
           similarityMatrixModalOpen,
           setSimilarityMatrix,
-          similarityMatrixFeature,
+          similarityMatrixSource,
           similarityMatrixText,
           setSimilarityMatrixModalOpen,
         }),
@@ -511,7 +513,7 @@ export default function GlobalProvider({
           featureModalOpen,
           releases,
           similarityMatrixModalOpen,
-          similarityMatrixFeature,
+          similarityMatrixSource,
           similarityMatrixText,
           setSimilarityMatrix,
           setSimilarityMatrixModalOpen,

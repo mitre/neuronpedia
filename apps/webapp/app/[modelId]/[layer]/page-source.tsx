@@ -5,6 +5,7 @@ import SAEEvalsPane from '@/components/panes/sae-evals-pane/sae-evals-pane';
 import SearchExplanationsPane from '@/components/panes/search-explanations-pane';
 import SearchInferenceSourcePane from '@/components/panes/search-inference-source-pane';
 import SearchTopkByTokenPane from '@/components/panes/search-topk-by-token-pane';
+import SourceSimilarityMatrixPane from '@/components/panes/source-similarity-matrix-pane';
 import UmapPane from '@/components/panes/umap-pane';
 import { BreadcrumbItem, BreadcrumbLink } from '@/components/shadcn/breadcrumbs';
 import { getVisibilityBadge } from '@/components/visibility-badge';
@@ -20,7 +21,15 @@ import { Visibility } from '@prisma/client';
 import Link from 'next/link';
 import SaeLensConfigPane from '../../../components/panes/saelens-config-pane';
 
-export default function PageSource({ source }: { source: SourceWithRelations }) {
+export default function PageSource({
+  source,
+  simMatrix,
+  simMatrixDemo,
+}: {
+  source: SourceWithRelations;
+  simMatrix?: string;
+  simMatrixDemo?: string;
+}) {
   const release = source.set && source.set.releases ? source.set.releases : null;
 
   return (
@@ -106,6 +115,14 @@ export default function PageSource({ source }: { source: SourceWithRelations }) 
 
       <div className="flex w-full max-w-screen-xl flex-col items-center pb-5 pt-6 text-slate-700">
         <div className="flex w-full flex-col items-stretch justify-center gap-x-3 gap-y-6">
+          {source.set?.similarityMatrixEnabled && (
+            <SourceSimilarityMatrixPane
+              source={source}
+              initialSimMatrixText={simMatrix}
+              initialSimMatrixDemo={simMatrixDemo}
+            />
+          )}
+
           <div className="flex w-full flex-col items-center justify-center">
             <div className="w-full max-w-screen-lg">
               <SaeLensConfigPane inSAEPage sae={source as SourceWithPartialRelations} />

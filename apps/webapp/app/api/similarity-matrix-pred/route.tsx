@@ -8,9 +8,10 @@ import { NextResponse } from 'next/server';
 type RequestBody = {
   modelId: string;
   sourceId: string;
-  index: number;
   text: string;
 };
+
+const maxTextLength = 700;
 
 export const POST = withOptionalUser(async (request) => {
   let body: RequestBody;
@@ -20,9 +21,19 @@ export const POST = withOptionalUser(async (request) => {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const { modelId, sourceId, index, text } = body || ({} as RequestBody);
-  if (!modelId || !sourceId || typeof index !== 'number' || !text) {
+  const { modelId, sourceId, text } = body || ({} as RequestBody);
+  if (!modelId || !sourceId || !text) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+  }
+
+  // if text is longer than maxTextLength, return error
+  if (text.length > maxTextLength) {
+    return NextResponse.json(
+      {
+        error: `Text is too long. The maximum allowed is ${maxTextLength} characters. Your text is ${text.length} characters long.`,
+      },
+      { status: 400 },
+    );
   }
 
   try {
@@ -45,7 +56,7 @@ export const POST = withOptionalUser(async (request) => {
       body: JSON.stringify({
         modelId: transformerLensModelId,
         sourceId,
-        index,
+        index: 0, // this isn't used, can remove it
         text,
       }),
       cache: 'no-cache',

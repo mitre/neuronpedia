@@ -39,6 +39,8 @@ import SteerPresetSelector from './preset-selector';
 import SteerSelectedFeature from './selected-feature';
 import SteerTooltip from './tooltip';
 
+const MODELS_TO_FILTER_OUT = ['gpt-oss-20b'];
+
 export default function Steerer({
   initialModelId,
   initialSource,
@@ -457,7 +459,7 @@ export default function Steerer({
                 modelIdChangedCallback={(newModelId) => {
                   setModelId(newModelId);
                 }}
-                overrideModels={getInferenceEnabledModels()}
+                overrideModels={getInferenceEnabledModels().filter((m) => !MODELS_TO_FILTER_OUT.includes(m))}
               />
             </div>
           </>

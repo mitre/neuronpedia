@@ -4,6 +4,7 @@ import BrowserPane from '@/components/panes/browser-pane/browser-pane';
 import JumpToPane from '@/components/panes/jump-to-pane';
 import SearchExplanationsPane from '@/components/panes/search-explanations-pane';
 import SearchInferenceReleasePane from '@/components/panes/search-inference-release-pane';
+import SourceSimilarityMatrixPane from '@/components/panes/source-similarity-matrix-pane';
 import UmapPane from '@/components/panes/umap-pane';
 import { BreadcrumbLink, BreadcrumbPage } from '@/components/shadcn/breadcrumbs';
 import { SearchExplanationsType } from '@/lib/utils/general';
@@ -32,6 +33,8 @@ export default function PageRelease({ release }: { release: SourceReleaseWithRel
     return true;
   });
 
+  const isTemporalSaeRelease = defaultSourceSet?.similarityMatrixEnabled;
+
   return (
     <div className="flex w-full flex-col items-center pb-10">
       <BreadcrumbsComponent
@@ -47,6 +50,7 @@ export default function PageRelease({ release }: { release: SourceReleaseWithRel
       <Hero release={release} />
 
       <div className="flex w-full max-w-screen-lg flex-col items-center pb-5 pt-5 text-slate-700 xl:max-w-screen-xl 2xl:max-w-screen-2xl">
+        {isTemporalSaeRelease && defaultSource && <SourceSimilarityMatrixPane source={defaultSource} />}
         {defaultUmapSourceId && defaultUmapSourceSetName && (
           <UmapPane
             showModel
