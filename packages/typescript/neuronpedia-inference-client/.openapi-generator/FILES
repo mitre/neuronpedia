@@ -18,6 +18,9 @@ src/models/ActivationSingleBatchPostRequest.ts
 src/models/ActivationSinglePost200Response.ts
 src/models/ActivationSinglePost200ResponseActivation.ts
 src/models/ActivationSinglePostRequest.ts
+src/models/ActivationTopkByTokenBatchPost200Response.ts
+src/models/ActivationTopkByTokenBatchPost200ResponseResultsInner.ts
+src/models/ActivationTopkByTokenBatchPostRequest.ts
 src/models/ActivationTopkByTokenPost200Response.ts
 src/models/ActivationTopkByTokenPost200ResponseResultsInner.ts
 src/models/ActivationTopkByTokenPost200ResponseResultsInnerTopFeaturesInner.ts

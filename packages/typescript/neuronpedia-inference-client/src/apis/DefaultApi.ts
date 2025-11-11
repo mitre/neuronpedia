@@ -23,6 +23,8 @@ import type {
   ActivationSingleBatchPostRequest,
   ActivationSinglePost200Response,
   ActivationSinglePostRequest,
+  ActivationTopkByTokenBatchPost200Response,
+  ActivationTopkByTokenBatchPostRequest,
   ActivationTopkByTokenPost200Response,
   ActivationTopkByTokenPostRequest,
   SteerCompletionChatPost200Response,
@@ -53,6 +55,10 @@ import {
     ActivationSinglePost200ResponseToJSON,
     ActivationSinglePostRequestFromJSON,
     ActivationSinglePostRequestToJSON,
+    ActivationTopkByTokenBatchPost200ResponseFromJSON,
+    ActivationTopkByTokenBatchPost200ResponseToJSON,
+    ActivationTopkByTokenBatchPostRequestFromJSON,
+    ActivationTopkByTokenBatchPostRequestToJSON,
     ActivationTopkByTokenPost200ResponseFromJSON,
     ActivationTopkByTokenPost200ResponseToJSON,
     ActivationTopkByTokenPostRequestFromJSON,
@@ -93,6 +99,10 @@ export interface ActivationSingleBatchPostOperationRequest {
 
 export interface ActivationSinglePostOperationRequest {
     activationSinglePostRequest: ActivationSinglePostRequest;
+}
+
+export interface ActivationTopkByTokenBatchPostOperationRequest {
+    activationTopkByTokenBatchPostRequest: ActivationTopkByTokenBatchPostRequest;
 }
 
 export interface ActivationTopkByTokenPostOperationRequest {
@@ -281,6 +291,46 @@ export class DefaultApi extends runtime.BaseAPI {
      */
     async activationSinglePost(requestParameters: ActivationSinglePostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ActivationSinglePost200Response> {
         const response = await this.activationSinglePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * For a given batch of prompts, get the top activating features at each token position for a single SAE.
+     */
+    async activationTopkByTokenBatchPostRaw(requestParameters: ActivationTopkByTokenBatchPostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ActivationTopkByTokenBatchPost200Response>> {
+        if (requestParameters['activationTopkByTokenBatchPostRequest'] == null) {
+            throw new runtime.RequiredError(
+                'activationTopkByTokenBatchPostRequest',
+                'Required parameter "activationTopkByTokenBatchPostRequest" was null or undefined when calling activationTopkByTokenBatchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["X-SECRET-KEY"] = await this.configuration.apiKey("X-SECRET-KEY"); // SimpleSecretAuth authentication
+        }
+
+        const response = await this.request({
+            path: `/activation/topk-by-token-batch`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ActivationTopkByTokenBatchPostRequestToJSON(requestParameters['activationTopkByTokenBatchPostRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ActivationTopkByTokenBatchPost200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * For a given batch of prompts, get the top activating features at each token position for a single SAE.
+     */
+    async activationTopkByTokenBatchPost(requestParameters: ActivationTopkByTokenBatchPostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ActivationTopkByTokenBatchPost200Response> {
+        const response = await this.activationTopkByTokenBatchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

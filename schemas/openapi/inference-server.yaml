@@ -23,6 +23,8 @@ paths:
     $ref: "inference/paths/activation/single-batch.yaml"
   /activation/topk-by-token:
     $ref: "inference/paths/activation/topk-by-token.yaml"
+  /activation/topk-by-token-batch:
+    $ref: "inference/paths/activation/topk-by-token-batch.yaml"
 
   # Steer
   /steer/completion:

@@ -38,6 +38,9 @@ from neuronpedia_inference.endpoints.activation.single_batch import (
 from neuronpedia_inference.endpoints.activation.topk_by_token import (
     router as activation_topk_by_token_router,
 )
+from neuronpedia_inference.endpoints.activation.topk_by_token_batch import (
+    router as activation_topk_by_token_batch_router,
+)
 from neuronpedia_inference.endpoints.steer.completion import (
     router as steer_completion_router,
 )
@@ -107,6 +110,7 @@ v1_router.include_router(steer_completion_router)
 v1_router.include_router(activation_single_router)
 v1_router.include_router(activation_single_batch_router)
 v1_router.include_router(activation_topk_by_token_router)
+v1_router.include_router(activation_topk_by_token_batch_router)
 v1_router.include_router(sae_topk_by_decoder_cossim_router)
 v1_router.include_router(sae_vector_router)
 v1_router.include_router(tokenize_router)

@@ -171,7 +171,7 @@ class ActivationProcessor:
         self, request: ActivationAllBatchPostRequest, prompt: str
     ) -> ActivationAllPost200Response:
         model = Model.get_instance()
-        sae_manager = SAEManager.get_instance()
+        # sae_manager = SAEManager.get_instance()
         max_layer = max(self._get_layer_num(s) for s in request.selected_sources) + 1
         if isinstance(model, StandardizedTransformer):
             if max_layer >= model.num_layers:
@@ -180,8 +180,9 @@ class ActivationProcessor:
             max_layer = None
 
         # Get the first sae and check if prepend bos is true, then pass to token getter
-        first_layer = request.selected_sources[0]
-        prepend_bos = sae_manager.get_sae(first_layer).cfg.metadata.prepend_bos
+        # first_layer = request.selected_sources[0]
+        # prepend_bos = sae_manager.get_sae(first_layer).cfg.metadata.prepend_bos
+        prepend_bos = False
 
         _, str_tokens, cache = self._tokenize_and_get_cache(
             prompt, prepend_bos, request, max_layer
@@ -391,7 +392,7 @@ class ActivationProcessor:
 
         if isinstance(model, StandardizedTransformer):
             tokens = model.tokenizer(
-                text, add_special_tokens=True, return_tensors="pt"
+                text, add_special_tokens=False, return_tensors="pt"
             )["input_ids"][0]
         else:
             tokens = model.to_tokens(

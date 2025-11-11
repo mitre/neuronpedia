@@ -55,6 +55,13 @@ class TestDefaultApi(unittest.TestCase):
         """
         pass
 
+    def test_activation_topk_by_token_batch_post(self) -> None:
+        """Test case for activation_topk_by_token_batch_post
+
+        For a given batch of prompts, get the top activating features at each token position for a single SAE.
+        """
+        pass
+
     def test_activation_topk_by_token_post(self) -> None:
         """Test case for activation_topk_by_token_post
 
