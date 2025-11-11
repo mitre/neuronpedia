@@ -15,10 +15,16 @@
 
 import * as runtime from '../runtime';
 import type {
+  ActivationAllBatchPost200Response,
+  ActivationAllBatchPostRequest,
   ActivationAllPost200Response,
   ActivationAllPostRequest,
+  ActivationSingleBatchPost200Response,
+  ActivationSingleBatchPostRequest,
   ActivationSinglePost200Response,
   ActivationSinglePostRequest,
+  ActivationTopkByTokenBatchPost200Response,
+  ActivationTopkByTokenBatchPostRequest,
   ActivationTopkByTokenPost200Response,
   ActivationTopkByTokenPostRequest,
   SteerCompletionChatPost200Response,
@@ -33,14 +39,26 @@ import type {
   UtilSaeVectorPostRequest,
 } from '../models/index';
 import {
+    ActivationAllBatchPost200ResponseFromJSON,
+    ActivationAllBatchPost200ResponseToJSON,
+    ActivationAllBatchPostRequestFromJSON,
+    ActivationAllBatchPostRequestToJSON,
     ActivationAllPost200ResponseFromJSON,
     ActivationAllPost200ResponseToJSON,
     ActivationAllPostRequestFromJSON,
     ActivationAllPostRequestToJSON,
+    ActivationSingleBatchPost200ResponseFromJSON,
+    ActivationSingleBatchPost200ResponseToJSON,
+    ActivationSingleBatchPostRequestFromJSON,
+    ActivationSingleBatchPostRequestToJSON,
     ActivationSinglePost200ResponseFromJSON,
     ActivationSinglePost200ResponseToJSON,
     ActivationSinglePostRequestFromJSON,
     ActivationSinglePostRequestToJSON,
+    ActivationTopkByTokenBatchPost200ResponseFromJSON,
+    ActivationTopkByTokenBatchPost200ResponseToJSON,
+    ActivationTopkByTokenBatchPostRequestFromJSON,
+    ActivationTopkByTokenBatchPostRequestToJSON,
     ActivationTopkByTokenPost200ResponseFromJSON,
     ActivationTopkByTokenPost200ResponseToJSON,
     ActivationTopkByTokenPostRequestFromJSON,
@@ -67,12 +85,24 @@ import {
     UtilSaeVectorPostRequestToJSON,
 } from '../models/index';
 
+export interface ActivationAllBatchPostOperationRequest {
+    activationAllBatchPostRequest: ActivationAllBatchPostRequest;
+}
+
 export interface ActivationAllPostOperationRequest {
     activationAllPostRequest: ActivationAllPostRequest;
 }
 
+export interface ActivationSingleBatchPostOperationRequest {
+    activationSingleBatchPostRequest: ActivationSingleBatchPostRequest;
+}
+
 export interface ActivationSinglePostOperationRequest {
     activationSinglePostRequest: ActivationSinglePostRequest;
+}
+
+export interface ActivationTopkByTokenBatchPostOperationRequest {
+    activationTopkByTokenBatchPostRequest: ActivationTopkByTokenBatchPostRequest;
 }
 
 export interface ActivationTopkByTokenPostOperationRequest {
@@ -103,6 +133,46 @@ export interface UtilSaeVectorPostOperationRequest {
  * 
  */
 export class DefaultApi extends runtime.BaseAPI {
+
+    /**
+     * For a given batch of prompts, get the top activating features for a set of SAEs (eg gemmascope-res-65k), or specific SAEs in the set of SAEs (eg 0-gemmascope-res-65k, 5-gemmascope-res-65k). Also has other customization options.
+     */
+    async activationAllBatchPostRaw(requestParameters: ActivationAllBatchPostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ActivationAllBatchPost200Response>> {
+        if (requestParameters['activationAllBatchPostRequest'] == null) {
+            throw new runtime.RequiredError(
+                'activationAllBatchPostRequest',
+                'Required parameter "activationAllBatchPostRequest" was null or undefined when calling activationAllBatchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["X-SECRET-KEY"] = await this.configuration.apiKey("X-SECRET-KEY"); // SimpleSecretAuth authentication
+        }
+
+        const response = await this.request({
+            path: `/activation/all-batch`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ActivationAllBatchPostRequestToJSON(requestParameters['activationAllBatchPostRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ActivationAllBatchPost200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * For a given batch of prompts, get the top activating features for a set of SAEs (eg gemmascope-res-65k), or specific SAEs in the set of SAEs (eg 0-gemmascope-res-65k, 5-gemmascope-res-65k). Also has other customization options.
+     */
+    async activationAllBatchPost(requestParameters: ActivationAllBatchPostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ActivationAllBatchPost200Response> {
+        const response = await this.activationAllBatchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * For a given prompt, get the top activating features for a set of SAEs (eg gemmascope-res-65k), or specific SAEs in the set of SAEs (eg 0-gemmascope-res-65k, 5-gemmascope-res-65k). Also has other customization options.
@@ -145,6 +215,46 @@ export class DefaultApi extends runtime.BaseAPI {
     }
 
     /**
+     * Given a batch of text prompts, returns the activation values for a single SAE latent or custom vector+hook.
+     */
+    async activationSingleBatchPostRaw(requestParameters: ActivationSingleBatchPostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ActivationSingleBatchPost200Response>> {
+        if (requestParameters['activationSingleBatchPostRequest'] == null) {
+            throw new runtime.RequiredError(
+                'activationSingleBatchPostRequest',
+                'Required parameter "activationSingleBatchPostRequest" was null or undefined when calling activationSingleBatchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["X-SECRET-KEY"] = await this.configuration.apiKey("X-SECRET-KEY"); // SimpleSecretAuth authentication
+        }
+
+        const response = await this.request({
+            path: `/activation/single-batch`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ActivationSingleBatchPostRequestToJSON(requestParameters['activationSingleBatchPostRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ActivationSingleBatchPost200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Given a batch of text prompts, returns the activation values for a single SAE latent or custom vector+hook.
+     */
+    async activationSingleBatchPost(requestParameters: ActivationSingleBatchPostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ActivationSingleBatchPost200Response> {
+        const response = await this.activationSingleBatchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Given a text prompt, returns the activation values for a single SAE latent or custom vector+hook.
      */
     async activationSinglePostRaw(requestParameters: ActivationSinglePostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ActivationSinglePost200Response>> {
@@ -181,6 +291,46 @@ export class DefaultApi extends runtime.BaseAPI {
      */
     async activationSinglePost(requestParameters: ActivationSinglePostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ActivationSinglePost200Response> {
         const response = await this.activationSinglePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * For a given batch of prompts, get the top activating features at each token position for a single SAE.
+     */
+    async activationTopkByTokenBatchPostRaw(requestParameters: ActivationTopkByTokenBatchPostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ActivationTopkByTokenBatchPost200Response>> {
+        if (requestParameters['activationTopkByTokenBatchPostRequest'] == null) {
+            throw new runtime.RequiredError(
+                'activationTopkByTokenBatchPostRequest',
+                'Required parameter "activationTopkByTokenBatchPostRequest" was null or undefined when calling activationTopkByTokenBatchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["X-SECRET-KEY"] = await this.configuration.apiKey("X-SECRET-KEY"); // SimpleSecretAuth authentication
+        }
+
+        const response = await this.request({
+            path: `/activation/topk-by-token-batch`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ActivationTopkByTokenBatchPostRequestToJSON(requestParameters['activationTopkByTokenBatchPostRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ActivationTopkByTokenBatchPost200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * For a given batch of prompts, get the top activating features at each token position for a single SAE.
+     */
+    async activationTopkByTokenBatchPost(requestParameters: ActivationTopkByTokenBatchPostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ActivationTopkByTokenBatchPost200Response> {
+        const response = await this.activationTopkByTokenBatchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

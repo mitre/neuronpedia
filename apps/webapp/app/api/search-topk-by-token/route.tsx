@@ -1,11 +1,13 @@
 import { getNeuronsForTopkSearcherExplanationOnly } from '@/lib/db/neuron';
 import { assertUserCanAccessModelAndSource } from '@/lib/db/userCanAccess';
-import { NEXT_PUBLIC_SEARCH_TOPK_MAX_CHAR_LENGTH } from '@/lib/env';
 import { getActivationsTopKByToken, SearchTopKResult } from '@/lib/utils/inference';
 import { RequestOptionalUser, withOptionalUser } from '@/lib/with-user';
-import { ActivationTopkByTokenPost200Response } from 'neuronpedia-inference-client';
+import {
+  ActivationTopkByTokenBatchPost200Response,
+  ActivationTopkByTokenPost200Response,
+} from 'neuronpedia-inference-client';
 import { NextResponse } from 'next/server';
-import { boolean, number, object, string, ValidationError } from 'yup';
+import { boolean, mixed, number, object, string, ValidationError } from 'yup';
 
 export const maxDuration = 30;
 
@@ -15,7 +17,7 @@ const DEFAULT_DENSITY_THRESHOLD = 0.01;
 const searchWithTopKRequestSchema = object({
   modelId: string().required().max(50),
   source: string().required().max(50),
-  text: string().required().max(NEXT_PUBLIC_SEARCH_TOPK_MAX_CHAR_LENGTH),
+  text: mixed().required(),
   numResults: number().optional().min(1).max(20).default(NUMBER_TOPK_RESULTS),
   ignoreBos: boolean().optional().default(true),
   densityThreshold: number().optional().default(DEFAULT_DENSITY_THRESHOLD),
@@ -51,7 +53,11 @@ const searchWithTopKRequestSchema = object({
  *                 maxLength: 50
  *                 example: "6-res-jb"
  *               text:
- *                 type: string
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: array
+ *                     items:
+ *                       type: string
  *                 description: Text to analyze
  *                 maxLength: 1000
  *                 example: "The quick brown fox jumps over the lazy dog"
@@ -87,6 +93,10 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
 
     const { modelId, source, text, numResults, ignoreBos } = body;
 
+    if (typeof text !== 'string' && !Array.isArray(text)) {
+      throw new Error('text must be a string or array of strings.');
+    }
+
     const densityThreshold = body.densityThreshold || -1;
     if (densityThreshold !== -1 && (densityThreshold <= 0 || densityThreshold >= 1)) {
       throw new Error('densityThreshold must be between 0 and 1.');
@@ -94,21 +104,37 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
 
     await assertUserCanAccessModelAndSource(modelId, source, request.user);
 
-    const result: ActivationTopkByTokenPost200Response = await getActivationsTopKByToken(
-      modelId,
-      source,
-      text,
-      numResults,
-      ignoreBos,
-      request.user,
-    );
+    const result = await getActivationsTopKByToken(modelId, source, text, numResults, ignoreBos, request.user);
 
-    const neuronData = await getNeuronsForTopkSearcherExplanationOnly(modelId, source, result, request.user);
+    // for batch don't return the neurons
+    if (Array.isArray(text)) {
+      const batchResult = result as ActivationTopkByTokenBatchPost200Response;
+      const toReturn: SearchTopKResult[] = [];
+      batchResult.results.forEach((promptResult) => {
+        toReturn.push({
+          source,
+          results: promptResult.results.map((r) => ({
+            position: r.tokenPosition,
+            token: r.token,
+            topFeatures: r.topFeatures.map((f) => ({
+              activationValue: f.activationValue,
+              featureIndex: f.featureIndex,
+              feature: undefined,
+            })),
+          })),
+        });
+      });
+      return NextResponse.json(toReturn);
+    }
+
+    const singleResult = result as ActivationTopkByTokenPost200Response;
+
+    const neuronData = await getNeuronsForTopkSearcherExplanationOnly(modelId, source, singleResult, request.user);
 
     // make a toReturn object
     const toReturn: SearchTopKResult = {
       source,
-      results: result.results.map((r) => ({
+      results: singleResult.results.map((r) => ({
         position: r.tokenPosition,
         token: r.token,
         topFeatures: r.topFeatures.map((f) => ({

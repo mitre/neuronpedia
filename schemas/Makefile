@@ -17,7 +17,7 @@ endif
 # Clean and generate inference clients
 generate-inference-clients: check-version clean-inference-clients
 	@echo "Generating Python inference client with version $(VERSION)..."
-	openapi-generator generate \
+	openapi-generator-cli generate \
 		-i $(INFERENCE_SPEC) \
 		-g python \
 		-o $(PY_OUTPUT_DIR)/neuronpedia-inference-client \
@@ -25,7 +25,7 @@ generate-inference-clients: check-version clean-inference-clients
 		--additional-properties=packageVersion=$(VERSION)
 
 	@echo "Generating TypeScript inference client..."
-	openapi-generator generate \
+	openapi-generator-cli generate \
 		-i $(INFERENCE_SPEC) \
 		-g typescript-fetch \
 		-o $(TS_OUTPUT_DIR)/neuronpedia-inference-client \

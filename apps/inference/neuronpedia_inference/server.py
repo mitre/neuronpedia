@@ -14,8 +14,11 @@ from dotenv import load_dotenv
 from fastapi import APIRouter, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from nnterp import StandardizedTransformer
 from transformer_lens import HookedTransformer
 from transformer_lens.hook_points import HookPoint
+
+# from transformer_lens.model_bridge.sources.transformers import boot
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from neuronpedia_inference.args import list_available_options, parse_env_and_args
@@ -23,11 +26,20 @@ from neuronpedia_inference.config import Config, get_saelens_neuronpedia_directo
 from neuronpedia_inference.endpoints.activation.all import (
     router as activation_all_router,
 )
+from neuronpedia_inference.endpoints.activation.all_batch import (
+    router as activation_all_batch_router,
+)
 from neuronpedia_inference.endpoints.activation.single import (
     router as activation_single_router,
 )
+from neuronpedia_inference.endpoints.activation.single_batch import (
+    router as activation_single_batch_router,
+)
 from neuronpedia_inference.endpoints.activation.topk_by_token import (
     router as activation_topk_by_token_router,
+)
+from neuronpedia_inference.endpoints.activation.topk_by_token_batch import (
+    router as activation_topk_by_token_batch_router,
 )
 from neuronpedia_inference.endpoints.steer.completion import (
     router as steer_completion_router,
@@ -40,11 +52,17 @@ from neuronpedia_inference.endpoints.util.sae_topk_by_decoder_cossim import (
     router as sae_topk_by_decoder_cossim_router,
 )
 from neuronpedia_inference.endpoints.util.sae_vector import router as sae_vector_router
+from neuronpedia_inference.endpoints.util.similarity_matrix_pred import (
+    router as similarity_matrix_pred_router,
+)
 from neuronpedia_inference.logging import initialize_logging
 from neuronpedia_inference.sae_manager import SAEManager  # noqa: F401
-from neuronpedia_inference.shared import STR_TO_DTYPE, Model  # noqa: F401
+from neuronpedia_inference.shared import (  # noqa: F401
+    STR_TO_DTYPE,
+    Model,
+    replace_tlens_model_id_with_hf_model_id,
+)
 from neuronpedia_inference.utils import checkCudaError
-from neuronpedia_inference.endpoints.util.similarity_matrix_pred import router as similarity_matrix_pred_router
 
 # Initialize logging at module level
 initialize_logging()
@@ -86,10 +104,13 @@ async def startup_event():
 v1_router = APIRouter(prefix="/v1")
 
 v1_router.include_router(activation_all_router)
+v1_router.include_router(activation_all_batch_router)
 v1_router.include_router(steer_completion_chat_router)
 v1_router.include_router(steer_completion_router)
 v1_router.include_router(activation_single_router)
+v1_router.include_router(activation_single_batch_router)
 v1_router.include_router(activation_topk_by_token_router)
+v1_router.include_router(activation_topk_by_token_batch_router)
 v1_router.include_router(sae_topk_by_decoder_cossim_router)
 v1_router.include_router(sae_vector_router)
 v1_router.include_router(tokenize_router)
@@ -100,6 +121,9 @@ app.include_router(v1_router)
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+
+USE_TLENS_BRIDGE = False
 
 
 @app.post("/initialize")
@@ -163,41 +187,70 @@ async def initialize(
         )
         Config._instance = config
 
-        logger.info("Loading model...")
+        if args.nnsight:
+            logger.info("Loading model with nnterp...")
 
-        hf_model = None
-        hf_tokenizer = None
-        if custom_hf_model_id is not None:
-            logger.info("Loading custom HF model: %s", custom_hf_model_id)
-            hf_model = AutoModelForCausalLM.from_pretrained(
-                custom_hf_model_id,
-                torch_dtype=STR_TO_DTYPE[config.model_dtype],
+            model = StandardizedTransformer(
+                replace_tlens_model_id_with_hf_model_id(config.model_id),
+                dtype=STR_TO_DTYPE[config.model_dtype],
             )
-            hf_tokenizer = AutoTokenizer.from_pretrained(custom_hf_model_id)
 
-        model = HookedTransformer.from_pretrained_no_processing(
-            (config.override_model_id if config.override_model_id else config.model_id),
-            device=args.device,
-            dtype=STR_TO_DTYPE[config.model_dtype],
-            n_devices=device_count,
-            hf_model=hf_model,
-            **({"hf_config": hf_model.config} if hf_model else {}),
-            tokenizer=hf_tokenizer,
-            **config.model_kwargs,
-        )
+        elif USE_TLENS_BRIDGE == False:
+            logger.info("Loading model...")
 
-        # add hook_in to mlp for transcoders
-        def add_hook_in_to_mlp(mlp):  # type: ignore
-            mlp.hook_in = HookPoint()
-            original_forward = mlp.forward
-            mlp.forward = lambda x: original_forward(mlp.hook_in(x))
+            hf_model = None
+            hf_tokenizer = None
+            if custom_hf_model_id is not None:
+                logger.info("Loading custom HF model: %s", custom_hf_model_id)
+                hf_model = AutoModelForCausalLM.from_pretrained(
+                    custom_hf_model_id,
+                    torch_dtype=STR_TO_DTYPE[config.model_dtype],
+                )
+                hf_tokenizer = AutoTokenizer.from_pretrained(custom_hf_model_id)
 
-        for block in model.blocks:
-            add_hook_in_to_mlp(block.mlp)
-        model.setup()
+            model = HookedTransformer.from_pretrained_no_processing(
+                (
+                    config.override_model_id
+                    if config.override_model_id
+                    else config.model_id
+                ),
+                device=args.device,
+                dtype=STR_TO_DTYPE[config.model_dtype],
+                n_devices=device_count,
+                hf_model=hf_model,
+                **({"hf_config": hf_model.config} if hf_model else {}),
+                tokenizer=hf_tokenizer,
+                **config.model_kwargs,
+            )
+
+            # add hook_in to mlp for transcoders
+            def add_hook_in_to_mlp(mlp):  # type: ignore
+                mlp.hook_in = HookPoint()
+                original_forward = mlp.forward
+                mlp.forward = lambda x: original_forward(mlp.hook_in(x))
+
+            for block in model.blocks:
+                add_hook_in_to_mlp(block.mlp)
+            model.setup()
+        # else:
+        #     # Load the model utilizing the new transformerlens bridge
+        #     model = boot(
+        #         model_name=(
+        #             config.override_model_id
+        #             if config.override_model_id
+        #             else config.model_id
+        #         ),
+        #         device=args.device,
+        #         dtype=STR_TO_DTYPE[config.model_dtype],
+        #     )
+
+        #     model.enable_compatibility_mode(no_processing=True)
 
         Model._instance = model
-        config.set_num_layers(model.cfg.n_layers)
+        if isinstance(model, StandardizedTransformer):
+            config.set_num_layers(model.num_layers)
+        else:
+            config.set_num_layers(model.cfg.n_layers)
 
         if model.tokenizer:
             special_token_ids = set(
@@ -221,7 +274,7 @@ async def initialize(
         checkCudaError()
 
         logger.info("Loading SAEs...")
-        SAEManager._instance = SAEManager(model.cfg.n_layers, args.device)
+        SAEManager._instance = SAEManager(config.num_layers, args.device)
         SAEManager._instance.load_saes()
 
         global initialized

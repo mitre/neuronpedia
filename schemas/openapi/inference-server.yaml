@@ -17,8 +17,14 @@ paths:
     $ref: "inference/paths/activation/single.yaml"
   /activation/all:
     $ref: "inference/paths/activation/all.yaml"
+  /activation/all-batch:
+    $ref: "inference/paths/activation/all-batch.yaml"
+  /activation/single-batch:
+    $ref: "inference/paths/activation/single-batch.yaml"
   /activation/topk-by-token:
     $ref: "inference/paths/activation/topk-by-token.yaml"
+  /activation/topk-by-token-batch:
+    $ref: "inference/paths/activation/topk-by-token-batch.yaml"
 
   # Steer
   /steer/completion:

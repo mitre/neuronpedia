@@ -15,7 +15,7 @@ import {
 } from '@/lib/env';
 import { runInferenceActivationAll } from '@/lib/utils/inference';
 import { RequestOptionalUser, withOptionalUser } from '@/lib/with-user';
-import { ActivationAllPost200Response } from 'neuronpedia-inference-client';
+import { ActivationAllBatchPost200Response, ActivationAllPost200Response } from 'neuronpedia-inference-client';
 import { NextResponse } from 'next/server';
 
 // Hobby plans don't support > 60 seconds
@@ -52,8 +52,12 @@ const DEFAULT_DENSITY_THRESHOLD = -1;
  *                 required: true
  *                 default: res-jb
  *               text:
- *                 description: The custom text to run through the model.
- *                 type: string
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: array
+ *                     items:
+ *                       type: string
+ *                 description: The custom text to run through the model. Either a single string or an array of strings.
  *                 required: true
  *                 default: hello world
  *               selectedLayers:
@@ -121,7 +125,7 @@ const DEFAULT_DENSITY_THRESHOLD = -1;
 
 export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
   const body = await request.json();
-  if (body.text === undefined || body.text === null || body.text.trim().length === 0) {
+  if (body.text === undefined || body.text === null || body.text === '') {
     throw new Error('Missing search text.');
   }
 
@@ -149,7 +153,47 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
     return NextResponse.json({ message: error instanceof Error ? error.message : 'Unknown Error' }, { status: 500 });
   }
 
-  console.log('starting');
+  // if it's a batch search, we don't need to check savedSearch or fetch the feature
+  if (Array.isArray(body.text)) {
+    const result = (await runInferenceActivationAll(
+      modelId,
+      sourceSetName,
+      body.text,
+      numResults,
+      selectedLayers,
+      sortIndexes,
+      body.ignoreBos,
+      request.user,
+    )) as ActivationAllBatchPost200Response;
+
+    const inferenceActivations: InferenceActivationAllResult[][] = [];
+    result.results.forEach((promptResult) => {
+      const searchResults: InferenceActivationAllResult[] = [];
+      promptResult.activations.forEach((activation) => {
+        if (
+          (sortIndexes.length === 0 && activation.maxValue > 0) ||
+          (sortIndexes.length > 0 && activation.sumValues !== undefined && activation.sumValues > 0)
+        ) {
+          // eslint-disable-next-line
+          searchResults.push({
+            modelId,
+            layer: activation.source,
+            index: activation.index.toString(),
+            maxValue: activation.maxValue,
+            maxValueIndex: activation.maxValueIndex,
+            values: activation.values,
+            neuron: undefined,
+            dfaValues: activation.dfaValues,
+            dfaTargetIndex: activation.dfaTargetIndex,
+            dfaMaxValue: activation.dfaMaxValue,
+          });
+        }
+      });
+      inferenceActivations.push(searchResults);
+    });
+
+    return NextResponse.json(result);
+  }
   // see if we found this before
   const savedSearch = await prisma.savedSearch.findUnique({
     where: {
@@ -236,7 +280,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
     }
   } else {
     console.log('no saved search found');
-    const result: ActivationAllPost200Response = await runInferenceActivationAll(
+    const result: ActivationAllPost200Response = (await runInferenceActivationAll(
       modelId,
       sourceSetName,
       body.text,
@@ -245,7 +289,8 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
       sortIndexes,
       body.ignoreBos,
       request.user,
-    );
+    )) as ActivationAllPost200Response;
+
     console.log('got activations: ', result.activations.length);
     console.log('got tokens: ', result.tokens.length);
 
