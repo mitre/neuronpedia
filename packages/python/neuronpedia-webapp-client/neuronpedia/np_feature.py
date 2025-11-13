@@ -32,6 +32,4 @@ class Feature:
     def open_in_browser(self):
         import webbrowser
 
-        webbrowser.open(
-            f"https://neuronpedia.org/{self.modelId}/{self.source}/{self.index}"
-        )
+        webbrowser.open(f"https://neuronpedia.org/{self.modelId}/{self.source}/{self.index}")
