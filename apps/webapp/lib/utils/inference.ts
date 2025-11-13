@@ -178,7 +178,7 @@ export const getActivationForFeature = async (
           const activations = result.activation.values;
           return {
             tokens,
-            activations,
+            values: activations,
             maxValue: Math.max(...activations),
             minValue: Math.min(...activations),
             modelId: feature.modelId || '',
