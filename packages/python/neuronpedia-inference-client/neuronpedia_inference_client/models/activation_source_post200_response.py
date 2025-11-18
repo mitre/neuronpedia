@@ -26,7 +26,7 @@ from typing_extensions import Self
 
 class ActivationSourcePost200Response(BaseModel):
     """
-    The results as a 3D array of prompt x prompt_token x feature_index
+    All prompts results, only including non-zero features and non-zero activations
     """ # noqa: E501
     results: List[ActivationSourcePost200ResponseResultsInner]
     __properties: ClassVar[List[str]] = ["results"]

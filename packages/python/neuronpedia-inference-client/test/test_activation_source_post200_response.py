@@ -41,11 +41,13 @@ class TestActivationSourcePost200Response(unittest.TestCase):
                         tokens = [
                             ''
                             ], 
-                        result = [
-                            [
-                                1.337
+                        active_features = {
+                            'key' : [
+                                [
+                                    1.337
+                                    ]
                                 ]
-                            ], )
+                            }, )
                     ]
             )
         else:
@@ -55,11 +57,13 @@ class TestActivationSourcePost200Response(unittest.TestCase):
                         tokens = [
                             ''
                             ], 
-                        result = [
-                            [
-                                1.337
+                        active_features = {
+                            'key' : [
+                                [
+                                    1.337
+                                    ]
                                 ]
-                            ], )
+                            }, )
                     ],
         )
         """

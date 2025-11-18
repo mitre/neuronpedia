@@ -19,17 +19,18 @@ import re  # noqa: F401
 import json
 
 from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt, StrictStr
-from typing import Any, ClassVar, Dict, List, Union
+from typing import Any, ClassVar, Dict, List, Optional, Union
+from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
 
 class ActivationSourcePost200ResponseResultsInner(BaseModel):
     """
-    One prompt's results as prompt_token x feature_index
+    One prompt's results, only including non-zero values and non-zero activations
     """ # noqa: E501
     tokens: List[StrictStr] = Field(description="The prompt, tokenized.")
-    result: List[List[Union[StrictFloat, StrictInt]]] = Field(description="The prompt_token x feature_index array")
-    __properties: ClassVar[List[str]] = ["tokens", "result"]
+    active_features: Optional[Dict[str, List[Annotated[List[Union[StrictFloat, StrictInt]], Field(min_length=2, max_length=2)]]]] = Field(default=None, description="Dictionary mapping feature indices to arrays of [token_index, activation_value]", alias="activeFeatures")
+    __properties: ClassVar[List[str]] = ["tokens", "activeFeatures"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -83,7 +84,7 @@ class ActivationSourcePost200ResponseResultsInner(BaseModel):
 
         _obj = cls.model_validate({
             "tokens": obj.get("tokens"),
-            "result": obj.get("result")
+            "activeFeatures": obj.get("activeFeatures")
         })
         return _obj
 

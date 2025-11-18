@@ -39,21 +39,18 @@ class TestActivationSourcePost200ResponseResultsInner(unittest.TestCase):
                 tokens = [
                     ''
                     ],
-                result = [
-                    [
-                        1.337
+                active_features = {
+                    'key' : [
+                        [
+                            1.337
+                            ]
                         ]
-                    ]
+                    }
             )
         else:
             return ActivationSourcePost200ResponseResultsInner(
                 tokens = [
                     ''
-                    ],
-                result = [
-                    [
-                        1.337
-                        ]
                     ],
         )
         """

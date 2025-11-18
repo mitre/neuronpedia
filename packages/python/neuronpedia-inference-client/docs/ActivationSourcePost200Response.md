@@ -1,6 +1,6 @@
 # ActivationSourcePost200Response
 
-The results as a 3D array of prompt x prompt_token x feature_index
+All prompts results, only including non-zero features and non-zero activations
 
 ## Properties
 

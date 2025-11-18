@@ -38,13 +38,15 @@ class TestUtilSaeVectorPost200Response(unittest.TestCase):
             return UtilSaeVectorPost200Response(
                 vector = [
                     1.337
-                    ]
+                    ],
+                hook_name = ''
             )
         else:
             return UtilSaeVectorPost200Response(
                 vector = [
                     1.337
                     ],
+                hook_name = '',
         )
         """
 

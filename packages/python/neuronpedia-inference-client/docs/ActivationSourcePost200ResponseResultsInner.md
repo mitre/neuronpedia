@@ -1,13 +1,13 @@
 # ActivationSourcePost200ResponseResultsInner
 
-One prompt's results as prompt_token x feature_index
+One prompt's results, only including non-zero values and non-zero activations
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **tokens** | **List[str]** | The prompt, tokenized. | 
-**result** | **List[List[float]]** | The prompt_token x feature_index array | 
+**active_features** | **Dict[str, List[List[float]]]** | Dictionary mapping feature indices to arrays of [token_index, activation_value] | [optional] 
 
 ## Example
 
