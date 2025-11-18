@@ -1,7 +1,7 @@
-from typing import List, Optional
 from dataclasses import dataclass
-from neuronpedia.np_activation import Activation
+from typing import List, Optional
 
+from neuronpedia.np_activation import Activation
 from neuronpedia.requests.base_request import NPRequest
 
 
@@ -71,7 +71,11 @@ class SourceActivationRequest(NPRequest):
 
         return [
             Activation(
-                modelId=result.modelId, source=result.layer, index=result.index, tokens=tokens, values=result.values
+                modelId=result.modelId,
+                source=result.layer,
+                index=result.index,
+                tokens=tokens,
+                values=result.values,
             )
             for result in feature_results
         ]
@@ -110,7 +114,10 @@ class SourceActivationRequest(NPRequest):
             for item in result["result"]:
                 batch_feature_result["results"].append(
                     SourceActivationResult(
-                        modelId=item["modelId"], layer=item["layer"], index=item["index"], values=item["values"]
+                        modelId=item["modelId"],
+                        layer=item["layer"],
+                        index=item["index"],
+                        values=item["values"],
                     )
                 )
             batch_feature_results.append(batch_feature_result)

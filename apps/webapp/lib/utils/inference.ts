@@ -48,6 +48,7 @@ export const makeInferenceServerApiWithServerHost = (serverHost: string) =>
       basePath: (USE_LOCALHOST_INFERENCE ? LOCALHOST_INFERENCE_HOST : serverHost) + BASE_PATH,
       headers: {
         'X-SECRET-KEY': INFERENCE_SERVER_SECRET,
+        'Accept-Encoding': 'gzip',
       },
     }),
   );
@@ -241,6 +242,28 @@ export const getActivationForFeature = async (
       console.error(error);
       throw error;
     });
+};
+
+export const runInferenceActivationSource = async (
+  modelId: string,
+  source: string,
+  prompts: string[],
+  user: AuthenticatedUser | null,
+) => {
+  const serverHost = await getOneRandomServerHostForSource(modelId, source, user);
+  if (!serverHost) {
+    throw new Error('No server host found');
+  }
+
+  const transformerLensModelId = await getTransformerLensModelIdIfExists(modelId);
+
+  return makeInferenceServerApiWithServerHost(serverHost).activationSourcePost({
+    activationSourcePostRequest: {
+      prompts,
+      model: transformerLensModelId,
+      source,
+    },
+  });
 };
 
 export const runInferenceActivationAll = async (

@@ -55,6 +55,13 @@ class TestDefaultApi(unittest.TestCase):
         """
         pass
 
+    def test_activation_source_post(self) -> None:
+        """Test case for activation_source_post
+
+        For a given prompt, get the top activating features for a source (eg 0-gemmascope-res-65k or 5-gemmascope-res-65k), and return the results as a 3D array of prompt x prompt_token x feature_index.
+        """
+        pass
+
     def test_activation_topk_by_token_batch_post(self) -> None:
         """Test case for activation_topk_by_token_batch_post
 

@@ -1,8 +1,8 @@
 from typing import List, Optional
 
+from neuronpedia.np_activation import Activation
 from neuronpedia.requests.base_request import NPRequest
 from requests import Response
-from neuronpedia.np_activation import Activation
 
 
 class ActivationRequest(NPRequest):
@@ -12,7 +12,22 @@ class ActivationRequest(NPRequest):
     ):
         super().__init__("activation", api_key=api_key)
 
-    def compute_activation_for_text(self, model_id: str, source: str, index: str, text: str) -> Activation:
+    def compute_all_source_activations_for_text(
+        self, model_id: str, source: str, text: str | list[str]
+    ) -> list[Activation]:
+        payload = {
+            "customText": text,
+            "modelId": model_id,
+            "source": source,
+        }
+        data = self.send_request(method="POST", json=payload, uri="source")
+
+        # we let the user handle the results
+        return data["results"]
+
+    def compute_activation_for_text(
+        self, model_id: str, source: str, index: str, text: str
+    ) -> Activation:
         if isinstance(index, int):
             index = str(index)
         payload = {
@@ -27,7 +42,11 @@ class ActivationRequest(NPRequest):
         result = self.send_request(method="POST", json=payload, uri="new")
 
         return Activation(
-            modelId=model_id, source=source, index=index, tokens=result["tokens"], values=result["values"]
+            modelId=model_id,
+            source=source,
+            index=index,
+            tokens=result["tokens"],
+            values=result["values"],
         )
 
     def compute_activation_for_texts(
@@ -46,7 +65,13 @@ class ActivationRequest(NPRequest):
 
         results = self.send_request(method="POST", json=payload, uri="new")
         return [
-            Activation(modelId=model_id, source=source, index=index, tokens=result["tokens"], values=result["values"])
+            Activation(
+                modelId=model_id,
+                source=source,
+                index=index,
+                tokens=result["tokens"],
+                values=result["values"],
+            )
             for result in results
         ]
 
