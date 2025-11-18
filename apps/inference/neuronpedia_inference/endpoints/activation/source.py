@@ -15,7 +15,6 @@ from neuronpedia_inference_client.models.activation_source_post_request import (
     ActivationSourcePostRequest,
 )
 from nnterp import StandardizedTransformer
-from transformer_lens import ActivationCache
 
 # from transformer_lens.model_bridge import TransformerBridge
 from neuronpedia_inference.config import Config
@@ -72,24 +71,6 @@ async def activation_source(
             content={"error": "An error occurred while processing the request"},
             status_code=500,
         )
-
-
-def _get_safe_dtype(dtype: torch.dtype) -> torch.dtype:
-    """
-    Convert float16 to float32, leave other dtypes unchanged.
-    """
-    return torch.float32 if dtype == torch.float16 else dtype
-
-
-def _safe_cast(tensor: torch.Tensor, target_dtype: torch.dtype) -> torch.Tensor:
-    """
-    Safely cast a tensor to the target dtype, creating a copy if needed.
-    Convert float16 to float32, leave other dtypes unchanged.
-    """
-    safe_dtype = _get_safe_dtype(tensor.dtype)
-    if safe_dtype != tensor.dtype or safe_dtype != target_dtype:
-        return tensor.to(target_dtype)
-    return tensor
 
 
 class ActivationProcessor:
@@ -189,13 +170,13 @@ class ActivationProcessor:
         elif max_layer >= model.cfg.n_layers:
             max_layer = None
 
-        # Run batched inference
+        layer_num = self._get_layer_num(request.source)
+        hook_name = sae_manager.get_sae_hook(request.source)
+
         with torch.no_grad():
             if isinstance(model, StandardizedTransformer):
                 cache = {}
                 with model.trace(padded_tokens):
-                    layer_num = self._get_layer_num(request.source)
-                    hook_name = sae_manager.get_sae_hook(request.source)
                     if "resid_post" in hook_name:
                         outputs = model.layers_output[layer_num].save()
                     elif "resid_pre" in hook_name:
@@ -216,142 +197,50 @@ class ActivationProcessor:
                 else:
                     _, cache = model.run_with_cache(padded_tokens)
 
-        # Process each prompt's results from the batch
+        activation_data = cache[hook_name].to(Config.get_instance().device)
+        feature_activation_data = (
+            SAEManager.get_instance().get_sae(request.source).encode(activation_data)
+        )
+
+        feature_activation_data = feature_activation_data.cpu().numpy()
+
+        # Convert feature_activation_data to sparse format for all prompts
         results: list[ActivationSourcePost200ResponseResultsInner] = []
         for i in range(batch_size):
             seq_len = original_lengths[i]
             str_tokens = all_str_tokens[i]
 
-            # Extract this sequence's cache
-            seq_cache = {}
-            for key in cache:
-                if isinstance(cache[key], torch.Tensor):
-                    # Extract the non-padded portion for this sequence
-                    seq_cache[key] = cache[key][i : i + 1, :seq_len]
-                else:
-                    seq_cache[key] = cache[key]
+            # Get activations for this prompt (shape: [seq_len, num_features])
+            prompt_activations = feature_activation_data[i, :seq_len, :]
 
-            # Process this prompt's activations
-            source_activations = self._process_source(request, seq_cache)
-            # Convert to numpy array and replace all 0.0 with 0
-            source_activations_np = np.array(source_activations, dtype=object)
+            # Find non-zero activations
+            nonzero_indices = np.nonzero(prompt_activations)
+            token_indices = nonzero_indices[0]
+            feature_indices = nonzero_indices[1]
+            activation_values = prompt_activations[nonzero_indices]
 
-            # Recursively replace 0.0 with 0 in nested lists
-            def replace_zeros(arr):
-                if isinstance(arr, (list, np.ndarray)):
-                    return [replace_zeros(x) for x in arr]
-                if isinstance(arr, float) and arr == 0.0:
-                    return 0
-                return arr
+            # Build sparse dictionary: feature_index -> [[token_index, activation_value], ...]
+            active_features: dict[str, list[list[float]]] = {}
+            for token_idx, feature_idx, activation_value in zip(
+                token_indices, feature_indices, activation_values
+            ):
+                if token_idx == 0:
+                    continue
+                feature_key = str(int(feature_idx))
+                if feature_key not in active_features:
+                    active_features[feature_key] = []
+                active_features[feature_key].append(
+                    [int(token_idx), round(float(activation_value), ROUND_DECIMALS)]
+                )
 
-            source_activations = replace_zeros(source_activations_np)
-            result = ActivationSourcePost200ResponseResultsInner(
-                tokens=str_tokens,
-                result=source_activations,
+            results.append(
+                ActivationSourcePost200ResponseResultsInner(
+                    tokens=str_tokens,
+                    activeFeatures=active_features,
+                )
             )
-            results.append(result)
 
         return results
-
-    def _tokenize_and_get_cache(
-        self,
-        text: list[str],
-        prepend_bos: bool,
-        request: ActivationSourcePostRequest,
-        max_layer: int | None = None,
-    ) -> tuple[torch.Tensor, list[str], ActivationCache]:
-        """Process input text and return tokens, string tokens, and cache."""
-        model = Model.get_instance()
-        config = Config.get_instance()
-
-        if isinstance(model, StandardizedTransformer):
-            tokens = model.tokenizer(
-                text, add_special_tokens=False, return_tensors="pt"
-            )["input_ids"][0]
-        else:
-            tokens = model.to_tokens(
-                text,
-                prepend_bos=prepend_bos,
-                truncate=False,
-            )[0]
-        if len(tokens) > config.token_limit:
-            raise ValueError(
-                f"Text too long: {len(tokens)} tokens, max is {config.token_limit}"
-            )
-
-        if isinstance(model, StandardizedTransformer):
-            tokenizer = model.tokenizer
-            str_tokens = tokenizer.tokenize(text)
-            str_tokens = [tokenizer.convert_tokens_to_string([t]) for t in str_tokens]
-        else:
-            str_tokens = model.to_str_tokens(text, prepend_bos=prepend_bos)
-
-        with torch.no_grad():
-            if isinstance(model, StandardizedTransformer):
-                sae_manager = SAEManager.get_instance()
-                cache = {}
-                with model.trace(tokens):
-                    layer_num = self._get_layer_num(request.source)
-                    hook_name = sae_manager.get_sae_hook(request.source)
-                    if "resid_post" in hook_name:
-                        outputs = model.layers_output[layer_num].save()
-                    else:
-                        raise ValueError(
-                            f"Unsupported hook name for nnsight: {hook_name}"
-                        )
-                    cache[hook_name] = outputs
-            else:
-                if max_layer:
-                    _, cache = model.run_with_cache(tokens, stop_at_layer=max_layer)
-                else:
-                    _, cache = model.run_with_cache(tokens)
-        return tokens, str_tokens, cache  # type: ignore
-
-    def _round_nested(self, obj, decimals=ROUND_DECIMALS):
-        if isinstance(obj, (list, np.ndarray)):
-            return [self._round_nested(x, decimals) for x in obj]
-        return round(float(obj), decimals)
-
-    def _process_source(
-        self,
-        request: ActivationSourcePostRequest,
-        cache: ActivationCache,
-    ) -> list[list[float]]:
-        """Process activations for each selected layer."""
-        sae_manager = SAEManager.get_instance()
-        hook_name = sae_manager.get_sae_hook(request.source)
-        sae_type = sae_manager.get_sae_type(request.source)
-
-        if Config.get_instance().device != "mps":
-            return (
-                self._get_activations_by_index(
-                    sae_type, request.source, cache, hook_name
-                )
-                .round(decimals=ROUND_DECIMALS)
-                .tolist()
-            )
-        result = self._get_activations_by_index(
-            sae_type, request.source, cache, hook_name
-        )
-        return self._round_nested(result.cpu().numpy().tolist())
-
-    def _get_activations_by_index(
-        self,
-        sae_type: str,
-        selected_source: str,
-        cache: ActivationCache,
-        hook_name: str,
-    ) -> torch.Tensor:
-        """Get activations by index for a specific layer and SAE type."""
-        if sae_type == "neurons":
-            mlp_activation_data = cache[hook_name].to(Config.get_instance().device)
-            return torch.transpose(mlp_activation_data[0], 0, 1)
-
-        activation_data = cache[hook_name].to(Config.get_instance().device)
-        feature_activation_data = (
-            SAEManager.get_instance().get_sae(selected_source).encode(activation_data)
-        )
-        return torch.transpose(feature_activation_data.squeeze(0), 0, 1)
 
     @staticmethod
     def _get_layer_num(sae_id: str) -> int:
