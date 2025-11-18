@@ -14,7 +14,7 @@ class ActivationRequest(NPRequest):
 
     def compute_all_source_activations_for_text(
         self, model_id: str, source: str, text: str | list[str]
-    ) -> list[Activation]:
+    ):
         payload = {
             "customText": text,
             "modelId": model_id,
@@ -22,7 +22,6 @@ class ActivationRequest(NPRequest):
         }
         data = self.send_request(method="POST", json=payload, uri="source")
 
-        # we let the user handle the results
         return data["results"]
 
     def compute_activation_for_text(
