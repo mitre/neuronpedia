@@ -22,7 +22,7 @@ import {
 } from './ActivationSourcePost200ResponseResultsInner';
 
 /**
- * The results as a 3D array of prompt x prompt_token x feature_index
+ * All prompts results, only including non-zero features and non-zero activations
  * @export
  * @interface ActivationSourcePost200Response
  */

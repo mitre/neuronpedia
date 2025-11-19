@@ -14,7 +14,7 @@
 
 import { mapValues } from '../runtime';
 /**
- * One prompt's results as prompt_token x feature_index
+ * One prompt's results, only including non-zero values and non-zero activations
  * @export
  * @interface ActivationSourcePost200ResponseResultsInner
  */
@@ -26,11 +26,11 @@ export interface ActivationSourcePost200ResponseResultsInner {
      */
     tokens: Array<string>;
     /**
-     * The prompt_token x feature_index array
-     * @type {Array<Array<number>>}
+     * Dictionary mapping feature indices to arrays of [token_index, activation_value]
+     * @type {{ [key: string]: Array<Array<number>>; }}
      * @memberof ActivationSourcePost200ResponseResultsInner
      */
-    result: Array<Array<number>>;
+    activeFeatures?: { [key: string]: Array<Array<number>>; };
 }
 
 /**
@@ -38,7 +38,6 @@ export interface ActivationSourcePost200ResponseResultsInner {
  */
 export function instanceOfActivationSourcePost200ResponseResultsInner(value: object): value is ActivationSourcePost200ResponseResultsInner {
     if (!('tokens' in value) || value['tokens'] === undefined) return false;
-    if (!('result' in value) || value['result'] === undefined) return false;
     return true;
 }
 
@@ -53,7 +52,7 @@ export function ActivationSourcePost200ResponseResultsInnerFromJSONTyped(json: a
     return {
         
         'tokens': json['tokens'],
-        'result': json['result'],
+        'activeFeatures': json['activeFeatures'] == null ? undefined : json['activeFeatures'],
     };
 }
 
@@ -69,7 +68,7 @@ export function ActivationSourcePost200ResponseResultsInnerToJSONTyped(value?: A
     return {
         
         'tokens': value['tokens'],
-        'result': value['result'],
+        'activeFeatures': value['activeFeatures'],
     };
 }
 

@@ -22,6 +22,7 @@ class ActivationRequest(NPRequest):
         }
         data = self.send_request(method="POST", json=payload, uri="source")
 
+        # allow the consumer to parse the results as they see fit
         return data["results"]
 
     def compute_activation_for_text(

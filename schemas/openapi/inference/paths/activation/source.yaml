@@ -30,7 +30,7 @@ post:
         application/json:
           schema:
             type: object
-            description: The results as a 3D array of prompt x prompt_token x feature_index
+            description: All prompts results, only including non-zero features and non-zero activations
             required:
               - results
             properties:
@@ -38,7 +38,7 @@ post:
                 type: array
                 items:
                   type: object
-                  description: One prompt's results as prompt_token x feature_index
+                  description: One prompt's results, only including non-zero values and non-zero activations
                   required:
                     - tokens
                     - result
@@ -48,12 +48,17 @@ post:
                       description: The prompt, tokenized.
                       items:
                         type: string
-                    result:
-                      type: array
-                      description: The prompt_token x feature_index array
-                      items:
+                    activeFeatures:
+                      type: object
+                      description: Dictionary mapping feature indices to arrays of [token_index, activation_value]
+                      additionalProperties:
                         type: array
+                        description: Array of [token_index, activation_value] pairs for this feature
                         items:
-                          type: number
+                          type: array
+                          items:
+                            type: number
+                          minItems: 2
+                          maxItems: 2
     401:
       $ref: "../../../shared.yaml#/components/responses/UnauthorizedError"

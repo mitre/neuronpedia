@@ -202,7 +202,7 @@ class ActivationProcessor:
             SAEManager.get_instance().get_sae(request.source).encode(activation_data)
         )
 
-        feature_activation_data = feature_activation_data.cpu().numpy()
+        feature_activation_data = feature_activation_data.float().cpu().numpy()
 
         # Convert feature_activation_data to sparse format for all prompts
         results: list[ActivationSourcePost200ResponseResultsInner] = []
