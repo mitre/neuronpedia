@@ -1,12 +1,19 @@
 import { prisma } from '@/lib/db';
 import { Neuron } from '@prisma/client';
-import { ActivationAllPost200Response, ActivationTopkByTokenPost200Response } from 'neuronpedia-inference-client';
+import {
+  ActivationAllPost200Response,
+  ActivationTopkByTokenPost200Response,
+  UtilSaeVectorPost200Response,
+} from 'neuronpedia-inference-client';
 import { NeuronWithPartialRelations } from 'prisma/generated/zod';
 import { PUBLIC_ACTIVATIONS_USER_IDS } from '../env';
 import { EXPLANATIONTYPE_HUMAN } from '../utils/autointerp';
+import { makeInferenceServerApiWithServerHost } from '../utils/inference';
 import { NeuronIdentifier } from '../utils/neuron-identifier';
 import { getSourceSetNameFromSource } from '../utils/source';
 import { AuthenticatedUser } from '../with-user';
+import { getOneRandomServerHostForSource } from './inference-host-source';
+import { getTransformerLensModelIdIfExists } from './model';
 import {
   assertUserCanAccessModel,
   assertUserCanAccessModelAndSource,
@@ -84,7 +91,27 @@ export const upsertVector = async (
   });
 };
 
-export const getVector = async (modelId: string, source: string, index: string) => {
+export const getVectorFromInstance = async (
+  modelId: string,
+  source: string,
+  index: string,
+): Promise<UtilSaeVectorPost200Response> => {
+  const serverHost = await getOneRandomServerHostForSource(modelId, source, null);
+  if (!serverHost) {
+    throw new Error('No server host found');
+  }
+  const transformerLensModelId = await getTransformerLensModelIdIfExists(modelId);
+
+  return makeInferenceServerApiWithServerHost(serverHost).utilSaeVectorPost({
+    utilSaeVectorPostRequest: {
+      model: transformerLensModelId,
+      source,
+      index: parseInt(index, 10),
+    },
+  });
+};
+
+export const getVectorFromDb = async (modelId: string, source: string, index: string) => {
   const neuron = prisma.neuron.findUnique({
     where: {
       modelId_layer_index: {
