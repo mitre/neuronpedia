@@ -1,4 +1,5 @@
-import { getVectorFromDb, getVectorFromInstance } from '@/lib/db/neuron';
+import { getVectorFromDb } from '@/lib/db/neuron';
+import { getVectorFromInstance } from '@/lib/utils/inference';
 import { RequestOptionalUser, withOptionalUser } from '@/lib/with-user';
 import { NextResponse } from 'next/server';
 import { object, string } from 'yup';

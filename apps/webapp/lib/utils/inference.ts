@@ -30,6 +30,7 @@ import {
   NPSteerVector,
   SteerCompletionChatPost200Response,
   SteerCompletionPost200Response,
+  UtilSaeVectorPost200Response,
 } from 'neuronpedia-inference-client';
 import {
   getOneRandomServerHostForModel,
@@ -607,4 +608,24 @@ export const tokenizeText = async (modelId: string, text: string, prependBos: bo
   });
 
   return result;
+};
+
+export const getVectorFromInstance = async (
+  modelId: string,
+  source: string,
+  index: string,
+): Promise<UtilSaeVectorPost200Response> => {
+  const serverHost = await getOneRandomServerHostForSource(modelId, source, null);
+  if (!serverHost) {
+    throw new Error('No server host found');
+  }
+  const transformerLensModelId = await getTransformerLensModelIdIfExists(modelId);
+
+  return makeInferenceServerApiWithServerHost(serverHost).utilSaeVectorPost({
+    utilSaeVectorPostRequest: {
+      model: transformerLensModelId,
+      source,
+      index: parseInt(index, 10),
+    },
+  });
 };
