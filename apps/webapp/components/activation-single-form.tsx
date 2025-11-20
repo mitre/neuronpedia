@@ -4,12 +4,11 @@
 // eslint-disable-next-line
 import ActivationItem from '@/components/activation-item';
 import { useGlobalContext } from '@/components/provider/global-provider';
-import { NEXT_PUBLIC_URL } from '@/lib/env';
 import { BOS_TOKENS } from '@/lib/utils/activations';
 import { getSourceSetNameFromSource } from '@/lib/utils/source';
 import { Activation } from '@prisma/client';
 import copy from 'copy-to-clipboard';
-import { Check, Copy, Grid, Joystick, Play, Share } from 'lucide-react';
+import { Check, Copy, Grid, Joystick, Play, Share, XIcon } from 'lucide-react';
 import { NeuronWithPartialRelations, SourceWithPartialRelations } from 'prisma/generated/zod';
 import { useEffect, useState } from 'react';
 import ReactTextareaAutosize from 'react-textarea-autosize';
@@ -50,7 +49,6 @@ export default function ActivationSingleForm({
   const [customText, setCustomText] = useState('');
   const [activationResult, setActivationResult] = useState<Activation | undefined>();
   const [copyClicked, setCopyClicked] = useState(false);
-
   useEffect(() => {
     if (copyClicked) {
       setTimeout(() => {
@@ -107,12 +105,17 @@ export default function ActivationSingleForm({
             }
           }
           setActivationResult(actToSet);
+          const url = `${window.location.origin}/${neuron.modelId}/${neuron.layer}/${
+            neuron.index
+          }?defaulttesttext=${encodeURIComponent(actToSet.tokens.join(''))}`;
+          window.history.pushState({}, '', url);
           if (callback) {
             callback(actToSet);
           }
         }
       })
-      .catch(() => {
+      .catch((e) => {
+        console.error(e);
         setIsSubmitting(false);
         showToastServerError();
         if (callback) {
@@ -246,10 +249,23 @@ export default function ActivationSingleForm({
                 <div className="mt-0 flex flex-row items-center justify-start">
                   <button
                     type="button"
-                    className="my-1 ml-3 flex w-[72px] cursor-pointer flex-row items-center justify-center gap-x-0.5 whitespace-pre rounded bg-slate-200 px-2 py-1.5 text-[9px] font-medium text-slate-600 hover:bg-slate-300 sm:px-2.5 sm:py-1.5 sm:text-[10.5px]"
+                    className="my-1 ml-3 flex w-[64px] cursor-pointer flex-row items-center justify-center gap-x-0.5 whitespace-pre rounded bg-slate-200 px-1.5 py-1.5 text-[9px] font-medium text-slate-600 hover:bg-slate-300 sm:px-2 sm:py-1.5 sm:text-[10.5px]"
+                    title="Clear Result"
+                    onClick={() => {
+                      setActivationResult(undefined);
+                      setCustomText('');
+                      const url = `${window.location.origin}/${neuron.modelId}/${neuron.layer}/${neuron.index}`;
+                      window.history.pushState({}, '', url);
+                    }}
+                  >
+                    <XIcon className="h-3 w-3" /> Reset
+                  </button>
+                  <button
+                    type="button"
+                    className="my-1 ml-1.5 flex w-[64px] cursor-pointer flex-row items-center justify-center gap-x-0.5 whitespace-pre rounded bg-slate-200 px-1.5 py-1.5 text-[9px] font-medium text-slate-600 hover:bg-slate-300 sm:px-2 sm:py-1.5 sm:text-[10.5px]"
                     title="Share Custom Activation Test Result"
                     onClick={() => {
-                      const url = `${NEXT_PUBLIC_URL}/${neuron.modelId}/${neuron.layer}/${
+                      const url = `${window.location.origin}/${neuron.modelId}/${neuron.layer}/${
                         neuron.index
                       }?defaulttesttext=${encodeURIComponent(activationResult.tokens.join(''))}`;
                       copy(url);
