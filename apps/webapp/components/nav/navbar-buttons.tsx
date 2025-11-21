@@ -266,6 +266,7 @@ export default function NavBarButtons() {
                   initialModelId={jumpToModelModelId}
                   initialSource={defaultSource}
                   initialText=""
+                  initialIgnoreBos
                   hideSettings
                   showResultsInNewPage
                 />
