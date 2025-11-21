@@ -16,6 +16,7 @@ import ReactTextareaAutosize from 'react-textarea-autosize';
 import { Button } from './shadcn/button';
 
 const DEFAULT_STEER_MULTIPLIER = 3;
+const HIDE_STEER_MODELS = ['gpt-oss-20b', 'llama3.3-70b-it'];
 
 export default function ActivationSingleForm({
   neuron,
@@ -196,20 +197,22 @@ export default function ActivationSingleForm({
               </Button>
             )}
 
-          {!hideSteer && !isGraphEnabledForSource(neuron.modelId, neuron.layer) && neuron.modelId !== 'gpt-oss-20b' && (
-            <Button
-              className="flex h-auto flex-col gap-y-0.5 border-emerald-700 px-2.5 text-[10.5px] font-medium text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
-              variant="outline"
-              onClick={() => {
-                window.open(
-                  `/${neuron.modelId}/steer?source=${neuron.layer}&index=${neuron.index}${neuron.activations && neuron.activations.length > 0 ? `&strength=${neuron.activations?.[0]?.maxValue ? Math.max((neuron.activations?.[0]?.maxValue || 0) * DEFAULT_STEER_MULTIPLIER, 0.25).toFixed(2) : 10}` : ''}`,
-                  '_blank',
-                );
-              }}
-            >
-              <Joystick className="h-4 w-4" /> Steer
-            </Button>
-          )}
+          {!hideSteer &&
+            !isGraphEnabledForSource(neuron.modelId, neuron.layer) &&
+            !HIDE_STEER_MODELS.includes(neuron.modelId) && (
+              <Button
+                className="flex h-auto flex-col gap-y-0.5 border-emerald-700 px-2.5 text-[10.5px] font-medium text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
+                variant="outline"
+                onClick={() => {
+                  window.open(
+                    `/${neuron.modelId}/steer?source=${neuron.layer}&index=${neuron.index}${neuron.activations && neuron.activations.length > 0 ? `&strength=${neuron.activations?.[0]?.maxValue ? Math.max((neuron.activations?.[0]?.maxValue || 0) * DEFAULT_STEER_MULTIPLIER, 0.25).toFixed(2) : 10}` : ''}`,
+                    '_blank',
+                  );
+                }}
+              >
+                <Joystick className="h-4 w-4" /> Steer
+              </Button>
+            )}
         </div>
         {activationResult && (
           <div className="mb-1 mt-2 flex w-full flex-col rounded-md border-0 bg-slate-50 pb-1 pr-2 pt-0.5 sm:pb-2 sm:pt-1">
