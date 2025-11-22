@@ -16,7 +16,7 @@ import ReactTextareaAutosize from 'react-textarea-autosize';
 import { Button } from './shadcn/button';
 
 const DEFAULT_STEER_MULTIPLIER = 3;
-const HIDE_STEER_MODELS = ['gpt-oss-20b', 'llama3.3-70b-it'];
+const HIDE_STEER_MODELS = ['gpt-oss-20b'];
 
 export default function ActivationSingleForm({
   neuron,

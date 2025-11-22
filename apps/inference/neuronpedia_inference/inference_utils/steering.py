@@ -153,6 +153,54 @@ def convert_to_chat_array(
                             )
                         )
 
+    # Llama 3.3 Instruct uses header tokens similar to Llama 3.1
+    elif hasattr(tokenizer, "name_or_path") and "Llama-3" in tokenizer.name_or_path:
+        # Llama 3.3 uses special tokens: 128006 (start_header), 128007 (end_header)
+        # Format: <|start_header_id|>role<|end_header_id|>\n\ncontent<|eot_id|>
+        START_HEADER_ID = 128006
+        END_HEADER_ID = 128007
+        EOT_ID = 128009
+
+        i = 0
+        while i < len(tokens):
+            token = tokens[i]
+
+            # Look for start of a message (start_header_id)
+            if token == START_HEADER_ID:
+                # Extract role (tokens between start_header and end_header)
+                role_tokens = []
+                i += 1
+                while i < len(tokens) and tokens[i] != END_HEADER_ID:
+                    role_tokens.append(tokens[i])
+                    i += 1
+
+                if i < len(tokens) and tokens[i] == END_HEADER_ID:
+                    i += 1  # Skip end_header_id
+
+                    # Extract content (tokens until eot_id)
+                    content_tokens = []
+                    while i < len(tokens) and tokens[i] != EOT_ID:
+                        content_tokens.append(tokens[i])
+                        i += 1
+
+                    if role_tokens and content_tokens:
+                        role = tokenizer.decode(role_tokens).strip()
+                        content = tokenizer.decode(content_tokens).strip()
+
+                        if role and content:
+                            conversation.append(
+                                NPSteerChatMessage(
+                                    role=role,
+                                    content=content,
+                                )
+                            )
+
+                    if i < len(tokens) and tokens[i] == EOT_ID:
+                        i += 1  # Skip eot_id
+                    continue
+
+            i += 1
+
     # only other one right now is Gemma 2 Instruct (2B and 9B)
     else:
         # Get special token IDs directly from the tokenizer
@@ -256,13 +304,16 @@ class OrthogonalProjector:
         if self._P is None:
             # Compute the squared norm of the steering vector
             v_norm_squared = torch.sum(self.steering_vector * self.steering_vector)
-            
+
             # Check for zero norm to avoid division by zero
             if v_norm_squared == 0:
                 raise ValueError("Cannot create projection matrix from zero vector")
-            
+
             # Compute the projection matrix: P = vv^T / ||v||^2
-            self._P = torch.matmul(self.steering_vector, self.steering_vector.T) / v_norm_squared
+            self._P = (
+                torch.matmul(self.steering_vector, self.steering_vector.T)
+                / v_norm_squared
+            )
 
             if not torch.isfinite(self._P).all():
                 raise ValueError("Projection matrix contains inf or nan values")

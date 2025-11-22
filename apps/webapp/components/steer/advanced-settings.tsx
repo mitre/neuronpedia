@@ -19,6 +19,7 @@ import { ChevronDown, HelpCircle } from 'lucide-react';
 import { NPSteerMethod } from 'neuronpedia-inference-client';
 
 export default function SteerAdvancedSettings({
+  isNnSightModel = false,
   thinking,
   inCompletionMode,
   steerTokens,
@@ -38,6 +39,7 @@ export default function SteerAdvancedSettings({
   steerMethod,
   setSteerMethod,
 }: {
+  isNnSightModel: boolean;
   thinking: boolean;
   inCompletionMode: boolean;
   steerTokens: number;
@@ -116,8 +118,9 @@ export default function SteerAdvancedSettings({
                 setFreqPenalty(parseFloat(e.target.value));
               }
             }}
-            className="max-w-[80px] flex-1 rounded-md border-slate-300 py-1 text-center text-xs text-slate-700"
+            className="max-w-[80px] flex-1 rounded-md border-slate-300 py-1 text-center text-xs text-slate-700 disabled:bg-slate-200 disabled:text-slate-400"
             value={freqPenalty}
+            disabled={isNnSightModel}
           />
         </div>
         <div className="flex w-full flex-row items-center justify-start gap-x-3">

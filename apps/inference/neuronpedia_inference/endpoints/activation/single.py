@@ -77,7 +77,7 @@ async def activation_single(
 
         if isinstance(model, StandardizedTransformer):
             tokens = model.tokenizer(
-                prompt, add_special_tokens=True, return_tensors="pt"
+                prompt, add_special_tokens=False, return_tensors="pt"
             )["input_ids"][0]
         else:
             tokens = model.to_tokens(

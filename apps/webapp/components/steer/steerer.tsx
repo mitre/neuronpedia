@@ -39,7 +39,8 @@ import SteerPresetSelector from './preset-selector';
 import SteerSelectedFeature from './selected-feature';
 import SteerTooltip from './tooltip';
 
-const MODELS_TO_FILTER_OUT = ['gpt-oss-20b', 'llama3.3-70b-it'];
+const MODELS_TO_FILTER_OUT = ['gpt-oss-20b'];
+const NNSIGHT_MODELS = ['llama3.3-70b-it', 'gpt-oss-20b'];
 
 export default function Steerer({
   initialModelId,
@@ -682,6 +683,7 @@ export default function Steerer({
             setSteerSpecialTokens={setSteerSpecialTokens}
             steerMethod={steerMethod}
             setSteerMethod={setSteerMethod}
+            isNnSightModel={NNSIGHT_MODELS.includes(modelId)}
           />
         )}
 
