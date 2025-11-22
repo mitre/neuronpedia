@@ -34,6 +34,9 @@ export default function FeatureDashboard({
   embedTest = true,
   defaultTestText,
   embedExplanation = true,
+  embedActivations = true,
+  embedLink = true,
+  embedSteer = true,
   forceMiniStats = false,
   activationMarkerValue,
 }: {
@@ -43,6 +46,9 @@ export default function FeatureDashboard({
   embedTest?: boolean;
   defaultTestText?: string;
   embedExplanation?: boolean;
+  embedActivations?: boolean;
+  embedLink?: boolean;
+  embedSteer?: boolean;
   forceMiniStats?: boolean;
   activationMarkerValue?: number;
 }) {
@@ -235,7 +241,7 @@ export default function FeatureDashboard({
             embed ? 'flex-1' : 'sm:basis-1/2 lg:basis-2/3'
           } sm:overflow-auto sm:px-0`}
         >
-          {embed && !currentNeuron?.hasVector && !forceMiniStats && (
+          {embed && !currentNeuron?.hasVector && !forceMiniStats && embedLink && (
             <div
               className={`mb-2 flex w-full flex-row items-center sm:mb-2 ${
                 embedExplanation ? 'justify-between gap-x-2 pl-2' : 'justify-center'
@@ -264,6 +270,12 @@ export default function FeatureDashboard({
               </a>
             </div>
           )}
+          {!embedLink && (
+            <div className="mb-1.5 flex flex-row justify-end px-1">
+              <Image src="/logo.png" alt="Neuronpedia logo" width="18" height="18" />
+            </div>
+          )}
+
           <div
             className={`relative ${forceMiniStats ? 'mb-0' : 'mb-5'} flex h-full w-full flex-1 cursor-default flex-col overflow-hidden bg-white px-0 pt-0 shadow sm:overflow-visible sm:rounded-lg`}
             id="activationScrollDiv"
@@ -297,6 +309,9 @@ export default function FeatureDashboard({
                 }}
                 // by default we try to show the chat/formatted tokens instead of the raw tokens
                 defaultShowRawTokens={false}
+                // if false, only show the activation test
+                showActivations={embedActivations}
+                showSteerButton={embedSteer}
               />
             </div>
           </div>
