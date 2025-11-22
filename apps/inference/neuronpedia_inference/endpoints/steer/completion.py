@@ -175,7 +175,9 @@ async def run_batched_generate(
             torch.manual_seed(seed)
 
         # for TransformerLens, use steering_hook
-        def steering_hook(activations: torch.Tensor, hook: Any) -> torch.Tensor:  # noqa: ARG001
+        def steering_hook(
+            activations: torch.Tensor, hook: Any
+        ) -> torch.Tensor:  # noqa: ARG001
             # Log activation device
             logger.info(f"Activations device: {activations.device}")
 
@@ -385,11 +387,10 @@ async def run_batched_generate(
                                     coeff = strength_multiplier * feature.strength
 
                                     if steer_method == NPSteerMethod.SIMPLE_ADDITIVE:
-                                        model.layers_output[layer - 1] += (
-                                            coeff
-                                            * steering_vector.to(
-                                                model.layers_output[layer - 1].device
-                                            )
+                                        model.layers_output[
+                                            layer - 1
+                                        ] += coeff * steering_vector.to(
+                                            model.layers_output[layer - 1].device
                                         )
                                     elif (
                                         steer_method == NPSteerMethod.ORTHOGONAL_DECOMP
@@ -516,7 +517,7 @@ async def run_batched_generate(
                                     layer = int(
                                         hook_name.split(".")[1]
                                     )  # blocks.0.hook_resid_post -> 0
-                                if "resid_pre" in hook_name:
+                                elif "resid_pre" in hook_name:
                                     layer = (
                                         int(hook_name.split(".")[1]) - 1
                                     )  # blocks.1.hook_resid_pre -> 0
@@ -544,11 +545,10 @@ async def run_batched_generate(
                                 coeff = strength_multiplier * feature.strength
 
                                 if steer_method == NPSteerMethod.SIMPLE_ADDITIVE:
-                                    model.layers_output[layer - 1] += (
-                                        coeff
-                                        * steering_vector.to(
-                                            model.layers_output[layer - 1].device
-                                        )
+                                    model.layers_output[
+                                        layer - 1
+                                    ] += coeff * steering_vector.to(
+                                        model.layers_output[layer - 1].device
                                     )
                                 elif steer_method == NPSteerMethod.ORTHOGONAL_DECOMP:
                                     projector = OrthogonalProjector(
