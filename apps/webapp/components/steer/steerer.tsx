@@ -18,6 +18,7 @@ import {
   STEER_FREQUENCY_PENALTY,
   STEER_METHOD,
   STEER_N_COMPLETION_TOKENS,
+  STEER_N_COMPLETION_TOKENS_LARGE_LLM,
   STEER_N_COMPLETION_TOKENS_THINKING,
   STEER_SEED,
   STEER_SPECIAL_TOKENS,
@@ -86,7 +87,9 @@ export default function Steerer({
   const [steeredCompletionLogProbs, setSteeredCompletionLogProbs] = useState<NPLogprob[] | null>(null);
 
   // Default Steering Settings
-  const [steerTokens, setSteerTokens] = useState(STEER_N_COMPLETION_TOKENS);
+  const [steerTokens, setSteerTokens] = useState(
+    NNSIGHT_MODELS.includes(modelId) ? STEER_N_COMPLETION_TOKENS_LARGE_LLM : STEER_N_COMPLETION_TOKENS,
+  );
   const [temperature, setTemperature] = useState(STEER_TEMPERATURE);
   const [freqPenalty, setFreqPenalty] = useState(STEER_FREQUENCY_PENALTY);
   const [strMultiple, setStrMultiple] = useState(STEER_STRENGTH_MULTIPLIER);
@@ -304,6 +307,8 @@ export default function Steerer({
       setSteerSpecialTokens(!isCompletionMode);
       if (globalModels[modelId].thinking) {
         setSteerTokens(STEER_N_COMPLETION_TOKENS_THINKING);
+      } else if (NNSIGHT_MODELS.includes(modelId)) {
+        setSteerTokens(STEER_N_COMPLETION_TOKENS_LARGE_LLM);
       } else {
         setSteerTokens(STEER_N_COMPLETION_TOKENS);
       }

@@ -14,6 +14,7 @@ import {
   STEER_MAX_PROMPT_CHARS,
   STEER_METHOD,
   STEER_N_COMPLETION_TOKENS_MAX,
+  STEER_N_COMPLETION_TOKENS_MAX_LARGE_LLM,
   STEER_N_COMPLETION_TOKENS_MAX_THINKING,
   STEER_STRENGTH_MAX,
   STEER_STRENGTH_MIN,
@@ -38,6 +39,7 @@ import { array, bool, InferType, number, object, string, ValidationError } from 
 // Hobby plans don't support > 60 seconds
 // export const maxDuration = 180;
 
+const NNSIGHT_MODELS = ['llama3.3-70b-it', 'gpt-oss-20b'];
 const STEERING_VERSION = 1;
 
 function sortChatMessages(chatMessages: ChatMessage[]) {
@@ -611,6 +613,13 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
       if (body.n_tokens > STEER_N_COMPLETION_TOKENS_MAX_THINKING) {
         return NextResponse.json(
           { message: `For thinking models the max n_tokens is ${STEER_N_COMPLETION_TOKENS_MAX_THINKING}` },
+          { status: 400 },
+        );
+      }
+    } else if (NNSIGHT_MODELS.includes(modelId)) {
+      if (body.n_tokens > STEER_N_COMPLETION_TOKENS_MAX_LARGE_LLM) {
+        return NextResponse.json(
+          { message: `For large LLM models the max n_tokens is ${STEER_N_COMPLETION_TOKENS_MAX_LARGE_LLM}` },
           { status: 400 },
         );
       }

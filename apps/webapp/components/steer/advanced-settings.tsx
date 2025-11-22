@@ -5,6 +5,7 @@ import {
   STEER_FREQUENCY_PENALTY_MIN,
   STEER_N_COMPLETION_TOKENS,
   STEER_N_COMPLETION_TOKENS_MAX,
+  STEER_N_COMPLETION_TOKENS_MAX_LARGE_LLM,
   STEER_N_COMPLETION_TOKENS_MAX_THINKING,
   STEER_SEED,
   STEER_SPECIAL_TOKENS,
@@ -72,11 +73,19 @@ export default function SteerAdvancedSettings({
             onChange={(e) => {
               if (
                 parseInt(e.target.value, 10) >
-                (thinking ? STEER_N_COMPLETION_TOKENS_MAX_THINKING : STEER_N_COMPLETION_TOKENS_MAX)
+                (thinking
+                  ? STEER_N_COMPLETION_TOKENS_MAX_THINKING
+                  : isNnSightModel
+                    ? STEER_N_COMPLETION_TOKENS_MAX_LARGE_LLM
+                    : STEER_N_COMPLETION_TOKENS_MAX)
               ) {
                 alert(
                   `Due to compute constraints, the current allowed max tokens is: ${
-                    thinking ? STEER_N_COMPLETION_TOKENS_MAX_THINKING : STEER_N_COMPLETION_TOKENS_MAX
+                    thinking
+                      ? STEER_N_COMPLETION_TOKENS_MAX_THINKING
+                      : isNnSightModel
+                        ? STEER_N_COMPLETION_TOKENS_MAX_LARGE_LLM
+                        : STEER_N_COMPLETION_TOKENS_MAX
                   }`,
                 );
               } else {
