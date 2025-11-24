@@ -195,6 +195,7 @@ export default function SteerAdvancedSettings({
               <Select.Content className="overflow-hidden rounded-md border bg-white shadow-lg">
                 <Select.Viewport>
                   {Object.entries(NPSteerMethod)
+                    // @ts-ignore
                     .filter(([_, value]) => STEER_METHODS_ALLOWED.includes(value))
                     .map(([key, value]) => (
                       <Select.Item
