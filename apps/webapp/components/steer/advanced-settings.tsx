@@ -19,6 +19,8 @@ import * as Select from '@radix-ui/react-select';
 import { ChevronDown, HelpCircle } from 'lucide-react';
 import { NPSteerMethod } from 'neuronpedia-inference-client';
 
+export const STEER_METHODS_ALLOWED = [NPSteerMethod.SimpleAdditive, NPSteerMethod.OrthogonalDecomp];
+
 export default function SteerAdvancedSettings({
   isNnSightModel = false,
   thinking,
@@ -192,17 +194,19 @@ export default function SteerAdvancedSettings({
             <Select.Portal>
               <Select.Content className="overflow-hidden rounded-md border bg-white shadow-lg">
                 <Select.Viewport>
-                  {Object.entries(NPSteerMethod).map(([key, value]) => (
-                    <Select.Item
-                      key={key}
-                      value={value}
-                      className="relative flex cursor-pointer items-center px-3 py-2 text-xs text-slate-700 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none"
-                    >
-                      <Select.ItemText className="flex-1 text-center">
-                        {key.replace(/([A-Z])/g, ' $1').trim()}
-                      </Select.ItemText>
-                    </Select.Item>
-                  ))}
+                  {Object.entries(NPSteerMethod)
+                    .filter(([_, value]) => STEER_METHODS_ALLOWED.includes(value))
+                    .map(([key, value]) => (
+                      <Select.Item
+                        key={key}
+                        value={value}
+                        className="relative flex cursor-pointer items-center px-3 py-2 text-xs text-slate-700 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none"
+                      >
+                        <Select.ItemText className="flex-1 text-center">
+                          {key.replace(/([A-Z])/g, ' $1').trim()}
+                        </Select.ItemText>
+                      </Select.Item>
+                    ))}
                 </Select.Viewport>
               </Select.Content>
             </Select.Portal>
