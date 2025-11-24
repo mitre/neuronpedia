@@ -366,6 +366,7 @@ model InferenceHostSource {
   updatedAt DateTime @updatedAt
 
   @@index([modelId])
+  @@index([engine])
 }
 
 model InferenceHostSourceOnSource {
