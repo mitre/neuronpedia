@@ -41,6 +41,7 @@ export default async function Page({
   const embedActivations = searchParams.embedactivations !== 'false'; // default embed activations
   const embedLink = searchParams.embedlink !== 'false'; // default embed link (link to the dashboard)
   const embedSteer = searchParams.embedsteer !== 'false'; // default embed steer
+  const embedTestField = searchParams.embedtestfield !== 'false'; // default embed test field
   const defaultTestText = searchParams.defaulttesttext ? (searchParams.defaulttesttext as string) : undefined;
 
   // TODO: this is a temporary map since there is a bug in our lesswrong plugin that breaks when dots are in modelIds for hoverover links
@@ -126,6 +127,7 @@ export default async function Page({
         embedPlots={embedPlots}
         embedTest={embedTest}
         defaultTestText={defaultTestText}
+        embedTestField={embedTestField}
         embedExplanation={embedExplanation}
         embedActivations={embedActivations}
         embedLink={embedLink}

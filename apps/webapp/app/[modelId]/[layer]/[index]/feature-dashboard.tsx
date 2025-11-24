@@ -33,6 +33,7 @@ export default function FeatureDashboard({
   embedPlots = true,
   embedTest = true,
   defaultTestText,
+  embedTestField = true,
   embedExplanation = true,
   embedActivations = true,
   embedLink = true,
@@ -45,6 +46,7 @@ export default function FeatureDashboard({
   embedPlots?: boolean;
   embedTest?: boolean;
   defaultTestText?: string;
+  embedTestField?: boolean;
   embedExplanation?: boolean;
   embedActivations?: boolean;
   embedLink?: boolean;
@@ -312,6 +314,7 @@ export default function FeatureDashboard({
                 // if false, only show the activation test
                 showActivations={embedActivations}
                 showSteerButton={embedSteer}
+                showTestField={embedTestField}
               />
             </div>
           </div>

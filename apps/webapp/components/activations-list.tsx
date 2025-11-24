@@ -31,6 +31,7 @@ export default function ActivationsList({
   // by default we show the actual tokens instead of hiding special tokens (eg for chat / reasoning)
   defaultShowRawTokens = true,
   showSteerButton = true,
+  showTestField = true,
 }: {
   feature?: NeuronWithPartialRelations;
   activations: ActivationPartialWithRelations[] | void;
@@ -50,6 +51,7 @@ export default function ActivationsList({
   activationItemClassName?: string;
   defaultShowRawTokens?: boolean;
   showSteerButton?: boolean;
+  showTestField?: boolean;
 }) {
   const { getSourceSet, user } = useGlobalContext();
   // used for showing correct snippet
@@ -234,6 +236,7 @@ export default function ActivationsList({
             callback={activationTestTextCallback}
             embed={embed}
             hideSteer={!showSteerButton}
+            hideTestField={!showTestField}
           />
         </div>
       )}
