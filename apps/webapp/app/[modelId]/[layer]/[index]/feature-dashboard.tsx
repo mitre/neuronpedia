@@ -16,6 +16,7 @@ import { BreadcrumbLink, BreadcrumbPage } from '@/components/shadcn/breadcrumbs'
 import VectorItem from '@/components/vector-item';
 import { neuronHasVectorInDatabase, shouldHideBreadcrumbsAndSelectorForNeuronVector } from '@/lib/utils/neuron-vector';
 import { getSourceSetNameFromSource, NEURONS_SOURCESET } from '@/lib/utils/source';
+import { Download } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
@@ -172,6 +173,36 @@ export default function FeatureDashboard({
               />
             </div>
             <div className="hidden flex-row items-start justify-start gap-x-2 px-0 pt-1 sm:flex">
+              {allowTest() && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const response = await fetch('/api/vector/get', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        modelId: currentNeuron?.modelId,
+                        source: currentNeuron?.layer,
+                        index: currentNeuron?.index,
+                      }),
+                    });
+                    const data = await response.json();
+                    const blob = new Blob([JSON.stringify(data.vector, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${currentNeuron?.modelId}_${currentNeuron?.layer}_${currentNeuron?.index}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  aria-label="Download vector as JSON"
+                  className={`h-9 w-9 overflow-hidden rounded-full bg-slate-200 px-0 py-1.5 text-center text-xs font-bold uppercase text-slate-500/80 transition-all hover:enabled:bg-sky-300 hover:enabled:text-sky-800 disabled:bg-slate-400 disabled:opacity-60`}
+                >
+                  <div className="-mt-0.5 flex flex-row items-center justify-center">
+                    <Download className="h-5 w-5" />
+                  </div>
+                </button>
+              )}
               <BookmarkButton mini={false} currentNeuron={currentNeuron} />
             </div>
           </div>
