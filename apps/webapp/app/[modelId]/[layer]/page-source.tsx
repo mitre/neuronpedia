@@ -115,12 +115,6 @@ export default function PageSource({
 
       <div className="flex w-full max-w-screen-xl flex-col items-center pb-5 pt-6 text-slate-700">
         <div className="flex w-full flex-col items-stretch justify-center gap-x-3 gap-y-6">
-          <div className="flex w-full flex-col items-center justify-center">
-            <div className="w-full max-w-screen-lg">
-              <SaeLensConfigPane inSAEPage sae={source as SourceWithPartialRelations} />
-            </div>
-          </div>
-
           {source.set?.similarityMatrixEnabled && (
             <SourceSimilarityMatrixPane
               source={source}
@@ -128,6 +122,12 @@ export default function PageSource({
               initialSimMatrixDemo={simMatrixDemo}
             />
           )}
+
+          <div className="flex w-full flex-col items-center justify-center">
+            <div className="w-full max-w-screen-lg">
+              <SaeLensConfigPane inSAEPage sae={source as SourceWithPartialRelations} />
+            </div>
+          </div>
 
           {source.inferenceEnabled && (
             <SearchInferenceSourcePane

@@ -19,6 +19,7 @@ import { AuthenticatedUser } from '@/lib/with-user';
 import { NeuronPartial, NeuronPartialWithRelations } from '@/prisma/generated/zod';
 import { SteerOutputType } from '@prisma/client';
 import {
+  ActivationSingleBatchPost200Response,
   ActivationSinglePost200Response,
   ActivationTopkByTokenPost200Response,
   BASE_PATH,
@@ -29,6 +30,7 @@ import {
   NPSteerVector,
   SteerCompletionChatPost200Response,
   SteerCompletionPost200Response,
+  UtilSaeVectorPost200Response,
 } from 'neuronpedia-inference-client';
 import {
   getOneRandomServerHostForModel,
@@ -47,6 +49,7 @@ export const makeInferenceServerApiWithServerHost = (serverHost: string) =>
       basePath: (USE_LOCALHOST_INFERENCE ? LOCALHOST_INFERENCE_HOST : serverHost) + BASE_PATH,
       headers: {
         'X-SECRET-KEY': INFERENCE_SERVER_SECRET,
+        'Accept-Encoding': 'gzip',
       },
     }),
   );
@@ -132,7 +135,7 @@ export const getCosSimForFeature = async (
 
 export const getActivationForFeature = async (
   feature: NeuronPartial,
-  defaultTestText: string,
+  defaultTestText: string | string[],
   user: AuthenticatedUser | null,
 ) => {
   if (!feature.modelId || !feature.layer || !feature.index) {
@@ -154,6 +157,51 @@ export const getActivationForFeature = async (
   const modelIdForSearcher = replaceSteerModelIdIfNeeded(feature.modelId);
   const transformerLensModelId = await getTransformerLensModelIdIfExists(modelIdForSearcher);
 
+  if (Array.isArray(defaultTestText)) {
+    return makeInferenceServerApiWithServerHost(serverHost)
+      .activationSingleBatchPost({
+        activationSingleBatchPostRequest: result?.hasVector
+          ? {
+              prompts: defaultTestText,
+              model: transformerLensModelId,
+              vector: result.vector,
+              hook: result.hookName || '',
+            }
+          : {
+              prompts: defaultTestText,
+              model: transformerLensModelId,
+              source: feature.layer,
+              index: feature.index,
+            },
+      })
+      .then((result: ActivationSingleBatchPost200Response) =>
+        result.results.map((result) => {
+          const { tokens } = result;
+          const activations = result.activation.values;
+          return {
+            tokens,
+            values: activations,
+            maxValue: Math.max(...activations),
+            minValue: Math.min(...activations),
+            modelId: feature.modelId || '',
+            layer: feature.layer || '',
+            index: feature.index || '',
+            creatorId: user?.id || '',
+            dataIndex: null,
+            dataSource: 'Neuronpedia',
+            maxValueTokenIndex: activations.indexOf(Math.max(...activations)),
+            createdAt: new Date(),
+            dfaValues: result.activation.dfaValues,
+            dfaTargetIndex: result.activation.dfaTargetIndex,
+            dfaMaxValue: result.activation.dfaMaxValue,
+          };
+        }),
+      )
+      .catch((error) => {
+        console.error(error);
+        throw error;
+      });
+  }
   return makeInferenceServerApiWithServerHost(serverHost)
     .activationSinglePost({
       activationSinglePostRequest: result?.hasVector
@@ -197,10 +245,32 @@ export const getActivationForFeature = async (
     });
 };
 
+export const runInferenceActivationSource = async (
+  modelId: string,
+  source: string,
+  prompts: string[],
+  user: AuthenticatedUser | null,
+) => {
+  const serverHost = await getOneRandomServerHostForSource(modelId, source, user);
+  if (!serverHost) {
+    throw new Error('No server host found');
+  }
+
+  const transformerLensModelId = await getTransformerLensModelIdIfExists(modelId);
+
+  return makeInferenceServerApiWithServerHost(serverHost).activationSourcePost({
+    activationSourcePostRequest: {
+      prompts,
+      model: transformerLensModelId,
+      source,
+    },
+  });
+};
+
 export const runInferenceActivationAll = async (
   modelId: string,
   sourceSetName: string,
-  text: string,
+  text: string | string[],
   numResults: number,
   selectedLayers: string[],
   sortIndexes: number[],
@@ -215,6 +285,19 @@ export const runInferenceActivationAll = async (
 
   const transformerLensModelId = await getTransformerLensModelIdIfExists(modelId);
 
+  if (Array.isArray(text)) {
+    return makeInferenceServerApiWithServerHost(serverHost).activationAllBatchPost({
+      activationAllBatchPostRequest: {
+        prompts: text,
+        model: transformerLensModelId,
+        selectedSources: selectedLayers,
+        sortByTokenIndexes: sortIndexes,
+        sourceSet: sourceSetName,
+        ignoreBos,
+        numResults,
+      },
+    });
+  }
   return makeInferenceServerApiWithServerHost(serverHost).activationAllPost({
     activationAllPostRequest: {
       prompt: text,
@@ -474,7 +557,7 @@ export const steerCompletionChat = async (
 export const getActivationsTopKByToken = async (
   modelId: string,
   layer: string,
-  text: string,
+  text: string | string[],
   topK: number,
   ignoreBos: boolean,
   user: AuthenticatedUser | null,
@@ -487,6 +570,17 @@ export const getActivationsTopKByToken = async (
 
   const transformerLensModelId = await getTransformerLensModelIdIfExists(modelId);
 
+  if (Array.isArray(text)) {
+    return makeInferenceServerApiWithServerHost(serverHost).activationTopkByTokenBatchPost({
+      activationTopkByTokenBatchPostRequest: {
+        prompts: text,
+        model: transformerLensModelId,
+        source: layer,
+        topK,
+        ignoreBos,
+      },
+    });
+  }
   const result: ActivationTopkByTokenPost200Response = await makeInferenceServerApiWithServerHost(
     serverHost,
   ).activationTopkByTokenPost({
@@ -514,4 +608,24 @@ export const tokenizeText = async (modelId: string, text: string, prependBos: bo
   });
 
   return result;
+};
+
+export const getVectorFromInstance = async (
+  modelId: string,
+  source: string,
+  index: string,
+): Promise<UtilSaeVectorPost200Response> => {
+  const serverHost = await getOneRandomServerHostForSource(modelId, source, null);
+  if (!serverHost) {
+    throw new Error('No server host found');
+  }
+  const transformerLensModelId = await getTransformerLensModelIdIfExists(modelId);
+
+  return makeInferenceServerApiWithServerHost(serverHost).utilSaeVectorPost({
+    utilSaeVectorPostRequest: {
+      model: transformerLensModelId,
+      source,
+      index: parseInt(index, 10),
+    },
+  });
 };

@@ -15,8 +15,10 @@ from neuronpedia_inference_client.models.activation_topk_by_token_post200_respon
 from neuronpedia_inference_client.models.activation_topk_by_token_post_request import (
     ActivationTopkByTokenPostRequest,
 )
+from nnterp import StandardizedTransformer
 from transformer_lens import ActivationCache
 
+# from transformer_lens.model_bridge import TransformerBridge
 from neuronpedia_inference.config import Config
 from neuronpedia_inference.sae_manager import SAEManager
 from neuronpedia_inference.shared import Model, with_request_lock
@@ -26,6 +28,10 @@ logger = logging.getLogger(__name__)
 DEFAULT_TOP_K = 5
 
 router = APIRouter()
+
+
+def get_layer_num_from_sae_id(sae_id: str) -> int:
+    return int(sae_id.split("-")[0]) if not sae_id.isdigit() else int(sae_id)
 
 
 @router.post("/activation/topk-by-token")
@@ -42,15 +48,25 @@ async def activation_topk_by_token(
 
     ignore_bos = request.ignore_bos
 
-    sae = sae_manager.get_sae(source)
+    # sae = sae_manager.get_sae(source)
 
-    prepend_bos = sae.cfg.metadata.prepend_bos or model.cfg.tokenizer_prepends_bos
+    prepend_bos = False
 
-    tokens = model.to_tokens(
-        prompt,
-        prepend_bos=prepend_bos,
-        truncate=False,
-    )[0]
+    # if the request doesn't start with the bos, prepend it
+    bos_token = Model.get_instance().tokenizer.bos_token
+    if not prompt.startswith(bos_token):
+        prompt = bos_token + prompt
+
+    if isinstance(model, StandardizedTransformer):
+        tokens = model.tokenizer(prompt, add_special_tokens=False, return_tensors="pt")[
+            "input_ids"
+        ][0]
+    else:
+        tokens = model.to_tokens(
+            prompt,
+            prepend_bos=prepend_bos,
+            truncate=False,
+        )[0]
 
     if len(tokens) > config.token_limit:
         logger.error(
@@ -65,11 +81,30 @@ async def activation_topk_by_token(
             status_code=400,
         )
 
-    str_tokens = model.to_str_tokens(prompt, prepend_bos=prepend_bos)
-    _, cache = model.run_with_cache(tokens)
+    if isinstance(model, StandardizedTransformer):
+        tokenizer = model.tokenizer
+        str_tokens = tokenizer.tokenize(prompt)
+        str_tokens = [tokenizer.convert_tokens_to_string([t]) for t in str_tokens]
+    else:
+        str_tokens = model.to_str_tokens(prompt, prepend_bos=prepend_bos)
 
     hook_name = sae_manager.get_sae_hook(source)
     sae_type = sae_manager.get_sae_type(source)
+
+    # if isinstance(model, TransformerBridge) and tokens.ndim == 1:
+    #     tokens = tokens.unsqueeze(0)
+    if tokens.ndim == 1:
+        tokens = tokens.unsqueeze(0)
+    if isinstance(model, StandardizedTransformer):
+        layer_num = get_layer_num_from_sae_id(source)
+        with model.trace(tokens):
+            if "resid_post" in hook_name:
+                outputs = model.layers_output[layer_num].save()
+            else:
+                raise ValueError(f"Unsupported hook name for nnsight: {hook_name}")
+        cache = {hook_name: outputs}
+    else:
+        _, cache = model.run_with_cache(tokens)
 
     activations_by_index = get_activations_by_index(
         sae_type,
@@ -82,7 +117,7 @@ async def activation_topk_by_token(
     top_k_values, top_k_indices = torch.topk(activations_by_index.T, k=top_k)
 
     # if we are ignoring BOS and the model prepends BOS, we shift everything over by one
-    if ignore_bos and prepend_bos:
+    if ignore_bos:
         str_tokens = str_tokens[1:]
         top_k_values = top_k_values[1:]
         top_k_indices = top_k_indices[1:]

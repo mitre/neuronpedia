@@ -10,6 +10,7 @@ import {
   STEER_MAX_PROMPT_CHARS,
   STEER_METHOD,
   STEER_N_COMPLETION_TOKENS_MAX,
+  STEER_N_COMPLETION_TOKENS_MAX_LARGE_LLM,
   STEER_STRENGTH_MULTIPLIER_MAX,
   STEER_TEMPERATURE_MAX,
   SteerFeature,
@@ -21,6 +22,7 @@ import { NPLogprob, NPSteerMethod, SteerCompletionPost200Response } from 'neuron
 import { NextResponse } from 'next/server';
 import { array, bool, InferType, number, object, string, ValidationError } from 'yup';
 
+const NNSIGHT_MODELS = ['llama3.3-70b-it', 'gpt-oss-20b'];
 const STEERING_VERSION = 1;
 const MAX_PROMPT_CHARS = STEER_MAX_PROMPT_CHARS;
 
@@ -367,6 +369,16 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
       shareUrl: undefined,
       limit,
     };
+
+    const { modelId } = body;
+    if (NNSIGHT_MODELS.includes(modelId)) {
+      if (body.n_tokens > STEER_N_COMPLETION_TOKENS_MAX_LARGE_LLM) {
+        return NextResponse.json(
+          { message: `For large LLM models the max n_tokens is ${STEER_N_COMPLETION_TOKENS_MAX_LARGE_LLM}` },
+          { status: 400 },
+        );
+      }
+    }
 
     // model access
     const modelAccess = await getModelById(body.modelId, request.user);

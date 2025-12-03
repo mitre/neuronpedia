@@ -393,7 +393,7 @@ test('slack link', async ({ page }) => {
   const [newPage] = await Promise.all([page.waitForEvent('popup'), page.getByText('Slack').click()]);
 
   await expect(newPage).toHaveURL(
-    'https://join.slack.com/t/opensourcemechanistic/shared_invite/zt-375zalm04-GFd5tdBU1yLKlu_T_JSqZQ#/shared-invite/email',
+    'https://join.slack.com/t/opensourcemechanistic/shared_invite/zt-3i6srxrnb-Ibz0as5FE2YCsZh6WlrAwg#/shared-invite/email',
   );
 });
 

@@ -15,8 +15,10 @@ from neuronpedia_inference_client.models.activation_all_post200_response_activat
 from neuronpedia_inference_client.models.activation_all_post_request import (
     ActivationAllPostRequest,
 )
+from nnterp import StandardizedTransformer
 from transformer_lens import ActivationCache
 
+# from transformer_lens.model_bridge import TransformerBridge
 from neuronpedia_inference.config import Config
 from neuronpedia_inference.sae_manager import SAEManager
 from neuronpedia_inference.shared import Model, with_request_lock
@@ -50,6 +52,11 @@ async def activation_all(
 
     if len(request.selected_sources) == 0:
         request.selected_sources = sae_manager.sae_set_to_saes[request.source_set]
+
+    # if the request doesn't start with the bos, prepend it
+    bos_token = Model.get_instance().tokenizer.bos_token
+    if not request.prompt.startswith(bos_token):
+        request.prompt = bos_token + request.prompt
 
     # # Removed this check because our SAE manager will just load and unload as needed (though it will be a little slower)
     # # Check if the number of requested layers exceeds the maximum
@@ -119,16 +126,25 @@ class ActivationProcessor:
         model = Model.get_instance()
         sae_manager = SAEManager.get_instance()
         max_layer = max(self._get_layer_num(s) for s in request.selected_sources) + 1
-        if max_layer >= model.cfg.n_layers:
+        if isinstance(model, StandardizedTransformer):
+            if max_layer >= model.num_layers:
+                max_layer = None
+        elif max_layer >= model.cfg.n_layers:
             max_layer = None
 
         # Get the first sae and check if prepend bos is true, then pass to token getter
-        first_layer = request.selected_sources[0]
-        prepend_bos = sae_manager.get_sae(first_layer).cfg.metadata.prepend_bos
+        # first_layer = request.selected_sources[0]
+        # prepend_bos = sae_manager.get_sae(first_layer).cfg.metadata.prepend_bos
+        prepend_bos = False
+        # if the prompt doesn't start with the bos, prepend it
+        bos_token = model.tokenizer.bos_token
+        if not request.prompt.startswith(bos_token):
+            request.prompt = bos_token + request.prompt
 
         _, str_tokens, cache = self._tokenize_and_get_cache(
-            request.prompt, prepend_bos, max_layer
+            request.prompt, prepend_bos, request, max_layer
         )
+
         # ensure sort_by_token_indexes doesn't have any out of range indexes
         # TODO: return a better error for this (currently returns a 500 error)
         for token_index in request.sort_by_token_indexes:
@@ -154,24 +170,68 @@ class ActivationProcessor:
         )
 
     def _tokenize_and_get_cache(
-        self, text: str, prepend_bos: bool, max_layer: int | None = None
+        self,
+        text: str,
+        prepend_bos: bool,
+        request: ActivationAllPostRequest,
+        max_layer: int | None = None,
     ) -> tuple[torch.Tensor, list[str], ActivationCache]:
         """Process input text and return tokens, string tokens, and cache."""
         model = Model.get_instance()
         config = Config.get_instance()
-        tokens = model.to_tokens(text, prepend_bos=prepend_bos, truncate=False)[0]
+
+        if isinstance(model, StandardizedTransformer):
+            tokens = model.tokenizer(
+                text, add_special_tokens=False, return_tensors="pt"
+            )["input_ids"][0]
+        else:
+            tokens = model.to_tokens(
+                text,
+                prepend_bos=prepend_bos,
+                truncate=False,
+            )[0]
         if len(tokens) > config.token_limit:
             raise ValueError(
                 f"Text too long: {len(tokens)} tokens, max is {config.token_limit}"
             )
 
-        str_tokens = model.to_str_tokens(text, prepend_bos=prepend_bos)
+        if isinstance(model, StandardizedTransformer):
+            tokenizer = model.tokenizer
+            str_tokens = tokenizer.tokenize(text)
+            str_tokens = [tokenizer.convert_tokens_to_string([t]) for t in str_tokens]
+        else:
+            str_tokens = model.to_str_tokens(text, prepend_bos=prepend_bos)
 
         with torch.no_grad():
-            if max_layer:
-                _, cache = model.run_with_cache(tokens, stop_at_layer=max_layer)
+            if isinstance(model, StandardizedTransformer):
+                sae_manager = SAEManager.get_instance()
+                cache = {}
+                with model.trace(tokens):
+                    # since nnsight requires the layers to be accessed in order,
+                    # make an ordered list of selected sources
+                    ordered_selected_sources = []
+                    # ordered_selected_sources is selected_sources sorted by layer number
+                    ordered_selected_sources = sorted(
+                        request.selected_sources,
+                        key=lambda x: self._get_layer_num(x),
+                    )
+                    for selected_source in ordered_selected_sources:
+                        layer_num = self._get_layer_num(selected_source)
+                        hook_name = sae_manager.get_sae_hook(selected_source)
+                        if "resid_post" in hook_name:
+                            outputs = model.layers_output[layer_num].save()
+                        else:
+                            raise ValueError(
+                                f"Unsupported hook name for nnsight: {hook_name}"
+                            )
+                        cache[hook_name] = outputs
             else:
-                _, cache = model.run_with_cache(tokens)
+                # if isinstance(model, TransformerBridge) and tokens.ndim == 1:
+                #     tokens = tokens.unsqueeze(0)
+                if max_layer:
+                    _, cache = model.run_with_cache(tokens, stop_at_layer=max_layer)
+                else:
+                    _, cache = model.run_with_cache(tokens)
         return tokens, str_tokens, cache  # type: ignore
 
     def _process_sources(
@@ -204,6 +264,7 @@ class ActivationProcessor:
                     activations_by_index,
                     layer_num,
                     request.sort_by_token_indexes,
+                    request.ignore_bos,
                 )
             )
 
@@ -232,7 +293,16 @@ class ActivationProcessor:
         activations_by_index: torch.Tensor,
         layer_num: int,
         sort_by_token_indexes: list[int],
+        ignore_bos: bool,
     ) -> dict[str, Any]:
+        model = Model.get_instance()
+        if ignore_bos:
+            if (
+                isinstance(model, StandardizedTransformer)
+                or model.cfg.default_prepend_bos
+            ):
+                activations_by_index[:, 0] = 0
+
         """Process activations for a single layer."""
         max_values, max_indices = torch.max(activations_by_index, dim=1)
         layer_num_tensor = torch.full(max_values.shape, layer_num).to(
@@ -290,8 +360,9 @@ class ActivationProcessor:
 
         sorted_activations = all_activations[sorted_indices]
 
-        if request.ignore_bos and Model.get_instance().cfg.default_prepend_bos:
-            sorted_activations = sorted_activations[sorted_activations[:, 3] != 0]
+        # this is now done in the activation part
+        # if request.ignore_bos and Model.get_instance().cfg.default_prepend_bos:
+        #     sorted_activations = sorted_activations[sorted_activations[:, 3] != 0]
 
         return sorted_activations[: request.num_results].tolist()
 

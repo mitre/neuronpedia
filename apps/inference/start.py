@@ -146,6 +146,8 @@ def main():
         os.environ["MAX_LOADED_SAES"] = str(args.max_loaded_saes)
     if "CUSTOM_HF_MODEL_ID" not in os.environ and args.custom_hf_model_id is not None:
         os.environ["CUSTOM_HF_MODEL_ID"] = str(args.custom_hf_model_id)
+    if "NNSIGHT" not in os.environ:
+        os.environ["NNSIGHT"] = "true" if args.nnsight else "false"
 
     if args.list_models:
         from neuronpedia_inference.args import list_available_options
@@ -161,9 +163,6 @@ def main():
         "--port",
         str(args.port),
     ]
-
-    if args.nnsight:
-        uvicorn_args.extend(["--nnsight"])
 
     if args.reload:
         uvicorn_args.extend(["--reload"])

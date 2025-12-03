@@ -41,10 +41,14 @@ import { NextResponse } from 'next/server';
  *                     required: true
  *                     default: "200"
  *               customText:
- *                 type: string
- *                 description: The custom text to process
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: array
+ *                     items:
+ *                       type: string
+ *                 description: The custom text to process. Either a single string or an array of strings.
  *                 required: true
- *                 default: And you
+ *                 default: Hello world
  *     responses:
  *       200:
  *         description: Successful response, with activation data
@@ -123,7 +127,7 @@ export const POST = withOptionalUser(async (request: RequestOptionalUser) => {
   if (!neuron.modelId || (!neuron.layer && !neuron.source) || !neuron.index) {
     throw new Error('Invalid feature.');
   }
-  if (!body.customText || body.customText.trim().length === 0) {
+  if (!body.customText) {
     throw new Error('Missing custom text.');
   }
 

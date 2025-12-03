@@ -345,10 +345,17 @@ model GraphHostSourceOnSourceSet {
   @@index([sourceSetModelId, sourceSetName])
 }
 
+enum InferenceEngine {
+  TRANSFORMER_LENS
+  NNSIGHT
+  CSPACE
+}
+
 model InferenceHostSource {
   id      String @id @default(cuid())
   name    String
   hostUrl String
+  engine  InferenceEngine @default(TRANSFORMER_LENS)
 
   modelId String
   model   Model  @relation(fields: [modelId], references: [id], onDelete: Cascade)
@@ -359,6 +366,7 @@ model InferenceHostSource {
   updatedAt DateTime @updatedAt
 
   @@index([modelId])
+  @@index([engine])
 }
 
 model InferenceHostSourceOnSource {

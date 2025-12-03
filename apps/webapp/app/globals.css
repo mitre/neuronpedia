@@ -676,6 +676,7 @@ div[data-virtuoso-scroller='true'] table {
 
   a {
     color: #0369a1;
+    text-decoration-line: none;
   }
 
   a:hover {
