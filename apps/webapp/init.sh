@@ -1,9 +1,7 @@
 #!/bin/bash
 
-set -a
-source .env
-set +a
+# Environment variables are injected at runtime via docker compose --env-file or Kubernetes ConfigMaps/Secrets
+# No .env file sourcing needed - all variables are already available in the container environment
 
-# Start the Next.js application (database operations handled by db-init container)
 echo "Starting Next.js application..."
 node server.js
